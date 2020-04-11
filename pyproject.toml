@@ -1,0 +1,20 @@
+[build-system]
+requires = ["flit_core >=2,<3"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "installer"
+author = "Pradyun Gedam"
+author-email = "pradyunsg@gmail.com"
+home-page = "https://github.com/pradyunsg/installer"
+description-file = "README.md"
+classifiers = ["License :: OSI Approved :: MIT License"]
+requires = []
+
+[tool.flit.metadata.requires-extra]
+test = [
+  "pytest",
+  "pytest-cov",
+  "pytest-xdist",
+]
+doc = ["sphinx"]

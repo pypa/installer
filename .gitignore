@@ -1,0 +1,8 @@
+*.pyc
+
+.nox/
+/build/
+/dist/
+
+.coverage
+.*cache

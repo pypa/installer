@@ -1,0 +1,34 @@
+repos:
+
+  - repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+      - id: black
+        language_version: python3.8
+
+  - repo: https://github.com/timothycrosley/isort
+    rev: '4.3.21-2'
+    hooks:
+      - id: isort
+        files: \.py$
+        args: ["--settings-path", "tools/isort.cfg"]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v0.740'
+    hooks:
+      - id: mypy
+        exclude: docs/.*
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 'v2.4.0'
+    hooks:
+      - id: check-builtin-literals
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: flake8
+      - id: forbid-new-submodules
+      - id: trailing-whitespace
