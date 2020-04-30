@@ -1,41 +1,38 @@
 from __future__ import annotations
 
 import csv
-import dataclasses
 import pathlib
 import warnings
 
-from typing import Iterator, Optional
+from typing import Iterator, NamedTuple, Optional
 
 
 class SuperfulousRecordColumnsWarning(UserWarning):
     pass
 
 
-@dataclasses.dataclass()
-class Hash:
+class Hash(NamedTuple):
     name: str
     value: str
 
-    @classmethod
-    def parse(cls, s: str) -> Optional[Hash]:
-        name, value = s.split("=", 1)
-        return cls(name, value)
 
-
-@dataclasses.dataclass()
-class Record:
+class Record(NamedTuple):
     path: pathlib.PurePosixPath
     hash_: Optional[Hash]
     size: Optional[int]
 
-    @classmethod
-    def from_row(cls, row: list[str]) -> Record:
-        return cls(
-            path=pathlib.PurePosixPath(row[0]),
-            hash_=Hash.parse(row[1]) if row[1] else None,
-            size=int(row[2]) if row[2] else None,
-        )
+
+def _parse_record(row: list[str]) -> Record:
+    if row[1]:
+        name, value = row[1].split("=", 1)
+        hash_ = Hash(name, value)
+    else:
+        hash_ = None
+    return Record(
+        path=pathlib.PurePosixPath(row[0]),
+        hash_=hash_,
+        size=int(row[2]) if row[2] else None,
+    )
 
 
 def parse_record_file(f: Iterator[str]) -> Iterator[Record]:
@@ -46,7 +43,7 @@ def parse_record_file(f: Iterator[str]) -> Iterator[Record]:
                 SuperfulousRecordColumnsWarning,
             )
         try:
-            record = Record.from_row(row)
+            record = _parse_record(row)
         except (IndexError, ValueError):
             raise ValueError(f"invalid row {i}: {row!r}")
         yield record
