@@ -1,19 +1,43 @@
-import io
-import textwrap
-
 import pytest
 
 from installer.wheels import SuperfulousRecordColumnsWarning, parse_record_file
 
 
-def test_parse_wheel_record_simple():
-    record_content = textwrap.dedent(
-        """\
-        file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144
-        distribution-1.0.dist-info/RECORD,,
-        """
-    )
-    records = list(parse_record_file(io.StringIO(record_content)))
+@pytest.fixture()
+def record_simple():
+    return [
+        "file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144",
+        "distribution-1.0.dist-info/RECORD,,",
+    ]
+
+
+@pytest.fixture()
+def record_simple_iter(record_simple):
+    return iter(record_simple)
+
+
+@pytest.fixture()
+def record_simple_file(tmpdir, record_simple):
+    p = tmpdir.join("RECORD")
+    p.write("\n".join(record_simple))
+    with open(str(p)) as f:
+        yield f
+
+
+@pytest.fixture()
+def record_input(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.mark.parametrize(
+    "record_input",
+    ["record_simple", "record_simple_iter", "record_simple_file"],
+    indirect=True,
+)
+def test_parse_wheel_record_simple(record_input):
+    """Parser accepts any iterable, e.g. container, iterator, or file object.
+    """
+    records = list(parse_record_file(record_input))
     assert len(records) == 2
 
     r0 = records[0]
@@ -29,19 +53,19 @@ def test_parse_wheel_record_simple():
 
 
 def test_parse_wheel_record_drop_superfulous():
-    record_content = textwrap.dedent(
-        """\
-        file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144,
-        distribution-1.0.dist-info/RECORD,,
-        """
-    )
-    record_io = io.StringIO(record_content)
+    """Parser emits warning on each row with superfulous columns.
+    """
+    record_lines = [
+        "file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144,",
+        "distribution-1.0.dist-info/RECORD,,,,",
+    ]
 
     with pytest.warns(SuperfulousRecordColumnsWarning) as ws:
-        records = list(parse_record_file(record_io))
+        records = list(parse_record_file(record_lines))
 
-    assert len(ws) == 1
-    assert ws[0].message.args[0] == "Dropping columns [3:] from row 0"
+    assert len(ws) == 2
+    assert "0" in ws[0].message.args[0]
+    assert "1" in ws[1].message.args[0]
 
     assert len(records) == 2
 
@@ -57,32 +81,33 @@ def test_parse_wheel_record_drop_superfulous():
     assert r1.size is None
 
 
-RECORD_CONTENT_NOT_ENOUGH_COLUMNS = """\
-file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144
-distribution-1.0.dist-info/RECORD,
-"""
+RECORD_LINES_NOT_ENOUGH_COLUMNS = [
+    "file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144",
+    "distribution-1.0.dist-info/RECORD,",
+]
 
-RECORD_CONTENT_INVALID_SIZE = """\
-file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144
-distribution-1.0.dist-info/RECORD,,deadbeef
-"""
+RECORD_LINES_INVALID_SIZE = [
+    "file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144",
+    "distribution-1.0.dist-info/RECORD,,deadbeef",
+]
 
 
 @pytest.mark.parametrize(
-    "record_content, invalid_row",
+    "record_lines, invalid_row",
     [
         (
-            RECORD_CONTENT_NOT_ENOUGH_COLUMNS,
+            RECORD_LINES_NOT_ENOUGH_COLUMNS,
             ["distribution-1.0.dist-info/RECORD", ""],
         ),
         (
-            RECORD_CONTENT_INVALID_SIZE,
+            RECORD_LINES_INVALID_SIZE,
             ["distribution-1.0.dist-info/RECORD", "", "deadbeef"],
         ),
     ],
 )
-def test_parse_wheel_record_invalid(record_content, invalid_row):
-    record_io = io.StringIO(record_content)
+def test_parse_wheel_record_invalid(record_lines, invalid_row):
+    """Parser raises ValueError on invalid RECORD.
+    """
     with pytest.raises(ValueError) as ctx:
-        list(parse_record_file(record_io))
+        list(parse_record_file(record_lines))
     assert str(ctx.value) == f"invalid row 1: {invalid_row!r}"
