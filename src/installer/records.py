@@ -1,6 +1,6 @@
 __all__ = [
     "Hash",
-    "Record",
+    "RecordItem",
     "SuperfulousRecordColumnsWarning",
     "parse_record_file",
 ]
@@ -35,7 +35,7 @@ class Hash(object):
         return Hash(name, value)
 
 
-class Record(object):
+class RecordItem(object):
     def __init__(self, path, hash_, size):
         # type: (pathlib.PurePosixPath, Optional[Hash], Optional[int]) -> None
         self.path = path
@@ -44,13 +44,13 @@ class Record(object):
 
     def __repr__(self):
         # type: () -> str
-        return "Record(path={!r}, hash_={!r}, size={!r})".format(
+        return "RecordItem(path={!r}, hash_={!r}, size={!r})".format(
             self.path, self.hash_, self.size,
         )
 
     @classmethod
     def parse(cls, path, hash_, size):
-        # type: (str, str, str) -> Record
+        # type: (str, str, str) -> RecordItem
         """Build a Record from parsing elements in a record row.
 
         Typical usage::
@@ -70,7 +70,7 @@ class Record(object):
 
 
 def parse_record_file(f):
-    # type: (Iterator[str]) -> Iterator[Record]
+    # type: (Iterator[str]) -> Iterator[RecordItem]
     for row_index, row in enumerate(csv.reader(f)):
         if len(row) > 3:
             warnings.warn(
@@ -78,7 +78,7 @@ def parse_record_file(f):
                 SuperfulousRecordColumnsWarning,
             )
         try:
-            record = Record.parse(row[0], row[1], row[2])
+            record = RecordItem.parse(row[0], row[1], row[2])
         except (IndexError, ValueError):
             raise ValueError("invalid row {}: {!r}".format(row_index, row))
         yield record
