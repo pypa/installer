@@ -21,6 +21,3 @@ test = [
   "pytest-xdist",
 ]
 doc = ["sphinx"]
-
-[tool.black]
-line-length = 79

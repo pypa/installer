@@ -1,9 +1,6 @@
 import pytest
 
-from installer.records import (
-    SuperfulousRecordColumnsWarning,
-    parse_record_file,
-)
+from installer.records import SuperfulousRecordColumnsWarning, parse_record_file
 
 
 @pytest.fixture()
@@ -84,12 +81,12 @@ def test_parse_wheel_record_drop_superfulous():
     assert r1.size is None
 
 
-RECORD_LINES_NOT_ENOUGH_COLUMNS = [
+RECORD_LINES_INVALID_NOT_ENOUGH_COLUMNS = [
     "file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144",
     "distribution-1.0.dist-info/RECORD,",
 ]
 
-RECORD_LINES_INVALID_SIZE = [
+RECORD_LINES_INVALID_SIZE_VALUE = [
     "file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144",
     "distribution-1.0.dist-info/RECORD,,deadbeef",
 ]
@@ -99,11 +96,11 @@ RECORD_LINES_INVALID_SIZE = [
     "record_lines, invalid_row",
     [
         (
-            RECORD_LINES_NOT_ENOUGH_COLUMNS,
+            RECORD_LINES_INVALID_NOT_ENOUGH_COLUMNS,
             ["distribution-1.0.dist-info/RECORD", ""],
         ),
         (
-            RECORD_LINES_INVALID_SIZE,
+            RECORD_LINES_INVALID_SIZE_VALUE,
             ["distribution-1.0.dist-info/RECORD", "", "deadbeef"],
         ),
     ],
