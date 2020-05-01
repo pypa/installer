@@ -1,3 +1,10 @@
+__all__ = [
+    "Hash",
+    "Record",
+    "SuperfulousRecordColumnsWarning",
+    "parse_record_file",
+]
+
 import csv
 import warnings
 
