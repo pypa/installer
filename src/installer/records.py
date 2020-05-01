@@ -71,14 +71,14 @@ class Record(object):
 
 def parse_record_file(f):
     # type: (Iterator[str]) -> Iterator[Record]
-    for i, row in enumerate(csv.reader(f)):
+    for row_index, row in enumerate(csv.reader(f)):
         if len(row) > 3:
             warnings.warn(
-                "Dropping columns [3:] from row {}".format(i),
+                "Dropping columns [3:] from row {}".format(row_index),
                 SuperfulousRecordColumnsWarning,
             )
         try:
             record = Record.parse(row[0], row[1], row[2])
         except (IndexError, ValueError):
-            raise ValueError("invalid row {}: {!r}".format(i, row))
+            raise ValueError("invalid row {}: {!r}".format(row_index, row))
         yield record
