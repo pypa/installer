@@ -1,5 +1,4 @@
 import pytest
-
 from installer.wheels import SuperfulousRecordColumnsWarning, parse_record_file
 
 
@@ -110,4 +109,4 @@ def test_parse_wheel_record_invalid(record_lines, invalid_row):
     """
     with pytest.raises(ValueError) as ctx:
         list(parse_record_file(record_lines))
-    assert str(ctx.value) == f"invalid row 1: {invalid_row!r}"
+    assert str(ctx.value) == "invalid row 1: {!r}".format(invalid_row)

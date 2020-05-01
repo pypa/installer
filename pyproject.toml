@@ -9,7 +9,10 @@ author-email = "pradyunsg@gmail.com"
 home-page = "https://github.com/pradyunsg/installer"
 description-file = "README.md"
 classifiers = ["License :: OSI Approved :: MIT License"]
-requires = []
+requires-python = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
+requires = [
+  "pathlib2; python_version < '3.4'"
+]
 
 [tool.flit.metadata.requires-extra]
 test = [

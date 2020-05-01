@@ -1,49 +1,59 @@
-from __future__ import annotations
-
+import collections
 import csv
-import pathlib
 import warnings
 
-from typing import Iterator, NamedTuple, Optional
+from installer._compat import pathlib
+from installer._compat.typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Iterator, Optional
 
 
 class SuperfulousRecordColumnsWarning(UserWarning):
     pass
 
 
-class Hash(NamedTuple):
-    name: str
-    value: str
+Hash = collections.namedtuple("Hash", "name value")
 
 
-class Record(NamedTuple):
-    path: pathlib.PurePosixPath
-    hash_: Optional[Hash]
-    size: Optional[int]
+class Record(object):
+    def __init__(self, path, hash_, size):
+        # type: (pathlib.PurePosixPath, Optional[Hash], Optional[int]) -> None
+        self.path = path
+        self.hash_ = hash_
+        self.size = size
+
+    def __repr__(self):
+        # type: () -> str
+        return "Record(path={!r}, hash_={!r}, size={!r})".format(
+            self.path, self.hash_, self.size,
+        )
+
+    @classmethod
+    def parse(cls, p, h, s):
+        # type: (str, str, str) -> Record
+        if h:
+            name, value = h.split("=", 1)
+            hash_ = Hash(name, value)  # type: Optional[Hash]
+        else:
+            hash_ = None
+        return cls(
+            path=pathlib.PurePosixPath(p),
+            hash_=hash_,
+            size=int(s) if s else None,
+        )
 
 
-def _parse_record(row: list[str]) -> Record:
-    if row[1]:
-        name, value = row[1].split("=", 1)
-        hash_ = Hash(name, value)
-    else:
-        hash_ = None
-    return Record(
-        path=pathlib.PurePosixPath(row[0]),
-        hash_=hash_,
-        size=int(row[2]) if row[2] else None,
-    )
-
-
-def parse_record_file(f: Iterator[str]) -> Iterator[Record]:
+def parse_record_file(f):
+    # type: (Iterator[str]) -> Iterator[Record]
     for i, row in enumerate(csv.reader(f)):
         if len(row) > 3:
             warnings.warn(
-                f"Dropping columns [3:] from row {i}",
+                "Dropping columns [3:] from row {}".format(i),
                 SuperfulousRecordColumnsWarning,
             )
         try:
-            record = _parse_record(row)
+            record = Record.parse(row[0], row[1], row[2])
         except (IndexError, ValueError):
-            raise ValueError(f"invalid row {i}: {row!r}")
+            raise ValueError("invalid row {}: {!r}".format(i, row))
         yield record

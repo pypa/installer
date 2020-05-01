@@ -27,6 +27,7 @@ def test(session):
         "pytest",
         "--cov=installer",
         "--cov-fail-under=100",
+        "--cov-report=term-missing",
         "-n",
         "auto",
         *session.posargs

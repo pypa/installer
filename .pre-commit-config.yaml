@@ -17,7 +17,12 @@ repos:
     rev: 'v0.740'
     hooks:
       - id: mypy
-        exclude: docs/.*
+        exclude: docs/.*|tests/.*|noxfile.py
+      - id: mypy
+        name: mypy (Python 2)
+        additional_dependencies: ["pathlib2"]
+        exclude: docs/.*|tests/.*|noxfile.py
+        args: ["-2"]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: 'v2.4.0'
