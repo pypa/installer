@@ -24,12 +24,14 @@ def lint(session):
 def test(session):
     session.install(".[test]")
 
+    htmlcov_output = os.path.join(session.virtualenv.location, "htmlcov")
+
     session.run(
         "pytest",
         "--cov=installer",
         "--cov-fail-under=100",
         "--cov-report=term-missing",
-        "--cov-report=html:{}".format(os.path.abspath("htmlcov")),
+        "--cov-report=html:{}".format(htmlcov_output),
         "--cov-context=test",
         "-n",
         "auto",

@@ -3,7 +3,6 @@
 .nox/
 /build/
 /dist/
-/htmlcov/
 
 .coverage
 .*cache
