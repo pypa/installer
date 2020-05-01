@@ -1,5 +1,6 @@
 """Development automation
 """
+import os
 
 import nox
 
@@ -28,6 +29,8 @@ def test(session):
         "--cov=installer",
         "--cov-fail-under=100",
         "--cov-report=term-missing",
+        "--cov-report=html:{}".format(os.path.abspath("htmlcov")),
+        "--cov-context=test",
         "-n",
         "auto",
         *session.posargs
