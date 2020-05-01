@@ -1,4 +1,3 @@
-import collections
 import csv
 import warnings
 
@@ -13,7 +12,20 @@ class SuperfulousRecordColumnsWarning(UserWarning):
     pass
 
 
-Hash = collections.namedtuple("Hash", "name value")
+class Hash(object):
+    def __init__(self, name, value):
+        # type: (str, str) -> None
+        self.name = name
+        self.value = value
+
+    def __repr__(self):
+        return "Hash(name={!r}, value={!r})".format(self.name, self.value)
+
+    @classmethod
+    def parse(cls, h):
+        # type: (str) -> Hash
+        name, value = h.split("=", 1)
+        return Hash(name, value)
 
 
 class Record(object):
@@ -32,14 +44,9 @@ class Record(object):
     @classmethod
     def parse(cls, p, h, s):
         # type: (str, str, str) -> Record
-        if h:
-            name, value = h.split("=", 1)
-            hash_ = Hash(name, value)  # type: Optional[Hash]
-        else:
-            hash_ = None
         return cls(
             path=pathlib.PurePosixPath(p),
-            hash_=hash_,
+            hash_=Hash.parse(h) if h else None,
             size=int(s) if s else None,
         )
 
