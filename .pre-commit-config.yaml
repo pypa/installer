@@ -11,7 +11,6 @@ repos:
     hooks:
       - id: isort
         files: \.py$
-        args: ["--settings-path", "tools/isort.cfg"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: 'v0.740'
