@@ -49,12 +49,23 @@ class Record(object):
         )
 
     @classmethod
-    def parse(cls, p, h, s):
+    def parse(cls, path, hash_, size):
         # type: (str, str, str) -> Record
+        """Build a Record from parsing elements in a record row.
+
+        Typical usage::
+
+            reader = csv.reader(f)
+            for row in reader:
+                record = Record.parse(row[0], row[1], row[2])
+
+        All arguments are in string form. Meaning of elements are specified in
+        PEP 376. Raises ``ValueError`` if any of the elements is invalid.
+        """
         return cls(
-            path=pathlib.PurePosixPath(p),
-            hash_=Hash.parse(h) if h else None,
-            size=int(s) if s else None,
+            path=pathlib.PurePosixPath(path),
+            hash_=Hash.parse(hash_) if hash_ else None,
+            size=int(size) if size else None,
         )
 
 
