@@ -1,5 +1,9 @@
 import pytest
-from installer.wheels import SuperfulousRecordColumnsWarning, parse_record_file
+
+from installer.records import (
+    SuperfulousRecordColumnsWarning,
+    parse_record_file,
+)
 
 
 @pytest.fixture()
