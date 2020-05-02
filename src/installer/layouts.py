@@ -3,12 +3,19 @@ __all__ = ["DistInfo"]
 import os
 import re
 
+import six
+
 from installer._compat import pathlib
 from installer._compat.typing import TYPE_CHECKING
 from installer.exceptions import MetadataNotFound
 
 if TYPE_CHECKING:
-    from typing import Iterable
+    from typing import Iterable, Union
+
+    if six.PY2:
+        FileName = Union[str, six.text_type]
+    else:
+        FileName = str
 
 
 _NAME_ESCAPE_REGEX = re.compile(r"[^A-Za-z0-9]+")
@@ -17,7 +24,7 @@ _VERSION_ESCAPE_REGEX = re.compile(r"[^A-Za-z0-9\.]+")
 
 
 def _name_escape(s):
-    # type: (str) -> str
+    # type: (six.text_type) -> six.text_type
     """Filename-escape the distribution name according to PEP 376.
 
     1. Replace any runs of non-alphanumeric characters with a single ``-``.
@@ -27,7 +34,7 @@ def _name_escape(s):
 
 
 def _version_escape(v):
-    # type: (str) -> str
+    # type: (six.text_type) -> six.text_type
     """Filename-escape the version string according to PEP 376.
 
     1. Spaces become dots, and all other non-alphanumeric characters (except
@@ -45,7 +52,7 @@ class DistInfo(object):
 
     @classmethod
     def find(cls, project_name, project_version, entry_names):
-        # type: (str, str, Iterable[str]) -> DistInfo
+        # type: (str, str, Iterable[FileName]) -> DistInfo
         escaped_project_name = _name_escape(project_name).lower()
         escaped_project_version = _version_escape(project_version)
 
@@ -60,7 +67,9 @@ class DistInfo(object):
                 continue
             if escaped_project_version != _version_escape(version):
                 continue
-            return cls(entry_name)
+            # The directory name needs to be str on Python 2 so we can
+            # correctly build paths with pathlib2, which does not take unicode.
+            return cls(six.ensure_str(entry_name))
 
         expected_name = "{}-{}.dist-info".format(
             escaped_project_name, escaped_project_version,

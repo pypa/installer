@@ -4,8 +4,12 @@
 import argparse
 import codecs
 import contextlib
+import errno
+import os
 import sys
 import zipfile
+
+import six
 
 from installer._compat import pathlib
 from installer._compat.typing import TYPE_CHECKING
@@ -14,6 +18,24 @@ from installer.records import RecordItem, parse_record_file, write_record_file
 
 if TYPE_CHECKING:
     from typing import Any, ContextManager, Dict, IO, Iterator
+
+
+def _wrap_as_io_str(f):
+    # type: (IO[six.binary_type]) -> Iterator[str]
+    if not six.PY3:
+        return f
+    return codecs.getreader("utf-8")(f)
+
+
+def _makedirs_exist_ok(path):
+    # type: (pathlib.Path) -> None
+    """Implement ``Path.mkdir(parents=True, exist_ok=True)`` Python 2.
+    """
+    try:
+        os.makedirs(str(path))
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
 
 
 class ZipFileInstaller(object):
@@ -39,7 +61,7 @@ class ZipFileInstaller(object):
     @contextlib.contextmanager
     def _open_adjacent_tmp_for_write(self, path, **kwargs):
         # type: (pathlib.Path, Any) -> Iterator[IO[Any]]
-        path.parent.mkdir(parents=True, exist_ok=True)
+        _makedirs_exist_ok(path.parent)
         temp = path.with_name("{}.tmp.{}".format(path.name, self._name))
         with temp.open(**kwargs) as f:
             yield f
@@ -73,9 +95,8 @@ class ZipFileInstaller(object):
 
     def _iter_installed_record_items(self, directory):
         # type: (pathlib.Path) -> Iterator[RecordItem]
-        reader = codecs.getreader("utf-8")
         with self._zf.open(str(self._distinfo.record)) as f:
-            for item in parse_record_file(reader(f)):
+            for item in parse_record_file(_wrap_as_io_str(f)):
                 self._install_record_item(item, directory)
                 yield item
 

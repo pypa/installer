@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
     class _Writable(Protocol):
         def write(self, s):
-            # type: (str) -> None
+            # type: (str) -> int
             pass
 
 
