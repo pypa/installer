@@ -1,8 +1,8 @@
-__all__ = ["PurePosixPath"]
+__all__ = ["Path", "PurePath", "PurePosixPath"]
 
 import sys
 
 if sys.version_info >= (3, 4):  # pragma: no cover
-    from pathlib import PurePosixPath
+    from pathlib import Path, PurePath, PurePosixPath
 else:  # pragma: no cover
-    from pathlib2 import PurePosixPath
+    from pathlib2 import Path, PurePath, PurePosixPath
