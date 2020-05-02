@@ -4,7 +4,14 @@ import os
 import pytest
 import six
 
+from installer._compat import pathlib
+from installer.exceptions import (
+    RecordItemError,
+    RecordItemHashMismatch,
+    RecordItemSizeMismatch,
+)
 from installer.records import (
+    Hash,
     RecordItem,
     SuperfulousRecordColumnsWarning,
     parse_record_file,
@@ -136,3 +143,27 @@ def test_write_record(record_simple):
 
     expected = os.linesep.join(sorted(record_simple)) + os.linesep
     assert buffer.getvalue() == expected
+
+
+# Record item describing a file "greeting" with content b"Hello".
+HELLO_RECORD_ITEM = RecordItem(
+    path=pathlib.PurePosixPath("greeting"),
+    hash_=Hash(
+        name="sha256",
+        value="GF-NsyJx_iX1Yab8k4suJkMG7DBO2lGAB9F2SCY4GWk=",
+    ),
+    size=5,
+)
+
+
+@pytest.mark.parametrize(
+    "record_item, data, exc_type",
+    [
+        (HELLO_RECORD_ITEM, b"Hell", RecordItemSizeMismatch),
+        (HELLO_RECORD_ITEM, b"Hell!", RecordItemHashMismatch),
+    ],
+)
+def test_record_item_validation(record_item, data, exc_type):
+    with pytest.raises(RecordItemError) as ctx:
+        record_item.raise_for_validation(data)
+    assert ctx.type == exc_type

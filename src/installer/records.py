@@ -51,7 +51,7 @@ class Hash(object):
         digest = hashlib.new(self.name, data).digest()
         value = base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
         if value != self.value:
-            raise RecordItemHashMismatch(self, value)
+            raise RecordItemHashMismatch(self, data)
 
 
 class RecordItem(object):
@@ -89,10 +89,10 @@ class RecordItem(object):
 
     def raise_for_validation(self, data):
         # type: (six.binary_type) -> None
+        if self.size is not None and self.size != len(data):
+            raise RecordItemSizeMismatch(self.size, data)
         if self.hash_ is not None:
             self.hash_.raise_for_validation(data)
-        if self.size is not None and self.size != len(data):
-            raise RecordItemSizeMismatch(self, data)
 
     def as_row(self):
         # type: () -> Tuple[str, str, str]
