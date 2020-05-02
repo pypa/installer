@@ -46,6 +46,8 @@ def _version_escape(v):
 
 
 class DistInfo(object):
+    _EXTENSION = ".dist-info"
+
     def __init__(self, directory_name):
         # type: (str) -> None
         self.directory_name = directory_name
@@ -58,7 +60,7 @@ class DistInfo(object):
 
         for entry_name in entry_names:
             stem, ext = os.path.splitext(entry_name)
-            if ext.lower() != ".dist-info":
+            if ext.lower() != cls._EXTENSION:
                 continue
             name, _, version = stem.partition("-")
             if not version:  # Dash not found.
@@ -71,8 +73,8 @@ class DistInfo(object):
             # correctly build paths with pathlib2, which does not take unicode.
             return cls(six.ensure_str(entry_name))
 
-        expected_name = "{}-{}.dist-info".format(
-            escaped_project_name, escaped_project_version,
+        expected_name = "{}-{}{}".format(
+            escaped_project_name, escaped_project_version, cls._EXTENSION,
         )
         raise MetadataNotFound(expected_name)
 
