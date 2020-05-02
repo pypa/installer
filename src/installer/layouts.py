@@ -1,5 +1,3 @@
-__all__ = ["DistInfo"]
-
 import os
 import re
 
@@ -17,6 +15,7 @@ if TYPE_CHECKING:
     else:
         FileName = str
 
+__all__ = ["DistInfo"]
 
 _NAME_ESCAPE_REGEX = re.compile(r"[^A-Za-z0-9]+")
 
