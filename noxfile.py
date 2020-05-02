@@ -37,3 +37,9 @@ def test(session):
         "auto",
         *session.posargs
     )
+
+
+@nox.session(python="3.8")
+def getlaunchers(session):
+    session.install("httpx")
+    session.run("python", "tools/getlaunchers.py")
