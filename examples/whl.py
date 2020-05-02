@@ -69,6 +69,7 @@ class ZipFileInstaller(object):
         target = directory.joinpath(item.path)
         with self._open_target_for_write(target, binary=True) as f:
             f.write(data)
+        # TODO: Handle file permission and other metadata.
 
     def _iter_installed_record_items(self, directory):
         # type: (pathlib.Path) -> Iterator[RecordItem]
@@ -100,9 +101,11 @@ class ZipFileInstaller(object):
     def install(self, directory):
         # type: (pathlib.Path) -> None
         items = {r.path: r for r in self._iter_installed_record_items(directory)}
+        # TODO: Install .data directory.
         items.update((r.path, r) for r in self._iter_installed_scripts(directory))
         items.update((r.path, r) for r in self._write_additional_metadata(directory))
         self._write_record(directory, items)
+        # TODO: Compile .pyc files.
 
 
 def main(args=None):
