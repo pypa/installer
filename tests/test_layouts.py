@@ -2,6 +2,7 @@ import re
 
 import pytest
 
+from installer._compat import pathlib
 from installer.exceptions import MetadataNotFound
 from installer.layouts import DistInfo
 
@@ -24,11 +25,13 @@ from installer.layouts import DistInfo
     ],
 )
 def test_find_distinfo(name, directory_name):
+    escaped_name = re.sub(r"[-_\.]+", "_", name)
     entries = [
         "pytest_xdist-2.8.1.dist-info",
         "pytest-2.8.1.dist-info",
+        "{}-2.8.1.egg-info".format(escaped_name),
+        "{}-2.8.2.dist-info".format(escaped_name),
         "pytest_cov",
-        "{}-2.8.2.dist-info".format(re.sub(r"[-_\.]+", "_", name)),
         directory_name,
     ]
     distinfo = DistInfo.find(name, "2.11.2", entries)
@@ -55,3 +58,16 @@ def test_find_distinfo_error(directory_name):
     with pytest.raises(MetadataNotFound) as ctx:
         DistInfo.find("pytest-cov", "2.8.1", entries)
     assert str(ctx.value) == "pytest_cov-2.8.1.dist-info"
+
+
+@pytest.mark.parametrize(
+    "attr, value",
+    [
+        ("record", "pytest_cov-2.8.1.dist-info/RECORD"),
+        ("installer", "pytest_cov-2.8.1.dist-info/INSTALLER"),
+        ("direct_url_json", "pytest_cov-2.8.1.dist-info/direct_url.json"),
+    ],
+)
+def test_distinfo_property(attr, value):
+    distinfo = DistInfo("pytest_cov-2.8.1.dist-info")
+    assert getattr(distinfo, attr) == pathlib.PurePosixPath(value)
