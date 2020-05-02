@@ -1,10 +1,3 @@
-__all__ = [
-    "Hash",
-    "RecordItem",
-    "SuperfulousRecordColumnsWarning",
-    "parse_record_file",
-]
-
 import base64
 import csv
 import hashlib
@@ -23,6 +16,14 @@ if TYPE_CHECKING:
         def write(self, s):
             # type: (str) -> int
             pass
+
+
+__all__ = [
+    "Hash",
+    "RecordItem",
+    "SuperfulousRecordColumnsWarning",
+    "parse_record_file",
+]
 
 
 class SuperfulousRecordColumnsWarning(UserWarning):

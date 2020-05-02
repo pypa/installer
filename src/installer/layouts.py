@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 __all__ = ["DistInfo"]
 
+
 _NAME_ESCAPE_REGEX = re.compile(r"[^A-Za-z0-9]+")
 
 _VERSION_ESCAPE_REGEX = re.compile(r"[^A-Za-z0-9\.]+")
