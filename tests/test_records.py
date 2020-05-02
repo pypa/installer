@@ -15,7 +15,7 @@ from installer.records import (
     RecordItem,
     SuperfulousRecordColumnsWarning,
     parse_record_file,
-    write_record_file
+    write_record_file,
 )
 
 
@@ -148,10 +148,7 @@ def test_write_record(record_simple):
 # Record item describing a file "greeting" with content b"Hello".
 HELLO_RECORD_ITEM = RecordItem(
     path=pathlib.PurePosixPath("greeting"),
-    hash_=Hash(
-        name="sha256",
-        value="GF-NsyJx_iX1Yab8k4suJkMG7DBO2lGAB9F2SCY4GWk=",
-    ),
+    hash_=Hash(name="sha256", value="GF-NsyJx_iX1Yab8k4suJkMG7DBO2lGAB9F2SCY4GWk="),
     size=5,
 )
 
