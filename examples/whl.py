@@ -42,21 +42,21 @@ class ZipFileInstaller(object):
     """Install a local wheel.
     """
 
-    def __init__(self, name, distinfo, zip_file_handler):
+    def __init__(self, name, dist_info, zip_file_handler):
         # type: (str, DistInfo, zipfile.ZipFile) -> None
         self._name = name
-        self._distinfo = distinfo
+        self._dist_info = dist_info
         self._zip_file_handler = zip_file_handler
 
     @classmethod
     @contextlib.contextmanager
-    def create(cls, name, wheel_path):
+    def from_wheel_path(cls, name, wheel_path):
         # type: (str, pathlib.Path) -> Iterator[ZipFileInstaller]
         project_name, project_version, _ = wheel_path.stem.split("-", 2)
         with zipfile.ZipFile(str(wheel_path)) as zf:
             entry_names = (name.lstrip("/").split("/", 1)[0] for name in zf.namelist())
-            distinfo = DistInfo.find(project_name, project_version, entry_names)
-            yield cls(name, distinfo, zf)
+            dist_info = DistInfo.find(project_name, project_version, entry_names)
+            yield cls(name, dist_info, zf)
 
     @contextlib.contextmanager
     def _open_adjacent_tmp_for_write(self, path, **kwargs):
@@ -95,7 +95,7 @@ class ZipFileInstaller(object):
 
     def _iter_installed_record_items(self, directory):
         # type: (pathlib.Path) -> Iterator[RecordItem]
-        with self._zip_file_handler.open(str(self._distinfo.record)) as f:
+        with self._zip_file_handler.open(str(self._dist_info.record)) as f:
             for item in parse_record_file(_wrap_as_io_str(f)):
                 self._install_record_item(item, directory)
                 yield item
@@ -106,15 +106,15 @@ class ZipFileInstaller(object):
 
     def _write_additional_metadata(self, directory):
         # type: (pathlib.Path) -> Iterator[RecordItem]
-        installer = directory.joinpath(self._distinfo.installer)
+        installer = directory.joinpath(self._dist_info.installer)
         with self._open_target_for_write(installer) as f:
             f.write(self._name)
-        yield RecordItem(self._distinfo.installer, None, None)
+        yield RecordItem(self._dist_info.installer, None, None)
         # TODO: Write direct_url.json.
 
     def _write_record(self, directory, installed_items):
         # type: (pathlib.Path, Dict[pathlib.PurePosixPath, RecordItem]) -> None
-        record = self._distinfo.record
+        record = self._dist_info.record
         installed_items[record] = RecordItem(record, None, None)
         with self._open_csv_for_write(directory.joinpath(record)) as f:
             write_record_file(f, installed_items.values())
