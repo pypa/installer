@@ -17,7 +17,12 @@ from installer._compat.typing import TYPE_CHECKING
 from installer.exceptions import RecordItemHashMismatch, RecordItemSizeMismatch
 
 if TYPE_CHECKING:
-    from typing import IO, Iterable, Iterator, Optional, Tuple
+    from typing import Iterable, Iterator, Optional, Protocol, Tuple
+
+    class _Writable(Protocol):
+        def write(self, s):
+            # type: (str) -> None
+            pass
 
 
 class SuperfulousRecordColumnsWarning(UserWarning):
@@ -115,6 +120,6 @@ def parse_record_file(f):
 
 
 def write_record_file(f, items):
-    # type: (IO[str], Iterable[RecordItem]) -> None
+    # type: (_Writable, Iterable[RecordItem]) -> None
     writer = csv.writer(f)
     writer.writerows(sorted(item.as_row() for item in items))

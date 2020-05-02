@@ -1,9 +1,24 @@
+import io
+import os
+
 import pytest
+import six
 
-from installer.records import SuperfulousRecordColumnsWarning, parse_record_file
+from installer.records import (
+    RecordItem,
+    SuperfulousRecordColumnsWarning,
+    parse_record_file,
+    write_record_file
+)
 
 
-@pytest.fixture()
+def _get_csv_io():
+    if six.PY2:
+        return io.BytesIO()
+    return io.StringIO(newline="")
+
+
+@pytest.fixture(scope="session")
 def record_simple():
     return [
         "file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144",
@@ -111,3 +126,13 @@ def test_parse_wheel_record_invalid(record_lines, invalid_row):
     with pytest.raises(ValueError) as ctx:
         list(parse_record_file(record_lines))
     assert str(ctx.value) == "invalid row 1: {!r}".format(invalid_row)
+
+
+def test_write_record(record_simple):
+    record_items = [RecordItem.parse(*row.split(",")) for row in record_simple]
+
+    buffer = _get_csv_io()
+    write_record_file(buffer, record_items)
+
+    expected = os.linesep.join(sorted(record_simple)) + os.linesep
+    assert buffer.getvalue() == expected
