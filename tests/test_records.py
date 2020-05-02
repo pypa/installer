@@ -1,5 +1,4 @@
 import io
-import os
 
 import pytest
 import six
@@ -141,7 +140,7 @@ def test_write_record(record_simple):
     buffer = _get_csv_io()
     write_record_file(buffer, record_items)
 
-    expected = os.linesep.join(sorted(record_simple)) + os.linesep
+    expected = "\r\n".join(sorted(record_simple)) + "\r\n"
     assert buffer.getvalue() == expected
 
 
