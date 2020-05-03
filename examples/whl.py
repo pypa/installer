@@ -42,11 +42,11 @@ class ZipFileInstaller(object):
     """Install a local wheel.
     """
 
-    def __init__(self, name, dist_info, zip_file_handler):
+    def __init__(self, name, dist_info, zip_file_handle):
         # type: (str, DistInfo, zipfile.ZipFile) -> None
         self._name = name
         self._dist_info = dist_info
-        self._zip_file_handler = zip_file_handler
+        self._zip_file_handle = zip_file_handle
 
     @classmethod
     @contextlib.contextmanager
@@ -85,7 +85,7 @@ class ZipFileInstaller(object):
 
     def _install_record_item(self, item, directory):
         # type: (RecordItem, pathlib.Path) -> None
-        with self._zip_file_handler.open(str(item.path)) as f:
+        with self._zip_file_handle.open(str(item.path)) as f:
             data = f.read()
         item.raise_for_validation(data)
         target = directory.joinpath(item.path)
@@ -95,7 +95,7 @@ class ZipFileInstaller(object):
 
     def _iter_installed_record_items(self, directory):
         # type: (pathlib.Path) -> Iterator[RecordItem]
-        with self._zip_file_handler.open(str(self._dist_info.record)) as f:
+        with self._zip_file_handle.open(str(self._dist_info.record)) as f:
             for item in parse_record_file(_wrap_as_io_str(f)):
                 self._install_record_item(item, directory)
                 yield item
