@@ -1,15 +1,15 @@
 import csv
 import warnings
 
-from installer._compat import pathlib
 from installer._compat.typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Iterator, Optional
+    from typing import Iterable, Iterator, Optional
 
 
 __all__ = [
     "Hash",
+    "Path",
     "RecordItem",
     "SuperfulousRecordColumnsWarning",
     "parse_record_file",
@@ -18,6 +18,43 @@ __all__ = [
 
 class SuperfulousRecordColumnsWarning(UserWarning):
     pass
+
+
+class Path(object):
+    """A light-weight path interface.
+
+    This is used like ``pathlib.PurePosixPath``, but slim.
+    """
+
+    __slots__ = ("_parts",)
+
+    def __init__(self, *parts):
+        # type: (*str) -> None
+        self._parts = tuple(self._iter_parts(parts))
+
+    @staticmethod
+    def _iter_parts(parts):
+        # type: (Iterable[str]) -> Iterator[str]
+        for part in parts:
+            for p in part.split("/"):
+                if p:
+                    yield p
+
+    def __repr__(self):
+        # type: () -> str
+        return "Path({})".format(", ".join(repr(p) for p in self._parts))
+
+    def __str__(self):
+        # type: () -> str
+        return self.as_posix()
+
+    def __fspath__(self):  # pragma: no cover
+        # type: () -> str
+        return self.as_posix()
+
+    def as_posix(self):
+        # type: () -> str
+        return "/".join(self._parts)
 
 
 class Hash(object):
@@ -38,7 +75,7 @@ class Hash(object):
 
 class RecordItem(object):
     def __init__(self, path, hash_, size):
-        # type: (pathlib.PurePosixPath, Optional[Hash], Optional[int]) -> None
+        # type: (Path, Optional[Hash], Optional[int]) -> None
         self.path = path
         self.hash_ = hash_
         self.size = size
@@ -64,7 +101,7 @@ class RecordItem(object):
         PEP 376. Raises ``ValueError`` if any of the elements is invalid.
         """
         return cls(
-            path=pathlib.PurePosixPath(path),
+            path=Path(path),
             hash_=Hash.parse(hash_) if hash_ else None,
             size=int(size) if size else None,
         )

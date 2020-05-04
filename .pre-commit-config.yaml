@@ -19,7 +19,6 @@ repos:
         exclude: docs/.*|tests/.*|noxfile.py
       - id: mypy
         name: mypy (Python 2)
-        additional_dependencies: ["pathlib2"]
         exclude: docs/.*|tests/.*|noxfile.py
         args: ["-2"]
 

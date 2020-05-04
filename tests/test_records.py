@@ -1,6 +1,40 @@
+import os
+import sys
+
 import pytest
 
-from installer.records import SuperfulousRecordColumnsWarning, parse_record_file
+from installer.records import Path, SuperfulousRecordColumnsWarning, parse_record_file
+
+
+@pytest.mark.parametrize(
+    "provided, expected",
+    [
+        ("", ""),
+        ("foo", "foo"),
+        ("foo/bar", "foo/bar"),
+        ("/foo/bar", "foo/bar"),
+        ("/foo/bar/", "foo/bar"),
+    ],
+)
+def test_path_str_always_relative(provided, expected):
+    path = Path(provided)
+    assert str(path) == expected
+
+
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="os.fspath() unavailable")
+@pytest.mark.parametrize(
+    "provided, expected",
+    [
+        ("", ""),
+        ("foo", "foo"),
+        ("foo/bar", "foo/bar"),
+        ("/foo/bar", "foo/bar"),
+        ("/foo/bar/", "foo/bar"),
+    ],
+)
+def test_path_fspath_always_relative(provided, expected):
+    path = Path(provided)
+    assert os.fspath(path) == expected
 
 
 @pytest.fixture()
