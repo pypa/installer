@@ -1,6 +1,6 @@
 import pytest
 
-from installer.records import SuperfulousRecordColumnsWarning, parse_record_file
+from installer.records import SuperfluousRecordColumnsWarning, parse_record_file
 
 
 @pytest.fixture()
@@ -60,7 +60,7 @@ def test_parse_wheel_record_drop_superfulous():
         "distribution-1.0.dist-info/RECORD,,,,",
     ]
 
-    with pytest.warns(SuperfulousRecordColumnsWarning) as ws:
+    with pytest.warns(SuperfluousRecordColumnsWarning) as ws:
         records = list(parse_record_file(record_lines))
 
     assert len(ws) == 2
