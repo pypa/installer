@@ -1,10 +1,3 @@
-__all__ = [
-    "Hash",
-    "RecordItem",
-    "SuperfulousRecordColumnsWarning",
-    "parse_record_file",
-]
-
 import csv
 import warnings
 
@@ -13,6 +6,14 @@ from installer._compat.typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing import Iterator, Optional
+
+
+__all__ = [
+    "Hash",
+    "RecordItem",
+    "SuperfulousRecordColumnsWarning",
+    "parse_record_file",
+]
 
 
 class SuperfulousRecordColumnsWarning(UserWarning):
