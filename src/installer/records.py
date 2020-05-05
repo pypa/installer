@@ -11,12 +11,12 @@ if TYPE_CHECKING:
 __all__ = [
     "Hash",
     "RecordItem",
-    "SuperfulousRecordColumnsWarning",
+    "SuperfluousRecordColumnsWarning",
     "parse_record_file",
 ]
 
 
-class SuperfulousRecordColumnsWarning(UserWarning):
+class SuperfluousRecordColumnsWarning(UserWarning):
     pass
 
 
@@ -76,7 +76,7 @@ def parse_record_file(f):
         if len(row) > 3:
             warnings.warn(
                 "Dropping columns [3:] from row {}".format(row_index),
-                SuperfulousRecordColumnsWarning,
+                SuperfluousRecordColumnsWarning,
             )
         try:
             record = RecordItem.parse(row[0], row[1], row[2])
