@@ -15,6 +15,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    # Get nox cache
+    - name: Save date (for cache)
+      id: date
+      run: echo "::set-output name=date::$(date +%F)"
+    - uses: actions/cache@v1
+      with:
+        path: ${{ github.workspace }}/.nox
+        key: nox-v1-${{ runner.os }}-${{ steps.date.outputs.date }}
+        restore-keys: nox-v1-${{ runner.os }}
+
     # Get all the Python versions
     - uses: actions/setup-python@v1
       with: {python-version: pypy2}
