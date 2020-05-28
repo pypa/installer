@@ -66,6 +66,44 @@ class TestRecord:
     def test_valid_elements(self, path, hash_, size):
         Record.from_elements(path, hash_, size)
 
+    @pytest.mark.parametrize(
+        ("elements", "data", "expected"),
+        [
+            (
+                ("test1.py", "sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4", 6),
+                b"test1\n",
+                True,
+            ),
+            (
+                ("test2.py", "sha256=fW_Xd08Nh2JNptzxbQ09EEwxkedx--LznIau1LK_Gg8", 6),
+                b"test2\n",
+                True,
+            ),
+            (
+                ("test3.py", "sha256=qwPDTx7OCCEf4qgDn9ZCQZmz9de1X_E7ETSzZHdsRcU", 6),
+                b"test3\n",
+                True,
+            ),
+            (
+                ("test4.py", "sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4", 7),
+                b"test1\n",
+                False,
+            ),
+            (
+                (
+                    "test5.py",
+                    "sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4",
+                    None,
+                ),
+                b"test1\n",
+                True,
+            ),
+            (("test6.py", None, None), b"test1\n", True),
+        ],
+    )
+    def test_parse_record(self, elements, data, expected):
+        assert Record.from_elements(*elements).validate(data) == expected
+
 
 class TestParseRecordFile:
     def test_accepts_empty_iterable(self):
