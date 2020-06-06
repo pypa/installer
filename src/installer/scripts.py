@@ -114,7 +114,7 @@ class Script(object):
             raise InvalidScript(error)
         return importlib_resources.read_binary(_scripts, name)
 
-    def build(self, executable, kind):
+    def generate(self, executable, kind):
         # type: (str, LauncherKind) -> Tuple[str, builtins.binary_type]
         launcher = self._get_launcher_data(kind)
         shebang = _build_shebang(executable, forlauncher=bool(launcher))
