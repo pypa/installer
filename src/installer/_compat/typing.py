@@ -5,9 +5,12 @@ This is shim logic allows this library to use mypy, for static type analysis, wh
 - not importing the 'typing' module at runtime.
 - maintaining Python 2 support
 - not completely confusing mypy :)
+
+This module also provides `FSPath`, a type annotation for Path-like values, which
+can only be imported inside an `if TYPE_CHECKING`, and used only in type comments.
 """
 
-__all__ = ["Text", "Binary", "TYPE_CHECKING"]
+__all__ = ["Text", "Binary", "FSPath", "TYPE_CHECKING"]
 
 import sys
 
@@ -22,3 +25,13 @@ if sys.version_info >= (3,):  # pragma: no cover
 else:  # pragma: no cover
     Binary = str
     Text = unicode  # noqa
+
+# FSPath declaration (only for Python 2 support)
+if TYPE_CHECKING:
+    if sys.version_info[:2] >= (3, 4):
+        from typing import Union
+        from pathlib import Path
+
+        FSPath = Union[Text, Path]
+    else:
+        FSPath = Text
