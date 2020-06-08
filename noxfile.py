@@ -13,9 +13,11 @@ def lint(session):
     session.install("pre-commit")
 
     if session.posargs:
-        args = session.posargs + ["--all-files"]
+        args = session.posargs
+    elif "CI" in os.environ:
+        args = ["--show-diff-on-failure"]
     else:
-        args = ["--all-files", "--show-diff-on-failure"]
+        args = []
 
     session.run("pre-commit", "run", "--all-files", *args)
 
