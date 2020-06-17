@@ -1,10 +1,13 @@
+"""Utilities for generating executable scripts, across platforms.
+"""
+
 import io
 import shlex
 import zipfile
 
 from installer import _scripts
-from installer._compat import builtins, importlib_resources
-from installer._compat.typing import TYPE_CHECKING
+from installer._compat import importlib_resources
+from installer._compat.typing import TYPE_CHECKING, Binary, Text
 
 if TYPE_CHECKING:
     from typing import Literal, Mapping, Optional, Tuple
@@ -37,7 +40,7 @@ if __name__ == "__main__":
 
 
 def _is_executable_simple(executable):
-    # type: (builtins.binary_type) -> bool
+    # type: (Binary) -> bool
     if b" " in executable:
         return False
     shebang_length = len(executable) + 3  # Prefix #! and newline after.
@@ -48,14 +51,14 @@ def _is_executable_simple(executable):
 
 
 def _quote_compat(s):  # pragma: no cover
-    # type: (builtins.text_type) -> builtins.text_type
+    # type: (Text) -> Text
     """Crude implementation taken from shlex.quote().
     """
     return u"'" + s.replace(u"'", u"'\"'\"'") + u"'"
 
 
 def _build_shebang(executable, forlauncher):
-    # type: (builtins.text_type, bool) -> builtins.binary_type
+    # type: (Text, bool) -> Binary
     """Build a shebang line.
 
     The non-launcher cases are taken directly from distlib's implementation,
@@ -103,7 +106,7 @@ class Script(object):
         )
 
     def _get_launcher_data(self, kind):
-        # type: (LauncherKind) -> Optional[builtins.binary_type]
+        # type: (LauncherKind) -> Optional[Binary]
         if kind == "posix":
             return None
         key = (self.section, kind)
@@ -115,7 +118,7 @@ class Script(object):
         return importlib_resources.read_binary(_scripts, name)
 
     def generate(self, executable, kind):
-        # type: (str, LauncherKind) -> Tuple[str, builtins.binary_type]
+        # type: (str, LauncherKind) -> Tuple[str, Binary]
         launcher = self._get_launcher_data(kind)
         shebang = _build_shebang(executable, forlauncher=bool(launcher))
         code = _SCRIPT_TEMPLATE.format(

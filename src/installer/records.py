@@ -1,11 +1,11 @@
 import csv
 import warnings
 
-from installer._compat import pathlib
 from installer._compat.typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing import Iterator, Optional
+    from installer._compat.typing import FSPath
 
 
 __all__ = [
@@ -38,7 +38,7 @@ class Hash(object):
 
 class RecordItem(object):
     def __init__(self, path, hash_, size):
-        # type: (pathlib.PurePosixPath, Optional[Hash], Optional[int]) -> None
+        # type: (FSPath, Optional[Hash], Optional[int]) -> None
         self.path = path
         self.hash_ = hash_
         self.size = size
@@ -64,7 +64,7 @@ class RecordItem(object):
         PEP 376. Raises ``ValueError`` if any of the elements is invalid.
         """
         return cls(
-            path=pathlib.PurePosixPath(path),
+            path=path,
             hash_=Hash.parse(hash_) if hash_ else None,
             size=int(size) if size else None,
         )
