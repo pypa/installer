@@ -63,7 +63,7 @@ class Record(object):
         )
 
     @classmethod
-    def parse(cls, path, hash_, size):
+    def from_elements(cls, path, hash_, size):
         # type: (str, str, str) -> Record
         """Build a Record from parsing elements in a record row.
 
@@ -95,5 +95,5 @@ def parse_record_file(rows):
             )
             raise InvalidRecord(elements=elements, issues=[message])
 
-        record = Record.parse(elements[0], elements[1], elements[2])
+        record = Record.from_elements(elements[0], elements[1], elements[2])
         yield record
