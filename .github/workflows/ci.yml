@@ -40,12 +40,6 @@ jobs:
     - name: Save pip cache dir
       id: pip-cache-dir
       run: echo "::set-output name=dir::$(pip cache dir)"
-    - name: nox cache
-      uses: actions/cache@v1
-      with:
-        path: ${{ github.workspace }}/.nox
-        key: nox-v1-${{ runner.os }}-${{ steps.date.outputs.date }}
-        restore-keys: nox-v1-${{ runner.os }}
     - name: pip cache
       uses: actions/cache@v1
       with:
