@@ -5,22 +5,37 @@ import base64
 import csv
 import hashlib
 import os
+from email.parser import FeedParser
 
 from installer._compat.typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from email.message import Message
     from typing import Iterator, Optional
     from installer._compat.typing import FSPath
 
-
 __all__ = [
-    "Hash",
-    "Record",
-    "InvalidRecord",
-    "parse_record_file",
+    "parse_metadata_file", "parse_record_file", "Hash", "Record", "InvalidRecord",
 ]
 
 
+#
+# METADATA (and WHEEL) file parsing
+#
+def parse_metadata_file(contents):
+    # type: (Text) -> Message
+    """Parse a METADATA / WHEEL / PKG-INFO file.
+
+    :param contents: The entire contents of the file.
+    """
+    feed_parser = FeedParser()
+    feed_parser.feed(contents)
+    return feed_parser.close()
+
+
+#
+# RECORD file parsing
+#
 class InvalidRecord(Exception):
     """Raised when a Record is not valid, due to improper element values or count.
     """
