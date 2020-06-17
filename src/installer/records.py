@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "Hash",
-    "RecordItem",
+    "Record",
     "InvalidRecord",
     "parse_record_file",
 ]
@@ -47,22 +47,24 @@ class Hash(object):
         return Hash(name, value)
 
 
-class RecordItem(object):
+class Record(object):
     def __init__(self, path, hash_, size):
         # type: (FSPath, Optional[Hash], Optional[int]) -> None
+        super(Record, self).__init__()
+
         self.path = path
         self.hash_ = hash_
         self.size = size
 
     def __repr__(self):
         # type: () -> str
-        return "RecordItem(path={!r}, hash_={!r}, size={!r})".format(
+        return "Record(path={!r}, hash_={!r}, size={!r})".format(
             self.path, self.hash_, self.size,
         )
 
     @classmethod
     def parse(cls, path, hash_, size):
-        # type: (str, str, str) -> RecordItem
+        # type: (str, str, str) -> Record
         """Build a Record from parsing elements in a record row.
 
         Typical usage::
@@ -82,7 +84,7 @@ class RecordItem(object):
 
 
 def parse_record_file(rows):
-    # type: (Iterator[str]) -> Iterator[RecordItem]
+    # type: (Iterator[str]) -> Iterator[Record]
     """Parse a RECORD file, provided as an iterator of record lines.
     """
     reader = csv.reader(rows, delimiter=",", quotechar='"', lineterminator=os.linesep)
@@ -93,5 +95,5 @@ def parse_record_file(rows):
             )
             raise InvalidRecord(elements=elements, issues=[message])
 
-        record = RecordItem.parse(elements[0], elements[1], elements[2])
+        record = Record.parse(elements[0], elements[1], elements[2])
         yield record
