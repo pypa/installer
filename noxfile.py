@@ -42,6 +42,6 @@ def test(session):
 
 
 @nox.session(python="3.8")
-def getlaunchers(session):
+def update_launchers(session):
     session.install("httpx")
-    session.run("python", "tools/getlaunchers.py")
+    session.run("python", "tools/update_launchers.py")

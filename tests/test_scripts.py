@@ -8,9 +8,9 @@ from installer import _scripts
 from installer.scripts import InvalidScript, Script
 
 
-def test_script_build_simple():
+def test_script_generate_simple():
     script = Script("foo", "foo.bar", "baz.qux", section="console")
-    name, data = script.build("/path/to/my/python", kind="posix")
+    name, data = script.generate("/path/to/my/python", kind="posix")
 
     assert name == "foo"
     assert data.startswith(b"#!/path/to/my/python\n")
@@ -18,9 +18,9 @@ def test_script_build_simple():
     assert b"baz.qux()" in data
 
 
-def test_script_build_space_in_executable():
+def test_script_generate_space_in_executable():
     script = Script("foo", "foo.bar", "baz.qux", section="console")
-    name, data = script.build("/path to my/python", kind="posix")
+    name, data = script.generate("/path to my/python", kind="posix")
 
     assert name == "foo"
     assert data.startswith(b"#!/bin/sh\n")
@@ -42,11 +42,11 @@ def _read_launcher_data(section, kind):
 
 @pytest.mark.parametrize("section", ["console", "gui"])
 @pytest.mark.parametrize("kind", ["win-ia32", "win-amd64", "win-arm"])
-def test_script_build_launcher(section, kind):
+def test_script_generate_launcher(section, kind):
     launcher_data = _read_launcher_data(section, kind)
 
     script = Script("foo", "foo.bar", "baz.qux", section=section)
-    name, data = script.build("#!C:\\path to my\\python.exe\n", kind=kind)
+    name, data = script.generate("#!C:\\path to my\\python.exe\n", kind=kind)
 
     prefix_len = len(launcher_data) + len(b"#!C:\\path to my\\python.exe\n")
     stream = io.BytesIO(data[prefix_len:])
@@ -64,7 +64,7 @@ def test_script_build_launcher(section, kind):
     "section, kind",
     [("nonexist", "win-ia32"), ("console", "nonexist"), ("nonexist", "nonexist")],
 )
-def test_script_build_launcher_error(section, kind):
+def test_script_generate_launcher_error(section, kind):
     script = Script("foo", "foo.bar", "baz.qux", section=section)
     with pytest.raises(InvalidScript):
-        script.build("#!C:\\path to my\\python.exe\n", kind=kind)
+        script.generate("#!C:\\path to my\\python.exe\n", kind=kind)
