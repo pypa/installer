@@ -64,23 +64,47 @@ class Record(object):
 
     @classmethod
     def from_elements(cls, path, hash_, size):
-        # type: (str, str, str) -> Record
-        """Build a Record from parsing elements in a record row.
+        # type: (FSPath, str, str) -> Record
+        """Build a Record object, from values of the elements.
+
+        All arguments must be in string form, except `path` which can also be a
+        ``pathlib.Path`` instance on Python 3.
 
         Typical usage::
 
             reader = csv.reader(f)
             for row in reader:
-                record = Record.parse(row[0], row[1], row[2])
+                record = Record.from_elements(row[0], row[1], row[2])
 
-        All arguments are in string form. Meaning of elements are specified in
-        PEP 376. Raises ``ValueError`` if any of the elements is invalid.
+        All arguments are in string form. Meaning of each element is specified in
+        PEP 376. Raises ``InvalidRecord`` if any element is invalid.
         """
-        return cls(
-            path=path,
-            hash_=Hash.parse(hash_) if hash_ else None,
-            size=int(size) if size else None,
-        )
+        # Validate the passed values.
+        issues = []
+
+        if not path:
+            issues.append("`path` cannot be empty")
+
+        if hash_:
+            try:
+                hash_value = Hash.parse(hash_)  # type: Optional[Hash]
+            except ValueError:
+                issues.append("`hash` does not follow the required format")
+        else:
+            hash_value = None
+
+        if size:
+            try:
+                size_value = int(size)  # type: Optional[int]
+            except ValueError:
+                issues.append("`size` cannot be non-integer")
+        else:
+            size_value = None
+
+        if issues:
+            raise InvalidRecord(elements=(path, hash_, size), issues=issues)
+
+        return cls(path=path, hash_=hash_value, size=size_value,)
 
 
 def parse_record_file(rows):

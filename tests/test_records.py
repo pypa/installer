@@ -1,6 +1,6 @@
 import pytest
 
-from installer.records import InvalidRecord, parse_record_file
+from installer.records import InvalidRecord, Record, parse_record_file
 
 
 #
@@ -35,6 +35,38 @@ def record_input(request):
 #
 # Actual Tests
 #
+class TestRecord:
+    @pytest.mark.parametrize(
+        "path, hash_, size, caused_by",
+        [
+            ("", "", "", ["path"]),
+            ("", "", "non-int", ["path", "size"]),
+            ("a.py", "", "non-int", ["size"]),
+            # Notice that we're explicitly allowing non-compliant hash values
+            ("a.py", "some-random-value", "non-int", ["size"]),
+        ],
+    )
+    def test_invalid_elements(self, path, hash_, size, caused_by):
+        with pytest.raises(InvalidRecord) as exc_info:
+            Record.from_elements(path, hash_, size)
+
+        assert exc_info.value.elements == (path, hash_, size)
+        for word in caused_by:
+            assert word in str(exc_info.value)
+
+    @pytest.mark.parametrize(
+        "path, hash_, size",
+        [
+            ("a.py", "", ""),
+            ("a.py", "", "3144"),
+            ("a.py", "sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI", ""),
+            ("a.py", "sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI", "3144"),
+        ],
+    )
+    def test_valid_elements(self, path, hash_, size):
+        Record.from_elements(path, hash_, size)
+
+
 class TestParseRecordFile:
     def test_accepts_empty_iterable(self):
         list(parse_record_file([]))
