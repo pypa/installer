@@ -1,3 +1,6 @@
+"""Utilities for parsing and handling PEP 376 RECORD files.
+"""
+
 import csv
 import os
 
