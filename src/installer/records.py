@@ -1,5 +1,5 @@
 import csv
-import warnings
+import os
 
 from installer._compat.typing import TYPE_CHECKING
 
@@ -11,13 +11,24 @@ if TYPE_CHECKING:
 __all__ = [
     "Hash",
     "RecordItem",
-    "SuperfluousRecordColumnsWarning",
+    "InvalidRecord",
     "parse_record_file",
 ]
 
 
-class SuperfluousRecordColumnsWarning(UserWarning):
-    pass
+class InvalidRecord(Exception):
+    """Raised when a Record is not valid, due to improper element values or count.
+    """
+
+    def __init__(self, elements, issues):
+        super(InvalidRecord, self).__init__(", ".join(issues))
+        self.issues = issues
+        self.elements = elements
+
+    def __repr__(self):
+        return "InvalidRecord(elements={!r}, issues={!r})".format(
+            self.elements, self.issues
+        )
 
 
 class Hash(object):
@@ -70,16 +81,17 @@ class RecordItem(object):
         )
 
 
-def parse_record_file(f):
+def parse_record_file(rows):
     # type: (Iterator[str]) -> Iterator[RecordItem]
-    for row_index, row in enumerate(csv.reader(f)):
-        if len(row) > 3:
-            warnings.warn(
-                "Dropping columns [3:] from row {}".format(row_index),
-                SuperfluousRecordColumnsWarning,
+    """Parse a RECORD file, provided as an iterator of record lines.
+    """
+    reader = csv.reader(rows, delimiter=",", quotechar='"', lineterminator=os.linesep)
+    for row_index, elements in enumerate(reader):
+        if len(elements) != 3:
+            message = "Row Index {}: expected 3 elements, got {}".format(
+                row_index, len(elements)
             )
-        try:
-            record = RecordItem.parse(row[0], row[1], row[2])
-        except (IndexError, ValueError):
-            raise ValueError("invalid row {}: {!r}".format(row_index, row))
+            raise InvalidRecord(elements=elements, issues=[message])
+
+        record = RecordItem.parse(elements[0], elements[1], elements[2])
         yield record
