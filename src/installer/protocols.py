@@ -16,8 +16,8 @@ Scheme = Enum("Scheme", ["purelib", "platlib", "headers", "scripts", "data"])
 
 @with_metaclass(abc.ABCMeta)
 class WheelSource(object):
-    """Represents an installable wheel.
-    """
+    
+    """Represents an installable wheel."""
 
     def __init__(self, distribution, version):
         # type: (Text, Text) -> None
@@ -27,14 +27,12 @@ class WheelSource(object):
 
     @property
     def dist_info_dir(self):
-        """Name of the dist-info directory.
-        """
+        """Name of the dist-info directory."""
         return u"{}-{}.dist-info".format(self.distribution, self.version)
 
     @property
     def data_dir(self):
-        """Name of the data directory.
-        """
+        """Name of the data directory."""
         return u"{}-{}.data".format(self.distribution, self.version)
 
     @abc.abstractproperty

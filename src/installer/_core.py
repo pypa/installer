@@ -21,7 +21,7 @@ __all__ = ["Installer"]
 
 
 class Installer(object):
-    """Implements wheel installation logic
+    """Implements wheel installation logic.
 
     Supports Wheel version 1.0 (PEP 427).
     """
@@ -37,7 +37,7 @@ class Installer(object):
         """Install a wheel, as described by ``source``, to ``destination``.
         """
 
-        # Process the WHEEL file
+        # Process the WHEEL file.
         wheel_metadata_stream = source.open_dist_info(u"WHEEL")
         metadata = parse_metadata_file(wheel_metadata_stream)
 

@@ -37,8 +37,8 @@ def parse_metadata_file(contents):
 # RECORD file parsing
 #
 class InvalidRecord(Exception):
-    """Raised when a Record is not valid, due to improper element values or count.
-    """
+
+    """Raised when a Record is not valid, due to improper element values or count."""
 
     def __init__(self, elements, issues):
         super(InvalidRecord, self).__init__(", ".join(issues))
@@ -145,8 +145,7 @@ class Record(object):
 
 def parse_record_file(rows):
     # type: (Iterator[str]) -> Iterator[Record]
-    """Parse a RECORD file, provided as an iterator of record lines.
-    """
+    """Parse a RECORD file, provided as an iterator of record lines."""
     reader = csv.reader(rows, delimiter=",", quotechar='"', lineterminator=os.linesep)
     for row_index, elements in enumerate(reader):
         if len(elements) != 3:
