@@ -1,5 +1,8 @@
+"""Utilities for parsing and handling PEP 376 RECORD files.
+"""
+
 import csv
-import warnings
+import os
 
 from installer._compat.typing import TYPE_CHECKING
 
@@ -10,14 +13,25 @@ if TYPE_CHECKING:
 
 __all__ = [
     "Hash",
-    "RecordItem",
-    "SuperfluousRecordColumnsWarning",
+    "Record",
+    "InvalidRecord",
     "parse_record_file",
 ]
 
 
-class SuperfluousRecordColumnsWarning(UserWarning):
-    pass
+class InvalidRecord(Exception):
+    """Raised when a Record is not valid, due to improper element values or count.
+    """
+
+    def __init__(self, elements, issues):
+        super(InvalidRecord, self).__init__(", ".join(issues))
+        self.issues = issues
+        self.elements = elements
+
+    def __repr__(self):
+        return "InvalidRecord(elements={!r}, issues={!r})".format(
+            self.elements, self.issues
+        )
 
 
 class Hash(object):
@@ -36,50 +50,77 @@ class Hash(object):
         return Hash(name, value)
 
 
-class RecordItem(object):
+class Record(object):
     def __init__(self, path, hash_, size):
         # type: (FSPath, Optional[Hash], Optional[int]) -> None
+        super(Record, self).__init__()
+
         self.path = path
         self.hash_ = hash_
         self.size = size
 
     def __repr__(self):
         # type: () -> str
-        return "RecordItem(path={!r}, hash_={!r}, size={!r})".format(
+        return "Record(path={!r}, hash_={!r}, size={!r})".format(
             self.path, self.hash_, self.size,
         )
 
     @classmethod
-    def parse(cls, path, hash_, size):
-        # type: (str, str, str) -> RecordItem
-        """Build a Record from parsing elements in a record row.
+    def from_elements(cls, path, hash_, size):
+        # type: (FSPath, str, str) -> Record
+        """Build a Record object, from values of the elements.
+
+        All arguments must be in string form, except `path` which can also be a
+        ``pathlib.Path`` instance on Python 3.
 
         Typical usage::
 
             reader = csv.reader(f)
             for row in reader:
-                record = Record.parse(row[0], row[1], row[2])
+                record = Record.from_elements(row[0], row[1], row[2])
 
-        All arguments are in string form. Meaning of elements are specified in
-        PEP 376. Raises ``ValueError`` if any of the elements is invalid.
+        All arguments are in string form. Meaning of each element is specified in
+        PEP 376. Raises ``InvalidRecord`` if any element is invalid.
         """
-        return cls(
-            path=path,
-            hash_=Hash.parse(hash_) if hash_ else None,
-            size=int(size) if size else None,
-        )
+        # Validate the passed values.
+        issues = []
+
+        if not path:
+            issues.append("`path` cannot be empty")
+
+        if hash_:
+            try:
+                hash_value = Hash.parse(hash_)  # type: Optional[Hash]
+            except ValueError:
+                issues.append("`hash` does not follow the required format")
+        else:
+            hash_value = None
+
+        if size:
+            try:
+                size_value = int(size)  # type: Optional[int]
+            except ValueError:
+                issues.append("`size` cannot be non-integer")
+        else:
+            size_value = None
+
+        if issues:
+            raise InvalidRecord(elements=(path, hash_, size), issues=issues)
+
+        return cls(path=path, hash_=hash_value, size=size_value,)
 
 
-def parse_record_file(f):
-    # type: (Iterator[str]) -> Iterator[RecordItem]
-    for row_index, row in enumerate(csv.reader(f)):
-        if len(row) > 3:
-            warnings.warn(
-                "Dropping columns [3:] from row {}".format(row_index),
-                SuperfluousRecordColumnsWarning,
+def parse_record_file(rows):
+    # type: (Iterator[str]) -> Iterator[Record]
+    """Parse a RECORD file, provided as an iterator of record lines.
+    """
+    reader = csv.reader(rows, delimiter=",", quotechar='"', lineterminator=os.linesep)
+    for row_index, elements in enumerate(reader):
+        if len(elements) != 3:
+            message = "Row Index {}: expected 3 elements, got {}".format(
+                row_index, len(elements)
             )
-        try:
-            record = RecordItem.parse(row[0], row[1], row[2])
-        except (IndexError, ValueError):
-            raise ValueError("invalid row {}: {!r}".format(row_index, row))
+            raise InvalidRecord(elements=elements, issues=[message])
+
+        record = Record.from_elements(elements[0], elements[1], elements[2])
         yield record
