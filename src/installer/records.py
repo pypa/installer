@@ -1,7 +1,9 @@
 """Utilities for parsing and handling PEP 376 RECORD files.
 """
 
+import base64
 import csv
+import hashlib
 import os
 
 from installer._compat.typing import TYPE_CHECKING
@@ -64,6 +66,18 @@ class Record(object):
         return "Record(path={!r}, hash_={!r}, size={!r})".format(
             self.path, self.hash_, self.size,
         )
+
+    def validate(self, data):
+        # type: (bytes) -> bool
+        if self.size is not None and len(data) != self.size:
+            return False
+
+        if self.hash_:
+            digest = hashlib.new(self.hash_.name, data).digest()
+            value = base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
+            return self.hash_.value == value
+
+        return True
 
     @classmethod
     def from_elements(cls, path, hash_, size):
