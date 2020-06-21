@@ -43,6 +43,7 @@ class Hash(object):
         self.value = value
 
     def __repr__(self):
+        # type: () -> str
         return "Hash(name={!r}, value={!r})".format(self.name, self.value)
 
     def validate(self, data):
