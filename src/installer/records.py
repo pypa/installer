@@ -56,7 +56,7 @@ class Hash(object):
     def parse(cls, h):
         # type: (str) -> Hash
         name, value = h.split("=", 1)
-        return Hash(name, value)
+        return cls(name, value)
 
 
 class Record(object):
