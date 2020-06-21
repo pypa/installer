@@ -45,6 +45,12 @@ class Hash(object):
     def __repr__(self):
         return "Hash(name={!r}, value={!r})".format(self.name, self.value)
 
+    def validate(self, data):
+        # type: (bytes) -> bool
+        digest = hashlib.new(self.name, data).digest()
+        value = base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
+        return self.value == value
+
     @classmethod
     def parse(cls, h):
         # type: (str) -> Hash
@@ -73,9 +79,7 @@ class Record(object):
             return False
 
         if self.hash_:
-            digest = hashlib.new(self.hash_.name, data).digest()
-            value = base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
-            return self.hash_.value == value
+            return self.hash_.validate(data)
 
         return True
 
