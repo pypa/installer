@@ -1,4 +1,4 @@
-"""Static Typing Support logic
+"""Static Typing Support logic.
 
 This is shim logic allows this library to use mypy, for static type analysis, while:
 

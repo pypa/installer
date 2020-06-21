@@ -1,3 +1,5 @@
+"""Compatibility cover for importlib.resources, for older Python versions."""
+
 from __future__ import absolute_import
 
 import sys
