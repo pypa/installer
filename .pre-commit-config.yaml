@@ -36,3 +36,9 @@ repos:
       - id: flake8
       - id: forbid-new-submodules
       - id: trailing-whitespace
+
+  - repo: https://github.com/PyCQA/pydocstyle.git
+    rev: '5.0.2'
+    hooks:
+      - id: pydocstyle
+        files: src/.*\.py$
