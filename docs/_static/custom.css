@@ -1,0 +1,28 @@
+/*** GENERAL ***/
+
+/* Make inline code blocks nicer to look at */
+code.literal {
+  border-radius: 0.3em;
+  padding: 0.0em 0.3em;
+}
+
+div.highlight pre {
+  border-radius: 0.2em;
+  padding: 0.75em;
+  margin: 0 -0.5em;
+}
+
+/*** API REFERENCE ***/
+
+/* Space things out properly */
+dl > dd:last-child {
+  margin-bottom: 10px;
+}
+
+/* Add a tiny dash of color to names of things */
+dt > .property {
+  color: #A02000;
+}
+.sig-name, .sig-prename {
+  color: #0066bb;
+}
