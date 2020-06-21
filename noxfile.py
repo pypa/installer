@@ -8,7 +8,7 @@ nox.options.sessions = ["lint", "test"]
 nox.options.reuse_existing_virtualenvs = True
 
 
-def _install_this_project(session, *, extras=None, editable=False):
+def _install_this_project_with_flit(session, *, extras=None, editable=False):
     session.install("flit")
     args = []
     if extras:
@@ -36,7 +36,7 @@ def lint(session):
 
 @nox.session(python=["2.7", "3.5", "3.6", "3.7", "3.8", "pypy2", "pypy3"])
 def test(session):
-    _install_this_project(session, extras=["test"])
+    session.install(".[test]")
 
     htmlcov_output = os.path.join(session.virtualenv.location, "htmlcov")
 
@@ -64,7 +64,7 @@ def update_launchers(session):
 #
 @nox.session(python="3.8")
 def docs(session):
-    _install_this_project(session, extras=["doc"])
+    _install_this_project_with_flit(session, extras=["doc"])
 
     # Generate documentation into `build/docs`
     session.run("sphinx-build", "-W", "-b", "html", "docs/", "build/docs")
@@ -72,7 +72,7 @@ def docs(session):
 
 @nox.session(name="docs-live", python="3.8")
 def docs_live(session):
-    _install_this_project(session, extras=["doc"], editable=True)
+    _install_this_project_with_flit(session, extras=["doc"], editable=True)
     session.install("sphinx-autobuild")
 
     # fmt: off
