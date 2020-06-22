@@ -1,5 +1,4 @@
-"""Utilities for generating executable scripts, across platforms.
-"""
+"""Generate executable scripts, on various platforms."""
 
 import io
 import shlex
@@ -52,8 +51,7 @@ def _is_executable_simple(executable):
 
 def _quote_compat(s):  # pragma: no cover
     # type: (Text) -> Text
-    """Crude implementation taken from shlex.quote().
-    """
+    """Fallback implementation for ``shlex.quote`` (for Python 2)."""
     return u"'" + s.replace(u"'", u"'\"'\"'") + u"'"
 
 
@@ -85,15 +83,26 @@ def _build_shebang(executable, forlauncher):
 
 
 class InvalidScript(ValueError):
-    """Raised if the user provides incorrect script section or kind.
-    """
+    """Raised if the user provides incorrect script section or kind."""
 
 
 class Script(object):
+    """Describes a script based on an entry point declaration."""
+
     __slots__ = ("name", "module", "attr", "section")
 
     def __init__(self, name, module, attr, section):
         # type: (str, str, str, ScriptSection) -> None
+        """Construct a Script object.
+
+        :param name: name of the script
+        :param module: module path, to load the entry point from
+        :param attr: final attribute access, for the entry point
+        :param section: Denotes the "entry point section" where this was specified.
+            Valid values are ``"gui"`` and ``"console"``.
+        :type section: str
+
+        """
         self.name = name
         self.module = module
         self.attr = attr
@@ -119,6 +128,17 @@ class Script(object):
 
     def generate(self, executable, kind):
         # type: (str, LauncherKind) -> Tuple[str, Binary]
+        """Generate a launcher for this script.
+
+        :param executable: Path to the executable to invoke.
+        :param kind: Which launcher template should be used.
+            Valid values are ``"posix"``, ``"win-ia32"``, ``"win-amd64"`` and
+            ``"win-arm"``.
+        :type kind: str
+
+        :raises InvalidScript: if no appropriate template is available.
+        :return: The name and contents of the launcher file.
+        """
         launcher = self._get_launcher_data(kind)
         shebang = _build_shebang(executable, forlauncher=bool(launcher))
         code = _SCRIPT_TEMPLATE.format(

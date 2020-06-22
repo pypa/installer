@@ -1,5 +1,4 @@
-"""Utilities for parsing and handling PEP 376 RECORD files.
-"""
+"""Parsing and handling :pep:`376` RECORD files."""
 
 import base64
 import csv
@@ -22,10 +21,9 @@ __all__ = [
 
 
 class InvalidRecord(Exception):
-    """Raised when a Record is not valid, due to improper element values or count.
-    """
+    """Raised when a Record is not valid, due to improper element values or count."""
 
-    def __init__(self, elements, issues):
+    def __init__(self, elements, issues):  # noqa: D107
         super(InvalidRecord, self).__init__(", ".join(issues))
         self.issues = issues
         self.elements = elements
@@ -37,16 +35,32 @@ class InvalidRecord(Exception):
 
 
 class Hash(object):
+    """Represents the "hash" element of a Record."""
+
     def __init__(self, name, value):
         # type: (str, str) -> None
+        """Construct a ``Hash`` object.
+
+        Most consumers should use :py:meth:`Hash.parse` instead, since no
+        validation or parsing is performed by this constructor.
+
+        :param name: name of the hash function
+        :param value: hashed value
+        """
         self.name = name
         self.value = value
 
     def __repr__(self):
+        # type: () -> str
         return "Hash(name={!r}, value={!r})".format(self.name, self.value)
 
     def validate(self, data):
         # type: (bytes) -> bool
+        """Validate that ``data`` matches this instance.
+
+        :param data: Contents of the file.
+        :return: Whether ``data`` matches the hashed value.
+        """
         digest = hashlib.new(self.name, data).digest()
         value = base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
         return self.value == value
@@ -54,13 +68,38 @@ class Hash(object):
     @classmethod
     def parse(cls, h):
         # type: (str) -> Hash
+        """Build a Hash object, from a "name=value" string.
+
+        This accepts a string of the format for the second element in a record,
+        as described in :pep:`376`.
+
+        Typical usage::
+
+            Hash.parse("sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4")
+
+        :param h: a name=value string
+        """
         name, value = h.split("=", 1)
-        return Hash(name, value)
+        return cls(name, value)
 
 
 class Record(object):
+    """Represents a single record in a RECORD file.
+
+    A list of :py:class:`Record` objects fully represents a RECORD file.
+    """
+
     def __init__(self, path, hash_, size):
         # type: (FSPath, Optional[Hash], Optional[int]) -> None
+        r"""Construct a ``Record`` object.
+
+        Most consumers should use :py:meth:`Record.from_elements`, since no
+        validation or parsing is performed by this constructor.
+
+        :param path: file's path
+        :param hash\_: hash of the file's contents
+        :param size: file's size in bytes
+        """
         super(Record, self).__init__()
 
         self.path = path
@@ -75,6 +114,11 @@ class Record(object):
 
     def validate(self, data):
         # type: (bytes) -> bool
+        """Validate that ``data`` matches this instance.
+
+        :param data: Contents of the file corresponding to this instance.
+        :return: whether ``data`` matches hash and size.
+        """
         if self.size is not None and len(data) != self.size:
             return False
 
@@ -86,10 +130,7 @@ class Record(object):
     @classmethod
     def from_elements(cls, path, hash_, size):
         # type: (FSPath, str, str) -> Record
-        """Build a Record object, from values of the elements.
-
-        All arguments must be in string form, except `path` which can also be a
-        ``pathlib.Path`` instance on Python 3.
+        r"""Build a Record object, from values of the elements.
 
         Typical usage::
 
@@ -97,8 +138,12 @@ class Record(object):
             for row in reader:
                 record = Record.from_elements(row[0], row[1], row[2])
 
-        All arguments are in string form. Meaning of each element is specified in
-        PEP 376. Raises ``InvalidRecord`` if any element is invalid.
+        Meaning of each element is specified in :pep:`376`.
+
+        :param path: first element (file's path)
+        :param hash\_: second element (hash of the file's contents)
+        :param size: third element (file's size in bytes)
+        :raises InvalidRecord: if any element is invalid
         """
         # Validate the passed values.
         issues = []
@@ -130,7 +175,9 @@ class Record(object):
 
 def parse_record_file(rows):
     # type: (Iterator[str]) -> Iterator[Record]
-    """Parse a RECORD file, provided as an iterator of record lines.
+    """Parse a :pep:`376` RECORD.
+
+    :param rows: iterator providing lines of a RECORD.
     """
     reader = csv.reader(rows, delimiter=",", quotechar='"', lineterminator=os.linesep)
     for row_index, elements in enumerate(reader):
