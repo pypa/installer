@@ -3,7 +3,6 @@
 import base64
 import csv
 import hashlib
-import os
 
 from installer._compat.typing import TYPE_CHECKING
 
@@ -179,7 +178,7 @@ def parse_record_file(rows):
 
     :param rows: iterator providing lines of a RECORD.
     """
-    reader = csv.reader(rows, delimiter=",", quotechar='"', lineterminator=os.linesep)
+    reader = csv.reader(rows, delimiter=",", quotechar='"', lineterminator="\n")
     for row_index, elements in enumerate(reader):
         if len(elements) != 3:
             message = "Row Index {}: expected 3 elements, got {}".format(
