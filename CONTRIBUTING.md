@@ -35,7 +35,7 @@ land a single large feature.
 
 Checklist:
 
-1. All pull requests *must* be made against the `master` branch.
+1. All pull requests *must* be made against the `main` branch.
 2. Include tests for any functionality you implement. Any contributions helping
    improve existing tests are welcome.
 3. Update documentation as necessary and provide documentation for any new
