@@ -128,6 +128,35 @@ class TestRecord:
         )
         assert str(record) == expected_string_value
 
+    def test_eq(self):
+        assert Record("a.py", "sha256=foobar", "3144") == Record(
+            "a.py", "sha256=foobar", "3144"
+        )
+
+    def test_eq_with_other_type(self):
+        assert not Record("a.py", "sha256=foobar", "3144") == object
+
+    @pytest.mark.parametrize(
+        "a,b",
+        [
+            [
+                Record("a.py", "sha256=foobar", "100"),
+                Record("b.py", "sha256=foobar", "100"),
+            ],
+            [
+                Record("a.py", "sha256=foobar", "100"),
+                Record("a.py", "sha256=foobar", "200"),
+            ],
+            [
+                Record("a.py", "sha256=foobar", "100"),
+                Record("a.py", "sha256=baz", "100"),
+            ],
+            [Record("a.py", "sha256=foobar", "100"), object],
+        ],
+    )
+    def test_neq(self, a, b):
+        assert a != b
+
 
 class TestParseRecordFile:
     def test_accepts_empty_iterable(self):
@@ -179,3 +208,34 @@ class TestParseRecordFile:
             list(parse_record_file(record_lines))
 
         assert "Row Index 3" in str(exc_info.value)
+
+
+class TestHash:
+    def test_eq(self):
+        assert Hash(name="sha256", value="somehash") == Hash(
+            name="sha256", value="somehash"
+        )
+
+    def test_eq_with_other_type(self):
+        assert not Hash(name="sha256", value="somehash") == object
+
+    @pytest.mark.parametrize(
+        "a,b",
+        [
+            [
+                Hash(name="sha256", value="somehash"),
+                Hash(name="sha256", value="someotherhash"),
+            ],
+            [
+                Hash(name="sha256", value="somehash"),
+                Hash(name="sha1", value="somehash"),
+            ],
+            [
+                Hash(name="sha256", value="somehash"),
+                Hash(name="sha1", value="someotherhash"),
+            ],
+            [Hash(name="sha256", value="somehash"), object],
+        ],
+    )
+    def test_neq(self, a, b):
+        assert a != b

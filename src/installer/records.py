@@ -58,6 +58,18 @@ class Hash(object):
         # type: () -> str
         return "Hash(name={!r}, value={!r})".format(self.name, self.value)
 
+    def __eq__(self, other):
+        # type: (object) -> bool
+        if not isinstance(other, Hash):
+            return NotImplemented
+        return self.name == other.name and self.value == other.value
+
+    def __ne__(self, other):
+        # type: (object) -> bool
+        if not isinstance(other, Hash):
+            return NotImplemented
+        return not self.__eq__(other)
+
     def validate(self, data):
         # type: (bytes) -> bool
         """Validate that ``data`` matches this instance.
@@ -124,6 +136,22 @@ class Record(object):
         return "Record(path={!r}, hash_={!r}, size={!r})".format(
             self.path, self.hash_, self.size
         )
+
+    def __eq__(self, other):
+        # type: (object) -> bool
+        if not isinstance(other, Record):
+            return NotImplemented
+        return (
+            self.path == other.path
+            and self.hash_ == other.hash_
+            and self.size == other.size
+        )
+
+    def __ne__(self, other):
+        # type: (object) -> bool
+        if not isinstance(other, Record):
+            return NotImplemented
+        return not self.__eq__(other)
 
     def validate(self, data):
         # type: (bytes) -> bool
