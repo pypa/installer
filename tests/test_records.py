@@ -1,6 +1,6 @@
 import pytest
 
-from installer.records import InvalidRecord, Record, parse_record_file
+from installer.records import Hash, InvalidRecord, Record, parse_record_file
 
 
 #
@@ -30,6 +30,40 @@ def record_simple_file(tmpdir, record_simple_list):
 @pytest.fixture()
 def record_input(request):
     return request.getfixturevalue(request.param)
+
+
+SAMPLE_RECORDS = [
+    (
+        ("test1.py", "sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4", 6),
+        b"test1\n",
+        True,
+    ),
+    (
+        ("test2.py", "sha256=fW_Xd08Nh2JNptzxbQ09EEwxkedx--LznIau1LK_Gg8", 6),
+        b"test2\n",
+        True,
+    ),
+    (
+        ("test3.py", "sha256=qwPDTx7OCCEf4qgDn9ZCQZmz9de1X_E7ETSzZHdsRcU", 6),
+        b"test3\n",
+        True,
+    ),
+    (
+        ("test4.py", "sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4", 7),
+        b"test1\n",
+        False,
+    ),
+    (
+        (
+            "test5.py",
+            "sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4",
+            None,
+        ),
+        b"test1\n",
+        True,
+    ),
+    (("test6.py", None, None), b"test1\n", True),
+]
 
 
 #
@@ -66,43 +100,33 @@ class TestRecord:
     def test_valid_elements(self, path, hash_, size):
         Record.from_elements(path, hash_, size)
 
-    @pytest.mark.parametrize(
-        ("elements", "data", "expected"),
-        [
-            (
-                ("test1.py", "sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4", 6),
-                b"test1\n",
-                True,
-            ),
-            (
-                ("test2.py", "sha256=fW_Xd08Nh2JNptzxbQ09EEwxkedx--LznIau1LK_Gg8", 6),
-                b"test2\n",
-                True,
-            ),
-            (
-                ("test3.py", "sha256=qwPDTx7OCCEf4qgDn9ZCQZmz9de1X_E7ETSzZHdsRcU", 6),
-                b"test3\n",
-                True,
-            ),
-            (
-                ("test4.py", "sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4", 7),
-                b"test1\n",
-                False,
-            ),
-            (
-                (
-                    "test5.py",
-                    "sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4",
-                    None,
-                ),
-                b"test1\n",
-                True,
-            ),
-            (("test6.py", None, None), b"test1\n", True),
-        ],
-    )
-    def test_parse_record(self, elements, data, expected):
-        assert Record.from_elements(*elements).validate(data) == expected
+    @pytest.mark.parametrize(("elements", "data", "passes_validation"), SAMPLE_RECORDS)
+    def test_populates_attributes_correctly(self, elements, data, passes_validation):
+        path, hash_string, size = elements
+
+        record = Record.from_elements(path, hash_string, size)
+
+        assert record.path == path
+        assert record.size == size
+
+        if record.hash_ is not None:
+            assert isinstance(record.hash_, Hash)
+            assert record.hash_.name == "sha256"
+            assert record.hash_.value == hash_string[len("sha256=") :]
+
+    @pytest.mark.parametrize(("elements", "data", "passes_validation"), SAMPLE_RECORDS)
+    def test_validation(self, elements, data, passes_validation):
+        record = Record.from_elements(*elements)
+        assert record.validate(data) == passes_validation
+
+    @pytest.mark.parametrize(("elements", "data", "passes_validation"), SAMPLE_RECORDS)
+    def test_string_representation(self, elements, data, passes_validation):
+        record = Record.from_elements(*elements)
+
+        expected_string_value = ",".join(
+            [(str(elem) if elem is not None else "") for elem in elements]
+        )
+        assert str(record) == expected_string_value
 
 
 class TestParseRecordFile:
