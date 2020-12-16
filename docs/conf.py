@@ -4,7 +4,11 @@ project = "installer"
 copyright = "2020, Pradyun Gedam"
 author = "Pradyun Gedam"
 
-extensions = ["sphinx.ext.autodoc", "myst_parser"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.todo",
+    "myst_parser",
+]
 
 # -- Options for Autodoc -----------------------------------------------------
 
