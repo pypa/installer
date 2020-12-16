@@ -10,7 +10,7 @@ This module also provides `FSPath`, a type annotation for Path-like values, whic
 can only be imported inside an `if TYPE_CHECKING`, and used only in type comments.
 """
 
-__all__ = ["Text", "Binary", "FSPath", "TYPE_CHECKING"]
+__all__ = ["cast", "Text", "Binary", "FSPath", "TYPE_CHECKING"]
 
 import sys
 
@@ -35,3 +35,15 @@ if TYPE_CHECKING:
         FSPath = Union[Text, Path]
     else:
         FSPath = Text
+
+# typing's cast syntax requires calling typing.cast at runtime, but we don't
+# want to import typing at runtime. Here, we inform the type checkers that
+# we're importing `typing.cast` as `cast` and re-implement typing.cast's
+# runtime behavior in a block that is ignored by type checkers.
+if TYPE_CHECKING:  # pragma: no cover
+    # not executed at runtime
+    from typing import cast
+else:
+    # executed at runtime
+    def cast(type_, value):  # noqa
+        return value
