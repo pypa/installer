@@ -29,8 +29,8 @@ else:  # pragma: no cover
 # FSPath declaration (only for Python 2 support)
 if TYPE_CHECKING:
     if sys.version_info[:2] >= (3, 4):
-        from typing import Union
         from pathlib import Path
+        from typing import Union
 
         FSPath = Union[Text, Path]
     else:

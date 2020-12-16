@@ -111,7 +111,9 @@ class Script(object):
     def __repr__(self):
         # type: () -> str
         return "Script(name={!r}, module={!r}, attr={!r}".format(
-            self.name, self.module, self.attr,
+            self.name,
+            self.module,
+            self.attr,
         )
 
     def _get_launcher_data(self, kind):
