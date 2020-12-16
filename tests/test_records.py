@@ -115,8 +115,7 @@ class TestParseRecordFile:
         indirect=True,
     )
     def test_accepts_all_kinds_of_iterables(self, record_input):
-        """Should accepts any iterable, e.g. container, iterator, or file object.
-        """
+        """Should accepts any iterable, e.g. container, iterator, or file object."""
         records = list(parse_record_file(record_input))
         assert len(records) == 2
 

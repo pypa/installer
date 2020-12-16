@@ -108,7 +108,7 @@ class Record(object):
     def __repr__(self):
         # type: () -> str
         return "Record(path={!r}, hash_={!r}, size={!r})".format(
-            self.path, self.hash_, self.size,
+            self.path, self.hash_, self.size
         )
 
     def validate(self, data):
@@ -169,7 +169,7 @@ class Record(object):
         if issues:
             raise InvalidRecord(elements=(path, hash_, size), issues=issues)
 
-        return cls(path=path, hash_=hash_value, size=size_value,)
+        return cls(path=path, hash_=hash_value, size=size_value)
 
 
 def parse_record_file(rows):
