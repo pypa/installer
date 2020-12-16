@@ -1,52 +1,63 @@
 name: CI
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
 
 jobs:
-  all:
-    name: ${{ matrix.os }}
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - uses: pre-commit/action@v2.0.0
+
+  tests:
+    name: tests / ${{ matrix.os }} / ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}-latest
+    needs: pre-commit
 
     strategy:
       matrix:
-        os: [Windows, Ubuntu, MacOS]
+        os: [Windows, Ubuntu]
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9]
+        include:
+          # Only run PyPy jobs, on Ubuntu.
+          - os: Ubuntu
+            python-version: pypy2
+          - os: Ubuntu
+            python-version: pypy3
+          # Only run one MacOS job, due to
+          # https://github.com/actions/virtual-environments/issues/2247
+          - os: MacOS
+            python-version: 3.8
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    # Get all the Python versions
-    - uses: actions/setup-python@v1
-      with: {python-version: pypy2}
-      if: matrix.os != 'Windows'
-    - uses: actions/setup-python@v1
-      with: {python-version: pypy3}
-      if: matrix.os != 'Windows'
-    - uses: actions/setup-python@v1
-      with: {python-version: 2.7}
-    - uses: actions/setup-python@v1
-      with: {python-version: 3.5}
-    - uses: actions/setup-python@v1
-      with: {python-version: 3.6}
-    - uses: actions/setup-python@v1
-      with: {python-version: 3.7}
-    - uses: actions/setup-python@v1
-      with: {python-version: 3.8}
+      # Get Python
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/setup-python@v2  # needed for Python 2 / PyPy 2!
+        with:
+          python-version: 3.x
 
-    # Get cache
-    - name: Save date (for cache)
-      id: date
-      run: echo "::set-output name=date::$(date +%F)"
-    - name: Save pip cache dir
-      id: pip-cache-dir
-      run: echo "::set-output name=dir::$(pip cache dir)"
-    - name: pip cache
-      uses: actions/cache@v1
-      with:
-        path: ${{ steps.pip-cache-dir.outputs.dir }}
-        key: pip-v1-${{ runner.os }}-${{ steps.date.outputs.date }}
-        restore-keys: pip-v1-${{ runner.os }}
+      # Setup pip's cache
+      - name: Save date (for cache)
+        id: date
+        run: echo "::set-output name=date::$(date +%F)"
+      - name: Save pip cache dir
+        id: pip-cache-dir
+        run: echo "::set-output name=dir::$(pip cache dir)"
+      - name: pip cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.pip-cache-dir.outputs.dir }}
+          key: pip-v1-${{ runner.os }}-${{ steps.date.outputs.date }}
+          restore-keys: pip-v1-${{ runner.os }}
 
-    - run: pip install nox
-    - run: nox
+      - run: pip install nox
+      - run: nox -s test-${{ matrix.python-version }}
