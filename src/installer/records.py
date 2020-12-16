@@ -8,6 +8,7 @@ from installer._compat.typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing import Iterator, Optional
+
     from installer._compat.typing import FSPath
 
 
@@ -48,6 +49,10 @@ class Hash(object):
         """
         self.name = name
         self.value = value
+
+    def __str__(self):
+        # type: () -> str
+        return "{}={}".format(self.name, self.value)
 
     def __repr__(self):
         # type: () -> str
@@ -104,6 +109,15 @@ class Record(object):
         self.path = path
         self.hash_ = hash_
         self.size = size
+
+    def __str__(self):
+        # type: () -> str
+        return ",".join(
+            [
+                (str(elem) if elem is not None else "")
+                for elem in [self.path, self.hash_, self.size]
+            ]
+        )
 
     def __repr__(self):
         # type: () -> str
