@@ -1,6 +1,5 @@
 """Utilities related to handling / interacting with wheel files."""
 
-import os
 import re
 from collections import namedtuple
 from email.parser import FeedParser
@@ -9,10 +8,9 @@ from installer._compat.typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from email.message import Message
-    from io import BufferedReader
-    from typing import Any, Callable, Dict, Iterable, NewType, Tuple
+    from typing import NewType, Tuple
 
-    from installer._compat.typing import Binary, Text
+    from installer._compat.typing import Text
 
     Scheme = NewType("Scheme", str)
     AllSchemes = Tuple[Scheme, ...]
