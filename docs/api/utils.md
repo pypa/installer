@@ -3,5 +3,16 @@
 `installer.utils` provides an assortment of miscellaneous utilities that are
 useful when working with wheels or for implementing the abstractions implemented in `installer`.
 
-```{todo} Write these down.
+## Usage
+
+```pycon
+>>> print("TODO: write this")
+TODO: write this
+```
+
+## Reference
+
+```{eval-rst}
+.. automodule:: installer.utils
+    :members:
 ```
