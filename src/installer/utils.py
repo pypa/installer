@@ -34,12 +34,12 @@ _WHEEL_FILENAME_REGEX = re.compile(
     """,
     re.VERBOSE | re.UNICODE,
 )
-
-# Taken directly from PEP 376
-SCHEME_NAMES = cast("AllSchemes", ("purelib", "platlib", "headers", "scripts", "data"))
 WheelFilename = namedtuple(
     "WheelFilename", ["distribution", "version", "build_tag", "tag"]
 )
+
+# According to https://www.python.org/dev/peps/pep-0427/#id7
+SCHEME_NAMES = cast("AllSchemes", ("purelib", "platlib", "headers", "scripts", "data"))
 
 
 def parse_metadata_file(contents):
