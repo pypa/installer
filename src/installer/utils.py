@@ -1,5 +1,7 @@
 """Utilities related to handling / interacting with wheel files."""
 
+import hashlib
+import os
 import re
 from collections import namedtuple
 from email.parser import FeedParser
@@ -8,7 +10,7 @@ from installer._compat.typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from email.message import Message
-    from typing import NewType, Tuple
+    from typing import BinaryIO, NewType, Tuple
 
     from installer._compat.typing import Text
 
@@ -21,6 +23,10 @@ __all__ = [
     "WheelFilename",
     "SCHEME_NAMES",
 ]
+
+# Borrowed from https://github.com/python/cpython/blob/v3.9.1/Lib/shutil.py#L52
+_WINDOWS = os.name == "nt"
+_COPY_BUFSIZE = 1024 * 1024 if _WINDOWS else 64 * 1024
 
 # According to https://www.python.org/dev/peps/pep-0427/#file-name-convention
 _WHEEL_FILENAME_REGEX = re.compile(
@@ -67,3 +73,33 @@ def parse_wheel_filename(filename):
     if not wheel_info:
         raise ValueError("Not a valid wheel filename: {}".format(filename))
     return WheelFilename(*wheel_info.groups())
+
+
+def copyfileobj_with_hashing(
+    source,  # type: BinaryIO
+    dest,  # type: BinaryIO
+    hash_algorithm,  # type: str
+):
+    # type: (...) -> Tuple[str, int]
+    """Copy a buffer while computing the content's hash and size.
+
+    Copies the source buffer into the destination buffer while computing the
+    hash of the contents. Adapted from :ref:`shutil.copyfileobj`.
+
+    :param source: buffer holding the source data
+    :param dest: destination buffer
+    :param hash_algorithm: hashing algorithm
+
+    :return: size, hash digest of the contents
+    """
+    hasher = hashlib.new(hash_algorithm)
+    size = 0
+    while True:
+        buf = source.read(_COPY_BUFSIZE)
+        if not buf:
+            break
+        hasher.update(buf)
+        dest.write(buf)
+        size += len(buf)
+
+    return hasher.hexdigest(), size
