@@ -22,6 +22,7 @@ __all__ = [
     "SCHEME_NAMES",
 ]
 
+# According to https://www.python.org/dev/peps/pep-0427/#file-name-convention
 _WHEEL_FILENAME_REGEX = re.compile(
     r"""
     ^
