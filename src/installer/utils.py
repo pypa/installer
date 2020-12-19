@@ -3,6 +3,7 @@
 import hashlib
 import os
 import re
+import sys
 from collections import namedtuple
 from email.parser import FeedParser
 
@@ -13,6 +14,7 @@ if TYPE_CHECKING:
     from typing import BinaryIO, NewType, Tuple
 
     from installer._compat.typing import Text
+    from installer.scripts import LauncherKind
 
     Scheme = NewType("Scheme", str)
     AllSchemes = Tuple[Scheme, ...]
@@ -103,3 +105,21 @@ def copyfileobj_with_hashing(
         size += len(buf)
 
     return hasher.hexdigest(), size
+
+
+def get_launcher_kind():  # pragma: no cover
+    # type: () -> LauncherKind
+    """Get the launcher kind for the current machine."""
+    if os.name != "nt":
+        return "posix"
+
+    if "amd64" in sys.version.lower():
+        return "win-amd64"
+    if "(arm64)" in sys.version.lower():
+        return "win-arm64"
+    if "(arm)" in sys.version.lower():
+        return "win-arm"
+    if sys.platform == "win32":
+        return "win-ia32"
+
+    raise NotImplementedError("Unknown launcher kind for this machine")
