@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from typing import BinaryIO, Iterable
 
     from installer._compat.typing import FSPath
+    from installer.scripts import ScriptSection
     from installer.utils import Scheme
 
 
@@ -16,6 +17,17 @@ class WheelDestination(object):
     Subclasses are expected to handle script generation and rewriting of the
     RECORD file after installation.
     """
+
+    def write_script(self, name, module, attr, section):
+        # type: (str, str, str, ScriptSection) -> Record
+        """Write a script in the correct location to invoke given entry point.
+
+        Example usage/behaviour::
+
+            >>> dest.write_script("pip", "pip._internal.cli", "main", "console")
+            ...
+        """
+        raise NotImplementedError
 
     def write_file(self, scheme, path, stream):
         # type: (Scheme, FSPath, BinaryIO) -> Record
