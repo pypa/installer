@@ -17,4 +17,8 @@ class TestWheelDestination:
             destination.write_file(scheme=None, path=None, stream=None)
 
         with pytest.raises(NotImplementedError):
-            destination.finalize_installation(scheme=None, records=None)
+            destination.finalize_installation(
+                scheme=None,
+                record_file_path=None,
+                records=None,
+            )
