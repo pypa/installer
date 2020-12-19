@@ -1,11 +1,19 @@
 """Tests for installer.utils
 """
+
+import hashlib
 import textwrap
 from email.message import Message
+from io import BytesIO
 
 import pytest
 
-from installer.utils import WheelFilename, parse_metadata_file, parse_wheel_filename
+from installer.utils import (
+    WheelFilename,
+    copyfileobj_with_hashing,
+    parse_metadata_file,
+    parse_wheel_filename,
+)
 
 
 class TestParseMetadata:
@@ -78,3 +86,18 @@ class TestParseWheelFilename:
     def test_invalid_cases(self, string):
         with pytest.raises(ValueError):
             parse_wheel_filename(string)
+
+
+class TestCopyFileObjWithHashing(object):
+    def test_basic_functionality(self):
+        data = b"input data is this"
+        hash_ = hashlib.sha256(data).hexdigest()
+        size = len(data)
+
+        with BytesIO(data) as source:
+            with BytesIO() as dest:
+                result = copyfileobj_with_hashing(source, dest, hash_algorithm="sha256")
+                written_data = dest.getvalue()
+
+        assert result == (hash_, size)
+        assert written_data == data
