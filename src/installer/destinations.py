@@ -19,7 +19,7 @@ class WheelDestination(object):
     """
 
     def write_script(self, name, module, attr, section):
-        # type: (str, str, str, ScriptSection) -> Record
+        # type: (str, str, str, ScriptSection) -> RecordEntry
         """Write a script in the correct location to invoke given entry point.
 
         Example usage/behaviour::
