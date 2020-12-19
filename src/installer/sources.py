@@ -70,7 +70,7 @@ class WheelSource(object):
         tuple containing 2 elements:
 
         - record: 3-value tuple, to pass to
-          :py:meth:`Record.from_elements <installer.records.Record.from_elements>`.
+          :py:meth:`RecordEntry.from_elements <installer.records.RecordEntry.from_elements>`.
         - stream: An :py:class:`io.BufferedReader` object, providing the contents of the
           file at the location provided by the first element (path).
 

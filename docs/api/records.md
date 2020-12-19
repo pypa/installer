@@ -17,7 +17,7 @@
 2
 >>> record = li[0]
 >>> record
-Record(path='file.py', hash_=Hash(name='sha256', value='AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI'), size=3144)
+RecordEntry(path='file.py', hash_=Hash(name='sha256', value='AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI'), size=3144)
 >>> record.path
 'file.py'
 >>> record.hash_
@@ -35,7 +35,7 @@ False
 
 .. autofunction:: installer.records.parse_record_file
 
-.. autoclass:: installer.records.Record()
+.. autoclass:: installer.records.RecordEntry()
     :special-members: __init__
     :members:
 
