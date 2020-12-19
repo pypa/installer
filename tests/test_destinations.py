@@ -11,6 +11,9 @@ class TestWheelDestination:
         destination = WheelDestination()
 
         with pytest.raises(NotImplementedError):
+            destination.write_script(name=None, module=None, attr=None, section=None)
+
+        with pytest.raises(NotImplementedError):
             destination.write_file(scheme=None, path=None, stream=None)
 
         with pytest.raises(NotImplementedError):
