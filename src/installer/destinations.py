@@ -41,8 +41,8 @@ class WheelDestination(object):
         """
         raise NotImplementedError
 
-    def finalize_installation(self, scheme, records):
-        # type: (Scheme, Iterable[RecordEntry]) -> None
+    def finalize_installation(self, scheme, record_file_path, records):
+        # type: (Scheme, FSPath, Iterable[RecordEntry]) -> None
         """Finalize installation, after all the files are written.
 
         This method is required to (re)write the RECORD file such that it includes
