@@ -13,9 +13,10 @@ from installer._compat.typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from email.message import Message
-    from typing import BinaryIO, Iterator, NewType, Tuple
+    from typing import BinaryIO, Iterable, Iterator, NewType, Tuple
 
     from installer._compat.typing import Text
+    from installer.records import RecordEntry
     from installer.scripts import LauncherKind
 
     Scheme = NewType("Scheme", str)
@@ -150,3 +151,13 @@ def fix_shebang(stream, interpreter):
     else:
         stream.seek(0)
         yield stream
+
+
+def construct_record_file(records):
+    # type: (Iterable[RecordEntry]) -> BinaryIO
+    """Construct a RECORD file given some records."""
+    stream = io.BytesIO()
+    for record in records:
+        stream.write(str(record).encode("utf-8") + b"\n")
+    stream.seek(0)
+    return stream
