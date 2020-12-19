@@ -1,7 +1,7 @@
 """Handles all file writing and post-installation processing."""
 
 from installer._compat.typing import TYPE_CHECKING
-from installer.records import Record
+from installer.records import RecordEntry
 
 if TYPE_CHECKING:
     from typing import BinaryIO, Iterable
@@ -18,7 +18,7 @@ class WheelDestination(object):
     """
 
     def write_file(self, scheme, path, stream):
-        # type: (Scheme, FSPath, BinaryIO) -> Record
+        # type: (Scheme, FSPath, BinaryIO) -> RecordEntry
         """TODO: write a good one line description of this function.
 
         Example usage/behaviour::
@@ -30,7 +30,7 @@ class WheelDestination(object):
         raise NotImplementedError
 
     def finalize_installation(self, scheme, records):
-        # type: (Scheme, Iterable[Record]) -> None
+        # type: (Scheme, Iterable[RecordEntry]) -> None
         """Finalize installation, after all the files are written.
 
         This method is required to (re)write the RECORD file such that it includes

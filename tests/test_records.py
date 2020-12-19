@@ -1,6 +1,6 @@
 import pytest
 
-from installer.records import Hash, InvalidRecord, Record, parse_record_file
+from installer.records import Hash, InvalidRecordEntry, RecordEntry, parse_record_file
 
 
 #
@@ -69,7 +69,7 @@ SAMPLE_RECORDS = [
 #
 # Actual Tests
 #
-class TestRecord:
+class TestRecordEntry:
     @pytest.mark.parametrize(
         "path, hash_, size, caused_by",
         [
@@ -81,8 +81,8 @@ class TestRecord:
         ],
     )
     def test_invalid_elements(self, path, hash_, size, caused_by):
-        with pytest.raises(InvalidRecord) as exc_info:
-            Record.from_elements(path, hash_, size)
+        with pytest.raises(InvalidRecordEntry) as exc_info:
+            RecordEntry.from_elements(path, hash_, size)
 
         assert exc_info.value.elements == (path, hash_, size)
         for word in caused_by:
@@ -98,13 +98,13 @@ class TestRecord:
         ],
     )
     def test_valid_elements(self, path, hash_, size):
-        Record.from_elements(path, hash_, size)
+        RecordEntry.from_elements(path, hash_, size)
 
     @pytest.mark.parametrize(("elements", "data", "passes_validation"), SAMPLE_RECORDS)
     def test_populates_attributes_correctly(self, elements, data, passes_validation):
         path, hash_string, size = elements
 
-        record = Record.from_elements(path, hash_string, size)
+        record = RecordEntry.from_elements(path, hash_string, size)
 
         assert record.path == path
         assert record.size == size
@@ -116,12 +116,12 @@ class TestRecord:
 
     @pytest.mark.parametrize(("elements", "data", "passes_validation"), SAMPLE_RECORDS)
     def test_validation(self, elements, data, passes_validation):
-        record = Record.from_elements(*elements)
+        record = RecordEntry.from_elements(*elements)
         assert record.validate(data) == passes_validation
 
     @pytest.mark.parametrize(("elements", "data", "passes_validation"), SAMPLE_RECORDS)
     def test_string_representation(self, elements, data, passes_validation):
-        record = Record.from_elements(*elements)
+        record = RecordEntry.from_elements(*elements)
 
         expected_string_value = ",".join(
             [(str(elem) if elem is not None else "") for elem in elements]
@@ -162,7 +162,7 @@ class TestParseRecordFile:
         ],
     )
     def test_rejects_wrong_element_count(self, line, element_count):
-        with pytest.raises(InvalidRecord) as exc_info:
+        with pytest.raises(InvalidRecordEntry) as exc_info:
             list(parse_record_file([line]))
 
         message = "expected 3 elements, got {}".format(element_count)
@@ -175,7 +175,7 @@ class TestParseRecordFile:
             "file3.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144",
             "distribution-1.0.dist-info/RECORD,,,,",
         ]
-        with pytest.raises(InvalidRecord) as exc_info:
+        with pytest.raises(InvalidRecordEntry) as exc_info:
             list(parse_record_file(record_lines))
 
         assert "Row Index 3" in str(exc_info.value)

@@ -14,28 +14,28 @@ if TYPE_CHECKING:
 
 __all__ = [
     "Hash",
-    "Record",
-    "InvalidRecord",
+    "RecordEntry",
+    "InvalidRecordEntry",
     "parse_record_file",
 ]
 
 
-class InvalidRecord(Exception):
-    """Raised when a Record is not valid, due to improper element values or count."""
+class InvalidRecordEntry(Exception):
+    """Raised when a RecordEntry is not valid, due to improper element values or count."""
 
     def __init__(self, elements, issues):  # noqa: D107
-        super(InvalidRecord, self).__init__(", ".join(issues))
+        super(InvalidRecordEntry, self).__init__(", ".join(issues))
         self.issues = issues
         self.elements = elements
 
     def __repr__(self):
-        return "InvalidRecord(elements={!r}, issues={!r})".format(
+        return "InvalidRecordEntry(elements={!r}, issues={!r})".format(
             self.elements, self.issues
         )
 
 
 class Hash(object):
-    """Represents the "hash" element of a Record."""
+    """Represents the "hash" element of a RecordEntry."""
 
     def __init__(self, name, value):
         # type: (str, str) -> None
@@ -87,24 +87,24 @@ class Hash(object):
         return cls(name, value)
 
 
-class Record(object):
+class RecordEntry(object):
     """Represents a single record in a RECORD file.
 
-    A list of :py:class:`Record` objects fully represents a RECORD file.
+    A list of :py:class:`RecordEntry` objects fully represents a RECORD file.
     """
 
     def __init__(self, path, hash_, size):
         # type: (FSPath, Optional[Hash], Optional[int]) -> None
-        r"""Construct a ``Record`` object.
+        r"""Construct a ``RecordEntry`` object.
 
-        Most consumers should use :py:meth:`Record.from_elements`, since no
+        Most consumers should use :py:meth:`RecordEntry.from_elements`, since no
         validation or parsing is performed by this constructor.
 
         :param path: file's path
         :param hash\_: hash of the file's contents
         :param size: file's size in bytes
         """
-        super(Record, self).__init__()
+        super(RecordEntry, self).__init__()
 
         self.path = path
         self.hash_ = hash_
@@ -121,7 +121,7 @@ class Record(object):
 
     def __repr__(self):
         # type: () -> str
-        return "Record(path={!r}, hash_={!r}, size={!r})".format(
+        return "RecordEntry(path={!r}, hash_={!r}, size={!r})".format(
             self.path, self.hash_, self.size
         )
 
@@ -142,21 +142,21 @@ class Record(object):
 
     @classmethod
     def from_elements(cls, path, hash_, size):
-        # type: (FSPath, str, str) -> Record
-        r"""Build a Record object, from values of the elements.
+        # type: (FSPath, str, str) -> RecordEntry
+        r"""Build a RecordEntry object, from values of the elements.
 
         Typical usage::
 
             reader = csv.reader(f)
             for row in reader:
-                record = Record.from_elements(row[0], row[1], row[2])
+                record = RecordEntry.from_elements(row[0], row[1], row[2])
 
         Meaning of each element is specified in :pep:`376`.
 
         :param path: first element (file's path)
         :param hash\_: second element (hash of the file's contents)
         :param size: third element (file's size in bytes)
-        :raises InvalidRecord: if any element is invalid
+        :raises InvalidRecordEntry: if any element is invalid
         """
         # Validate the passed values.
         issues = []
@@ -181,13 +181,13 @@ class Record(object):
             size_value = None
 
         if issues:
-            raise InvalidRecord(elements=(path, hash_, size), issues=issues)
+            raise InvalidRecordEntry(elements=(path, hash_, size), issues=issues)
 
         return cls(path=path, hash_=hash_value, size=size_value)
 
 
 def parse_record_file(rows):
-    # type: (Iterator[str]) -> Iterator[Record]
+    # type: (Iterator[str]) -> Iterator[RecordEntry]
     """Parse a :pep:`376` RECORD.
 
     :param rows: iterator providing lines of a RECORD.
@@ -198,7 +198,7 @@ def parse_record_file(rows):
             message = "Row Index {}: expected 3 elements, got {}".format(
                 row_index, len(elements)
             )
-            raise InvalidRecord(elements=elements, issues=[message])
+            raise InvalidRecordEntry(elements=elements, issues=[message])
 
-        record = Record.from_elements(elements[0], elements[1], elements[2])
+        record = RecordEntry.from_elements(elements[0], elements[1], elements[2])
         yield record
