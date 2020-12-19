@@ -1,6 +1,8 @@
 """Utilities related to handling / interacting with wheel files."""
 
+import contextlib
 import hashlib
+import io
 import os
 import re
 import sys
@@ -11,7 +13,7 @@ from installer._compat.typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from email.message import Message
-    from typing import BinaryIO, NewType, Tuple
+    from typing import BinaryIO, Iterator, NewType, Tuple
 
     from installer._compat.typing import Text
     from installer.scripts import LauncherKind
@@ -123,3 +125,28 @@ def get_launcher_kind():  # pragma: no cover
         return "win-ia32"
 
     raise NotImplementedError("Unknown launcher kind for this machine")
+
+
+@contextlib.contextmanager
+def fix_shebang(stream, interpreter):
+    # type: (BinaryIO, str) -> Iterator[BinaryIO]
+    """Replace ^#!python shebang in a stream with the correct interpreter."""
+    stream.seek(0)
+    if stream.read(8) == b"#!python":
+        new_stream = io.BytesIO()
+        # write our new shebang
+        new_stream.write("#!{}\n".format(interpreter).encode())
+        # copy the rest of the stream
+        stream.seek(0)
+        stream.readline()  # skip first line
+        while True:
+            buf = stream.read(_COPY_BUFSIZE)
+            if not buf:
+                break
+            new_stream.write(buf)
+        new_stream.seek(0)
+        yield new_stream
+        new_stream.close()
+    else:
+        stream.seek(0)
+        yield stream
