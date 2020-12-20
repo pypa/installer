@@ -11,7 +11,7 @@ from installer._compat.typing import TYPE_CHECKING, Binary, Text
 if TYPE_CHECKING:
     from typing import Literal, Mapping, Optional, Tuple
 
-    LauncherKind = Literal["posix", "win-ia32", "win-amd64", "win-arm"]
+    LauncherKind = Literal["posix", "win-ia32", "win-amd64", "win-arm", "win-arm64"]
     ScriptSection = Literal["console", "gui"]
 
 
