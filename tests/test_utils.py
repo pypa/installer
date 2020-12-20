@@ -11,6 +11,7 @@ import pytest
 from installer.utils import (
     WheelFilename,
     copyfileobj_with_hashing,
+    fix_shebang,
     parse_metadata_file,
     parse_wheel_filename,
 )
@@ -101,3 +102,48 @@ class TestCopyFileObjWithHashing(object):
 
         assert result == (hash_, size)
         assert written_data == data
+
+
+class TestScript:
+    @pytest.mark.parametrize(
+        ("data", "expected"),
+        [
+            (
+                b"#!python\ntest",
+                b"#!/my/python\ntest",
+            ),
+            (
+                b"#!pythonw\ntest",
+                b"#!/my/python\ntest",
+            ),
+            (
+                b"#!python something\ntest",
+                b"#!/my/python\ntest",
+            ),
+            (
+                b"#!python",
+                b"#!/my/python\n",
+            ),
+        ],
+    )
+    def test_replace_shebang(self, data, expected):
+        with BytesIO(data) as source:
+            with fix_shebang(source, "/my/python") as stream:
+                result = stream.read()
+        assert result == expected
+
+    @pytest.mark.parametrize(
+        "data",
+        [
+            b"#!py\ntest",
+            b"#!something\ntest",
+            b"#something\ntest",
+            b"#something",
+            b"something",
+        ],
+    )
+    def test_keep_data(self, data):
+        with BytesIO(data) as source:
+            with fix_shebang(source, "/my/python") as stream:
+                result = stream.read()
+        assert result == data
