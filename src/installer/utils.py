@@ -131,7 +131,10 @@ def get_launcher_kind():  # pragma: no cover
 @contextlib.contextmanager
 def fix_shebang(stream, interpreter):
     # type: (BinaryIO, str) -> Iterator[BinaryIO]
-    """Replace ^#!python shebang in a stream with the correct interpreter."""
+    """Replace ^#!python shebang in a stream with the correct interpreter.
+
+    The original stream should be closed by the caller.
+    """
     stream.seek(0)
     if stream.read(8) == b"#!python":
         new_stream = io.BytesIO()
