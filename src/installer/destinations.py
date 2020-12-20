@@ -3,6 +3,7 @@
 import io
 import os.path
 
+from installer._compat import FileExistsError
 from installer._compat.typing import TYPE_CHECKING
 from installer.records import Hash, RecordEntry
 from installer.scripts import Script
