@@ -28,6 +28,8 @@ class WheelDestination(object):
         # type: (str, str, str, ScriptSection) -> RecordEntry
         """Write a script in the correct location to invoke given entry point.
 
+        The stream should be closed by the caller.
+
         Example usage/behaviour::
 
             >>> dest.write_script("pip", "pip._internal.cli", "main", "console")
@@ -38,6 +40,8 @@ class WheelDestination(object):
     def write_file(self, scheme, path, stream):
         # type: (Scheme, FSPath, BinaryIO) -> RecordEntry
         """TODO: write a good one line description of this function.
+
+        The stream should be closed by the caller.
 
         Example usage/behaviour::
 
@@ -95,7 +99,10 @@ class SchemeDictionaryDestination(WheelDestination):
 
     def write_file(self, scheme, path, stream):
         # type: (Scheme, FSPath, BinaryIO) -> RecordEntry
-        """Write a file to file-system."""
+        """Write a file to file-system.
+
+        The stream should be closed by the caller.
+        """
         if scheme == "scripts":
             with fix_shebang(stream, self.interpreter) as fixed_stream:
                 return self._write_file(scheme, path, fixed_stream)
@@ -103,7 +110,10 @@ class SchemeDictionaryDestination(WheelDestination):
 
     def write_script(self, name, module, attr, section):
         # type: (str, str, str, ScriptSection) -> RecordEntry
-        """Write an entrypoint script to the file-system."""
+        """Write an entrypoint script to the file-system.
+
+        The stream should be closed by the caller.
+        """
         script = Script(name, module, attr, section)
         name, data = script.generate(self.interpreter, self.script_kind)
         return self._write_file("scripts", name, io.BytesIO(data))
