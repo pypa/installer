@@ -7,9 +7,12 @@ from email.message import Message
 from io import BytesIO
 
 import pytest
+from test_records import SAMPLE_RECORDS
 
+from installer.records import RecordEntry
 from installer.utils import (
     WheelFilename,
+    construct_record_file,
     copyfileobj_with_hashing,
     fix_shebang,
     parse_metadata_file,
@@ -147,3 +150,18 @@ class TestScript:
             with fix_shebang(source, "/my/python") as stream:
                 result = stream.read()
         assert result == data
+
+
+class TestConstructRecord:
+    def test_construct(self):
+        records = [
+            RecordEntry.from_elements(*elements) for elements, _, _ in SAMPLE_RECORDS
+        ]
+        assert construct_record_file(records).read() == (
+            b"test1.py,sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4,6\n"
+            b"test2.py,sha256=fW_Xd08Nh2JNptzxbQ09EEwxkedx--LznIau1LK_Gg8,6\n"
+            b"test3.py,sha256=qwPDTx7OCCEf4qgDn9ZCQZmz9de1X_E7ETSzZHdsRcU,6\n"
+            b"test4.py,sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4,7\n"
+            b"test5.py,sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4,\n"
+            b"test6.py,,\n"
+        )
