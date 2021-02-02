@@ -36,7 +36,7 @@ def lint(session):
 
 @nox.session(python=["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "pypy2", "pypy3"])
 def test(session):
-    session.install(".[test]")
+    session.install(".[test, docs]")
 
     htmlcov_output = os.path.join(session.virtualenv.location, "htmlcov")
 
@@ -51,6 +51,7 @@ def test(session):
         "auto",
         *session.posargs
     )
+    session.run("sphinx-build", "-b", "doctest", "docs/", "build/docs")
 
 
 @nox.session(python="3.8")
