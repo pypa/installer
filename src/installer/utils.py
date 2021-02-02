@@ -1,8 +1,11 @@
 """Utilities related to handling / interacting with wheel files."""
 
+import contextlib
 import hashlib
+import io
 import os
 import re
+import sys
 from collections import namedtuple
 from email.parser import FeedParser
 
@@ -10,9 +13,11 @@ from installer._compat.typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from email.message import Message
-    from typing import BinaryIO, NewType, Tuple
+    from typing import BinaryIO, Iterable, Iterator, NewType, Tuple
 
     from installer._compat.typing import Text
+    from installer.records import RecordEntry
+    from installer.scripts import LauncherKind
 
     Scheme = NewType("Scheme", str)
     AllSchemes = Tuple[Scheme, ...]
@@ -103,3 +108,62 @@ def copyfileobj_with_hashing(
         size += len(buf)
 
     return hasher.hexdigest(), size
+
+
+def get_launcher_kind():  # pragma: no cover
+    # type: () -> LauncherKind
+    """Get the launcher kind for the current machine."""
+    if os.name != "nt":
+        return "posix"
+
+    if "amd64" in sys.version.lower():
+        return "win-amd64"
+    if "(arm64)" in sys.version.lower():
+        return "win-arm64"
+    if "(arm)" in sys.version.lower():
+        return "win-arm"
+    if sys.platform == "win32":
+        return "win-ia32"
+
+    raise NotImplementedError("Unknown launcher kind for this machine")
+
+
+@contextlib.contextmanager
+def fix_shebang(stream, interpreter):
+    # type: (BinaryIO, str) -> Iterator[BinaryIO]
+    """Replace ^#!python shebang in a stream with the correct interpreter.
+
+    The original stream should be closed by the caller.
+    """
+    stream.seek(0)
+    if stream.read(8) == b"#!python":
+        new_stream = io.BytesIO()
+        # write our new shebang
+        new_stream.write("#!{}\n".format(interpreter).encode())
+        # copy the rest of the stream
+        stream.seek(0)
+        stream.readline()  # skip first line
+        while True:
+            buf = stream.read(_COPY_BUFSIZE)
+            if not buf:
+                break
+            new_stream.write(buf)
+        new_stream.seek(0)
+        yield new_stream
+        new_stream.close()
+    else:
+        stream.seek(0)
+        yield stream
+
+
+def construct_record_file(records):
+    # type: (Iterable[RecordEntry]) -> BinaryIO
+    """Construct a RECORD file given some records.
+
+    The original stream should be closed by the caller.
+    """
+    stream = io.BytesIO()
+    for record in records:
+        stream.write(str(record).encode("utf-8") + b"\n")
+    stream.seek(0)
+    return stream
