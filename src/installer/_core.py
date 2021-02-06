@@ -76,7 +76,7 @@ def install(source, destination, additional_metadata):
     root_scheme = _process_WHEEL_file(source)
 
     # RECORD handling
-    record_file_path = "/".join([source.dist_info_dir, "RECORD"])
+    record_file_path = posixpath.join(source.dist_info_dir, "RECORD")
     written_records = []
 
     # Write all the files from the wheel.
