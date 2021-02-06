@@ -8,7 +8,7 @@ from installer.destinations import WheelDestination
 from installer.exceptions import InvalidWheelSource
 from installer.records import RecordEntry
 from installer.sources import WheelSource
-from installer.utils import SCHEME_NAMES, parse_metadata_file
+from installer.utils import SCHEME_NAMES, parse_entrypoints, parse_metadata_file
 
 if TYPE_CHECKING:
     from typing import Dict
@@ -78,6 +78,16 @@ def install(source, destination, additional_metadata):
     # RECORD handling
     record_file_path = posixpath.join(source.dist_info_dir, "RECORD")
     written_records = []
+
+    # Write the entry-points based scripts.
+    entrypoints_text = source.read_dist_info("entry-points.txt")
+    for name, module, attr, section in parse_entrypoints(entrypoints_text):
+        destination.write_script(
+            name=name,
+            module=module,
+            attr=attr,
+            section=section,
+        )
 
     # Write all the files from the wheel.
     for record_elements, stream in source.get_contents():
