@@ -110,4 +110,8 @@ def install(source, destination, additional_metadata):
             )
         written_records.append(record)
 
-    destination.finalize_installation(scheme=root_scheme, records=written_records)
+    destination.finalize_installation(
+        scheme=root_scheme,
+        record_file_path=record_file_path,
+        records=written_records,
+    )

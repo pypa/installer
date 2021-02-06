@@ -121,7 +121,7 @@ class SchemeDictionaryDestination(WheelDestination):
     def finalize_installation(self, scheme, record_file_path, records):
         # type: (Scheme, FSPath, Iterable[RecordEntry]) -> None
         """Write the RECORD file and generate the Python cache."""
-        record_list = list(records) + [RecordEntry("RECORD", None, None)]
+        record_list = list(records) + [RecordEntry(record_file_path, None, None)]
         with construct_record_file(record_list) as record_stream:
             self._write_file(scheme, record_file_path, record_stream)
         # TODO: cache generation
