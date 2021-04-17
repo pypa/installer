@@ -10,9 +10,9 @@ from installer.scripts import Script
 from installer.utils import construct_record_file, copyfileobj_with_hashing, fix_shebang
 
 if TYPE_CHECKING:
-    from typing import BinaryIO, Dict, Iterable, Tuple
+    from typing import BinaryIO, Dict, Iterable
 
-    from installer._compat.typing import FSPath
+    from installer._compat.typing import FSPath, Text
     from installer.scripts import LauncherKind, ScriptSection
     from installer.utils import Scheme
 
@@ -25,7 +25,7 @@ class WheelDestination(object):
     """
 
     def write_script(self, name, module, attr, section):
-        # type: (str, str, str, ScriptSection) -> RecordEntry
+        # type: (Text, Text, Text, ScriptSection) -> RecordEntry
         """Write a script in the correct location to invoke given entry point.
 
         The stream should be closed by the caller.
@@ -75,15 +75,13 @@ class SchemeDictionaryDestination(WheelDestination):
         scheme_dict,
         interpreter,
         script_kind,
-        optimise=(1,),
         hash_algorithm="sha256",
     ):
-        # type: (Dict[str, str], str, LauncherKind, Tuple[int, ...], str) -> None
+        # type: (Dict[str, str], str, LauncherKind, str) -> None
         """Construct destination."""
         self.scheme_dict = scheme_dict
         self.interpreter = interpreter
         self.script_kind = script_kind
-        self.optimise = optimise
         self.hash_algorithm = hash_algorithm
 
     def _write_file(self, scheme, path, stream):
@@ -109,7 +107,7 @@ class SchemeDictionaryDestination(WheelDestination):
         return self._write_file(scheme, path, stream)
 
     def write_script(self, name, module, attr, section):
-        # type: (str, str, str, ScriptSection) -> RecordEntry
+        # type: (Text, Text, Text, ScriptSection) -> RecordEntry
         """Write an entrypoint script to the file-system.
 
         The stream should be closed by the caller.
@@ -121,7 +119,7 @@ class SchemeDictionaryDestination(WheelDestination):
     def finalize_installation(self, scheme, record_file_path, records):
         # type: (Scheme, FSPath, Iterable[RecordEntry]) -> None
         """Write the RECORD file and generate the Python cache."""
-        record_list = list(records) + [RecordEntry("RECORD", None, None)]
+        record_list = list(records) + [RecordEntry(record_file_path, None, None)]
         with construct_record_file(record_list) as record_stream:
             self._write_file(scheme, record_file_path, record_stream)
         # TODO: cache generation

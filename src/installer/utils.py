@@ -9,15 +9,15 @@ import sys
 from collections import namedtuple
 from email.parser import FeedParser
 
-from installer._compat.typing import TYPE_CHECKING, cast
+from installer._compat import ConfigParser
+from installer._compat.typing import TYPE_CHECKING, Text, cast
 
 if TYPE_CHECKING:
     from email.message import Message
     from typing import BinaryIO, Iterable, Iterator, NewType, Tuple
 
-    from installer._compat.typing import Text
     from installer.records import RecordEntry
-    from installer.scripts import LauncherKind
+    from installer.scripts import LauncherKind, ScriptSection
 
     Scheme = NewType("Scheme", str)
     AllSchemes = Tuple[Scheme, ...]
@@ -48,6 +48,16 @@ _WHEEL_FILENAME_REGEX = re.compile(
 )
 WheelFilename = namedtuple(
     "WheelFilename", ["distribution", "version", "build_tag", "tag"]
+)
+
+# Adapted from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L90  # noqa
+_ENTRYPOINT_REGEX = re.compile(
+    r"""
+    (?P<module>[\w.]+)\s*
+    (:\s*(?P<attrs>[\w.]+))\s*
+    (?P<extras>\[.*\])?\s*$
+    """,
+    re.VERBOSE | re.UNICODE,
 )
 
 # According to https://www.python.org/dev/peps/pep-0427/#id7
@@ -167,3 +177,31 @@ def construct_record_file(records):
         stream.write(str(record).encode("utf-8") + b"\n")
     stream.seek(0)
     return stream
+
+
+def parse_entrypoints(text):
+    # type: (Text) -> Iterable[Tuple[Text, Text, Text, ScriptSection]]
+    # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115  # noqa
+    config = ConfigParser(delimiters="=")
+    config.optionxform = Text  # type: ignore
+    config.read_string(text)
+
+    # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L90  # noqa
+    for section in config.sections():
+        for name, value in config.items(section):
+            assert isinstance(name, Text)
+            match = _ENTRYPOINT_REGEX.match(value)
+            assert match
+
+            module = match.group("module")
+            assert isinstance(module, Text)
+
+            attrs = match.group("attrs")
+            # TODO: make this a proper error, which can be caught.
+            assert attrs is not None
+            assert isinstance(attrs, Text)
+
+            script_section = cast("ScriptSection", section[: -len("_scripts")])
+            assert script_section in ["gui", "console"]
+
+            yield name, module, attrs, script_section

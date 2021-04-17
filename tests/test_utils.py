@@ -15,6 +15,7 @@ from installer.utils import (
     construct_record_file,
     copyfileobj_with_hashing,
     fix_shebang,
+    parse_entrypoints,
     parse_metadata_file,
     parse_wheel_filename,
 )
@@ -165,3 +166,46 @@ class TestConstructRecord:
             b"test5.py,sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4,\n"
             b"test6.py,,\n"
         )
+
+
+class TestParseEntryPoints:
+    @pytest.mark.parametrize(
+        ("script", "expected"),
+        [
+            (u"", []),
+            (
+                u"""
+                    [console_scripts]
+                    package = package.__main__:package
+                """,
+                [
+                    ("package", "package.__main__", "package", "console"),
+                ],
+            ),
+            (
+                u"""
+                    [gui_scripts]
+                    package = package.__main__:package
+                """,
+                [
+                    ("package", "package.__main__", "package", "gui"),
+                ],
+            ),
+            (
+                u"""
+                    [console_scripts]
+                    magic-cli = magic.cli:main
+
+                    [gui_scripts]
+                    magic-gui = magic.gui:main
+                """,
+                [
+                    ("magic-cli", "magic.cli", "main", "console"),
+                    ("magic-gui", "magic.gui", "main", "gui"),
+                ],
+            ),
+        ],
+    )
+    def test_valid(self, script, expected):
+        iterable = parse_entrypoints(textwrap.dedent(script))
+        assert list(iterable) == expected, expected

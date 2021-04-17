@@ -12,6 +12,9 @@ for handling wheels and installing packages from wheels.
 :caption: API documentation
 :hidden:
 
+api/core
+api/sources
+api/destinations
 api/records
 api/scripts
 api/utils

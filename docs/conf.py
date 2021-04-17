@@ -6,6 +6,7 @@ author = "Pradyun Gedam"
 
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.doctest",
     "sphinx.ext.todo",
     "myst_parser",
 ]
