@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [Windows, Ubuntu]
+        os: [Windows, Ubuntu, MacOS]
         python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9]
         include:
           # Only run PyPy jobs, on Ubuntu.
@@ -20,10 +20,6 @@ jobs:
             python-version: pypy2
           - os: Ubuntu
             python-version: pypy3
-          # Only run one MacOS job, due to
-          # https://github.com/actions/virtual-environments/issues/2247
-          - os: MacOS
-            python-version: 3.8
 
     steps:
       - uses: actions/checkout@v2
