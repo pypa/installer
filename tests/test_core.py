@@ -5,7 +5,7 @@ from io import BytesIO
 import mock
 import pytest
 
-from installer import install
+from installer import InvalidWheelSource, install
 from installer.sources import WheelSource
 
 
@@ -136,7 +136,6 @@ class TestInstall:
             },
         )
 
-        # Run the install
         install(
             source=source,
             destination=mock_destination,
@@ -209,3 +208,243 @@ class TestInstall:
                 ),
             ]
         )
+
+    def test_handles_platlib(self, mock_destination):
+        # Create a fake wheel
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    def main():
+                        print("I'm a fancy package")
+                """,
+                "fancy/__main__.py": b"""\
+                    if __name__ == "__main__":
+                        from . import main
+                        main()
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "entry-points.txt": b"""\
+                    [console_scripts]
+                    fancy = fancy:main
+
+                    [gui_scripts]
+                    fancy-gui = fancy:main
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: false
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                    Summary: A fancy package
+                    Author: Agendaless Consulting
+                    Author-email: nobody@example.com
+                    License: MIT
+                    Keywords: fancy amazing
+                    Platform: UNKNOWN
+                    Classifier: Intended Audience :: Developers
+                """,
+            },
+        )
+
+        install(
+            source=source,
+            destination=mock_destination,
+            additional_metadata={
+                "fun_file.txt": b"this should be in dist-info!",
+            },
+        )
+
+        mock_destination.assert_has_calls(
+            [
+                mock.call.write_script(
+                    name="fancy",
+                    module="fancy",
+                    attr="main",
+                    section="console",
+                ),
+                mock.call.write_script(
+                    name="fancy-gui",
+                    module="fancy",
+                    attr="main",
+                    section="gui",
+                ),
+                mock.call.write_file(
+                    scheme="platlib",
+                    path="fancy/__init__.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="platlib",
+                    path="fancy/__main__.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="platlib",
+                    path="fancy-1.0.0.dist-info/top_level.txt",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="platlib",
+                    path="fancy-1.0.0.dist-info/entry-points.txt",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="platlib",
+                    path="fancy-1.0.0.dist-info/WHEEL",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="platlib",
+                    path="fancy-1.0.0.dist-info/METADATA",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="platlib",
+                    path="fancy-1.0.0.dist-info/fun_file.txt",
+                    stream=mock.ANY,
+                ),
+                mock.call.finalize_installation(
+                    scheme="platlib",
+                    record_file_path="fancy-1.0.0.dist-info/RECORD",
+                    records=[
+                        ("fancy/__init__.py", "platlib", 0),
+                        ("fancy/__main__.py", "platlib", 0),
+                        ("fancy-1.0.0.dist-info/top_level.txt", "platlib", 0),
+                        ("fancy-1.0.0.dist-info/entry-points.txt", "platlib", 0),
+                        ("fancy-1.0.0.dist-info/WHEEL", "platlib", 0),
+                        ("fancy-1.0.0.dist-info/METADATA", "platlib", 0),
+                        ("fancy-1.0.0.dist-info/fun_file.txt", "platlib", 0),
+                    ],
+                ),
+            ]
+        )
+
+    def test_accepts_newer_minor_wheel_versions(self, mock_destination):
+        # Create a fake wheel
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    def main():
+                        print("I'm a fancy package")
+                """,
+                "fancy/__main__.py": b"""\
+                    if __name__ == "__main__":
+                        from . import main
+                        main()
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "entry-points.txt": b"""\
+                    [console_scripts]
+                    fancy = fancy:main
+
+                    [gui_scripts]
+                    fancy-gui = fancy:main
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.1
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                    Summary: A fancy package
+                    Author: Agendaless Consulting
+                    Author-email: nobody@example.com
+                    License: MIT
+                    Keywords: fancy amazing
+                    Platform: UNKNOWN
+                    Classifier: Intended Audience :: Developers
+                """,
+            },
+        )
+
+        install(
+            source=source,
+            destination=mock_destination,
+            additional_metadata={
+                "fun_file.txt": b"this should be in dist-info!",
+            },
+        )
+
+        # no assertions necessary, since we want to make sure this test didn't
+        # raises errors.
+        assert True
+
+    def test_rejects_newer_major_wheel_versions(self, mock_destination):
+        # Create a fake wheel
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    def main():
+                        print("I'm a fancy package")
+                """,
+                "fancy/__main__.py": b"""\
+                    if __name__ == "__main__":
+                        from . import main
+                        main()
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "entry-points.txt": b"""\
+                    [console_scripts]
+                    fancy = fancy:main
+
+                    [gui_scripts]
+                    fancy-gui = fancy:main
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 2.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                    Summary: A fancy package
+                    Author: Agendaless Consulting
+                    Author-email: nobody@example.com
+                    License: MIT
+                    Keywords: fancy amazing
+                    Platform: UNKNOWN
+                    Classifier: Intended Audience :: Developers
+                """,
+            },
+        )
+
+        with pytest.raises(InvalidWheelSource) as ctx:
+            install(
+                source=source,
+                destination=mock_destination,
+                additional_metadata={
+                    "fun_file.txt": b"this should be in dist-info!",
+                },
+            )
+
+        assert "Incompatible Wheel-Version" in str(ctx.value)
