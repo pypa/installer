@@ -5,7 +5,8 @@ from io import BytesIO
 import mock
 import pytest
 
-from installer import InvalidWheelSource, install
+from installer import install
+from installer.exceptions import InvalidWheelSource
 from installer.sources import WheelSource
 
 
