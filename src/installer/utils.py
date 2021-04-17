@@ -10,13 +10,12 @@ from collections import namedtuple
 from email.parser import FeedParser
 
 from installer._compat import ConfigParser
-from installer._compat.typing import TYPE_CHECKING, cast
+from installer._compat.typing import TYPE_CHECKING, Text, cast
 
 if TYPE_CHECKING:
     from email.message import Message
     from typing import BinaryIO, Iterable, Iterator, NewType, Tuple
 
-    from installer._compat.typing import Text
     from installer.records import RecordEntry
     from installer.scripts import LauncherKind, ScriptSection
 
@@ -194,7 +193,7 @@ def parse_entrypoints(text):
             assert match
 
             module = match.group("module")
-            assert isinstance(module, str)
+            assert isinstance(module, Text)
 
             attrs = match.group("attrs")
             # TODO: make this a proper error, which can be caught.
