@@ -14,7 +14,7 @@ from installer.sources import WheelSource
 # Helpers
 # --------------------------------------------------------------------------------------
 def hash_and_size(data):
-    return hashlib.sha256(data).digest(), len(data)
+    return hashlib.sha256(data).hexdigest(), len(data)
 
 
 @pytest.fixture
