@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import hashlib
 import textwrap
 from io import BytesIO
@@ -67,14 +69,18 @@ class FakeWheelSource(WheelSource):
         return self.dist_info_files[filename]
 
     def get_contents(self):
-        for file, content in self.regular_files.items():
+        # Sort for deterministic behaviour for Python versions that do not preserve
+        # insertion order for dictionaries.
+        for file, content in sorted(self.regular_files.items()):
             hashed, size = hash_and_size(content)
             record = (file, "sha256={}".format(hashed), str(size))
             with BytesIO(content) as stream:
                 yield record, stream
 
-        for file, text in self.dist_info_files.items():
-            content = text.encode()
+        # Sort for deterministic behaviour for Python versions that do not preserve
+        # insertion order for dictionaries.
+        for file, text in sorted(self.dist_info_files.items()):
+            content = text.encode("utf-8")
             hashed, size = hash_and_size(content)
             record = (
                 self.dist_info_dir + "/" + file,
@@ -171,12 +177,7 @@ class TestInstall:
                 ),
                 mock.call.write_file(
                     scheme="purelib",
-                    path="fancy-1.0.0.dist-info/top_level.txt",
-                    stream=mock.ANY,
-                ),
-                mock.call.write_file(
-                    scheme="purelib",
-                    path="fancy-1.0.0.dist-info/entry-points.txt",
+                    path="fancy-1.0.0.dist-info/METADATA",
                     stream=mock.ANY,
                 ),
                 mock.call.write_file(
@@ -186,7 +187,12 @@ class TestInstall:
                 ),
                 mock.call.write_file(
                     scheme="purelib",
-                    path="fancy-1.0.0.dist-info/METADATA",
+                    path="fancy-1.0.0.dist-info/entry-points.txt",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/top_level.txt",
                     stream=mock.ANY,
                 ),
                 mock.call.write_file(
@@ -200,10 +206,10 @@ class TestInstall:
                     records=[
                         ("fancy/__init__.py", "purelib", 0),
                         ("fancy/__main__.py", "purelib", 0),
-                        ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
-                        ("fancy-1.0.0.dist-info/entry-points.txt", "purelib", 0),
-                        ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0),
                         ("fancy-1.0.0.dist-info/METADATA", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/entry-points.txt", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
                         ("fancy-1.0.0.dist-info/fun_file.txt", "purelib", 0),
                     ],
                 ),
@@ -292,12 +298,7 @@ class TestInstall:
                 ),
                 mock.call.write_file(
                     scheme="platlib",
-                    path="fancy-1.0.0.dist-info/top_level.txt",
-                    stream=mock.ANY,
-                ),
-                mock.call.write_file(
-                    scheme="platlib",
-                    path="fancy-1.0.0.dist-info/entry-points.txt",
+                    path="fancy-1.0.0.dist-info/METADATA",
                     stream=mock.ANY,
                 ),
                 mock.call.write_file(
@@ -307,7 +308,12 @@ class TestInstall:
                 ),
                 mock.call.write_file(
                     scheme="platlib",
-                    path="fancy-1.0.0.dist-info/METADATA",
+                    path="fancy-1.0.0.dist-info/entry-points.txt",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="platlib",
+                    path="fancy-1.0.0.dist-info/top_level.txt",
                     stream=mock.ANY,
                 ),
                 mock.call.write_file(
@@ -321,10 +327,10 @@ class TestInstall:
                     records=[
                         ("fancy/__init__.py", "platlib", 0),
                         ("fancy/__main__.py", "platlib", 0),
-                        ("fancy-1.0.0.dist-info/top_level.txt", "platlib", 0),
-                        ("fancy-1.0.0.dist-info/entry-points.txt", "platlib", 0),
-                        ("fancy-1.0.0.dist-info/WHEEL", "platlib", 0),
                         ("fancy-1.0.0.dist-info/METADATA", "platlib", 0),
+                        ("fancy-1.0.0.dist-info/WHEEL", "platlib", 0),
+                        ("fancy-1.0.0.dist-info/entry-points.txt", "platlib", 0),
+                        ("fancy-1.0.0.dist-info/top_level.txt", "platlib", 0),
                         ("fancy-1.0.0.dist-info/fun_file.txt", "platlib", 0),
                     ],
                 ),
@@ -528,23 +534,8 @@ class TestInstall:
                     section="gui",
                 ),
                 mock.call.write_file(
-                    scheme="purelib",
-                    path="fancy/__init__.py",
-                    stream=mock.ANY,
-                ),
-                mock.call.write_file(
-                    scheme="purelib",
-                    path="fancy/purelib.py",
-                    stream=mock.ANY,
-                ),
-                mock.call.write_file(
-                    scheme="platlib",
-                    path="fancy/platlib.py",
-                    stream=mock.ANY,
-                ),
-                mock.call.write_file(
-                    scheme="scripts",
-                    path="fancy/scripts.py",
+                    scheme="data",
+                    path="fancy/data.py",
                     stream=mock.ANY,
                 ),
                 mock.call.write_file(
@@ -553,18 +544,28 @@ class TestInstall:
                     stream=mock.ANY,
                 ),
                 mock.call.write_file(
-                    scheme="data",
-                    path="fancy/data.py",
+                    scheme="platlib",
+                    path="fancy/platlib.py",
                     stream=mock.ANY,
                 ),
                 mock.call.write_file(
                     scheme="purelib",
-                    path="fancy-1.0.0.dist-info/top_level.txt",
+                    path="fancy/purelib.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="scripts",
+                    path="fancy/scripts.py",
                     stream=mock.ANY,
                 ),
                 mock.call.write_file(
                     scheme="purelib",
-                    path="fancy-1.0.0.dist-info/entry-points.txt",
+                    path="fancy/__init__.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/METADATA",
                     stream=mock.ANY,
                 ),
                 mock.call.write_file(
@@ -574,23 +575,28 @@ class TestInstall:
                 ),
                 mock.call.write_file(
                     scheme="purelib",
-                    path="fancy-1.0.0.dist-info/METADATA",
+                    path="fancy-1.0.0.dist-info/entry-points.txt",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/top_level.txt",
                     stream=mock.ANY,
                 ),
                 mock.call.finalize_installation(
                     scheme="purelib",
                     record_file_path="fancy-1.0.0.dist-info/RECORD",
                     records=[
-                        ("fancy/__init__.py", "purelib", 0),
-                        ("fancy/purelib.py", "purelib", 0),
-                        ("fancy/platlib.py", "platlib", 0),
-                        ("fancy/scripts.py", "scripts", 0),
-                        ("fancy/headers.py", "headers", 0),
                         ("fancy/data.py", "data", 0),
-                        ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
-                        ("fancy-1.0.0.dist-info/entry-points.txt", "purelib", 0),
-                        ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0),
+                        ("fancy/headers.py", "headers", 0),
+                        ("fancy/platlib.py", "platlib", 0),
+                        ("fancy/purelib.py", "purelib", 0),
+                        ("fancy/scripts.py", "scripts", 0),
+                        ("fancy/__init__.py", "purelib", 0),
                         ("fancy-1.0.0.dist-info/METADATA", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/entry-points.txt", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
                     ],
                 ),
             ]

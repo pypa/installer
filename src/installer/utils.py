@@ -183,7 +183,7 @@ def parse_entrypoints(text):
     # type: (Text) -> Iterable[Tuple[Text, Text, Text, ScriptSection]]
     # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115  # noqa
     config = ConfigParser(delimiters="=")
-    config.optionxform = str  # type: ignore
+    config.optionxform = Text  # type: ignore
     config.read_string(text)
 
     # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L90  # noqa

@@ -30,12 +30,12 @@ class WheelSource(object):
     @property
     def dist_info_dir(self):
         """Name of the dist-info directory."""
-        return "{}-{}.dist-info".format(self.distribution, self.version)
+        return u"{}-{}.dist-info".format(self.distribution, self.version)
 
     @property
     def data_dir(self):
         """Name of the data directory."""
-        return "{}-{}.data".format(self.distribution, self.version)
+        return u"{}-{}.data".format(self.distribution, self.version)
 
     @property
     def dist_info_filenames(self):
