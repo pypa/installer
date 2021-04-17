@@ -47,7 +47,7 @@ def _determine_scheme(path, source, root_scheme):
     data_dir = source.data_dir
 
     # If it's in not `{distribution}-{version}.data`, then it's in root_scheme.
-    if posixpath.commonpath([data_dir, path]) != data_dir:
+    if posixpath.commonprefix([data_dir, path]) != data_dir:
         return root_scheme, path
 
     # Figure out which scheme this goes to.
