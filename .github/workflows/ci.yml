@@ -24,11 +24,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # Get Python
+      # Get Python to test against
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: actions/setup-python@v2  # needed for Python 2 / PyPy 2!
+
+      # Nox needs a recent Python 3 version (can't run on Python 2 / PyPy 2)
+      - uses: actions/setup-python@v2
         with:
           python-version: 3.x
 
