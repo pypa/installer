@@ -30,14 +30,12 @@ def _process_WHEEL_file(source):
     metadata = parse_metadata_file(stream)
 
     # Ensure compatibility with this wheel version.
-    if metadata["Wheel-Version"] != "1.0":
-        raise InvalidWheelSource(
-            source,
-            "Incompatible Wheel-Version: only support version 1.0",
-        )
+    if not (metadata["Wheel-Version"] and metadata["Wheel-Version"].startswith("1.")):
+        message = "Incompatible Wheel-Version {}, only support version 1.x wheels."
+        raise InvalidWheelSource(source, message.format(metadata["Wheel-Version"]))
 
     # Determine where archive root should go.
-    if metadata["Root-Is-Purelib"]:
+    if metadata["Root-Is-Purelib"] == "true":
         return cast("Scheme", "purelib")
     else:
         return cast("Scheme", "platlib")
