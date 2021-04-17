@@ -36,7 +36,9 @@ def lint(session):
 
 @nox.session(python=["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "pypy2", "pypy3"])
 def test(session):
-    session.install(".[test, docs]")
+    session.install(".")
+    session.install("-r", "tests/requirements.txt")
+    session.install("-r", "docs/requirements.txt")
 
     htmlcov_output = os.path.join(session.virtualenv.location, "htmlcov")
 
@@ -65,7 +67,8 @@ def update_launchers(session):
 #
 @nox.session(python="3.8")
 def docs(session):
-    _install_this_project_with_flit(session, extras=["doc"])
+    _install_this_project_with_flit(session)
+    session.install("-r", "docs/requirements.txt")
 
     # Generate documentation into `build/docs`
     session.run("sphinx-build", "-W", "-b", "html", "docs/", "build/docs")
@@ -73,7 +76,8 @@ def docs(session):
 
 @nox.session(name="docs-live", python="3.8")
 def docs_live(session):
-    _install_this_project_with_flit(session, extras=["doc"], editable=True)
+    _install_this_project_with_flit(session, editable=True)
+    session.install("-r", "docs/requirements.txt")
     session.install("sphinx-autobuild")
 
     # fmt: off

@@ -14,11 +14,3 @@ requires = [
   "configparser >= 3.5; python_version < '3'",
   "importlib-resources; python_version < '3.7'",
 ]
-
-[tool.flit.metadata.requires-extra]
-test = [
-  "pytest",
-  "pytest-cov",
-  "pytest-xdist",
-]
-doc = ["sphinx", "furo", "myst-parser"]
