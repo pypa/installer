@@ -180,7 +180,7 @@ def construct_record_file(records):
 
 
 def parse_entrypoints(text):
-    # type: (Text) -> Iterable[Tuple[str, str, str, ScriptSection]]
+    # type: (Text) -> Iterable[Tuple[Text, Text, Text, ScriptSection]]
     # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115  # noqa
     config = ConfigParser(delimiters="=")
     config.optionxform = str  # type: ignore
@@ -189,6 +189,7 @@ def parse_entrypoints(text):
     # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L90  # noqa
     for section in config.sections():
         for name, value in config.items(section):
+            assert isinstance(name, Text)
             match = _ENTRYPOINT_REGEX.match(value)
             assert match
 
@@ -198,6 +199,7 @@ def parse_entrypoints(text):
             attrs = match.group("attrs")
             # TODO: make this a proper error, which can be caught.
             assert attrs is not None
+            assert isinstance(attrs, Text)
 
             script_section = cast("ScriptSection", section[: -len("_scripts")])
             assert script_section in ["gui", "console"]

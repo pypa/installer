@@ -92,7 +92,7 @@ class Script(object):
     __slots__ = ("name", "module", "attr", "section")
 
     def __init__(self, name, module, attr, section):
-        # type: (str, str, str, ScriptSection) -> None
+        # type: (Text, Text, Text, ScriptSection) -> None
         """Construct a Script object.
 
         :param name: name of the script
@@ -129,7 +129,7 @@ class Script(object):
         return importlib_resources.read_binary(_scripts, name)
 
     def generate(self, executable, kind):
-        # type: (str, LauncherKind) -> Tuple[str, Binary]
+        # type: (str, LauncherKind) -> Tuple[Text, Binary]
         """Generate a launcher for this script.
 
         :param executable: Path to the executable to invoke.
