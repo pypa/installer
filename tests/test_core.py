@@ -3,13 +3,31 @@ import textwrap
 from io import BytesIO
 
 import mock
+import pytest
 
 from installer import install
 from installer.sources import WheelSource
 
 
+# --------------------------------------------------------------------------------------
+# Helpers
+# --------------------------------------------------------------------------------------
 def hash_and_size(data):
     return hashlib.sha256(data).digest(), len(data)
+
+
+@pytest.fixture
+def mock_destination():
+    retval = mock.Mock()
+
+    # A hacky approach to making sure we got the right objects going in.
+    def custom_write_file(scheme, path, stream):
+        assert isinstance(stream, BytesIO)
+        return (path, scheme, 0)
+
+    retval.write_file.side_effect = custom_write_file
+
+    return retval
 
 
 class FakeWheelSource(WheelSource):
@@ -66,8 +84,11 @@ class FakeWheelSource(WheelSource):
                 yield record, stream
 
 
+# --------------------------------------------------------------------------------------
+# Actual Tests
+# --------------------------------------------------------------------------------------
 class TestInstall:
-    def test_calls_destination_correctly(self):
+    def test_calls_destination_correctly(self, mock_destination):
         # Create a fake wheel
         source = FakeWheelSource(
             distribution="fancy",
@@ -114,15 +135,6 @@ class TestInstall:
                 """,
             },
         )
-
-        mock_destination = mock.Mock()
-
-        # A hacky approach to making sure we got the right objects going in.
-        def custom_write_file(scheme, path, stream):
-            assert isinstance(stream, BytesIO)
-            return (path, scheme, 0)
-
-        mock_destination.write_file.side_effect = custom_write_file
 
         # Run the install
         install(
