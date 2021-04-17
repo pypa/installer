@@ -116,8 +116,13 @@ class TestInstall:
         )
 
         mock_destination = mock.Mock()
+
         # A hacky approach to making sure we got the right objects going in.
-        mock_destination.write_file.side_effect = lambda scheme, path, stream: (path, scheme, 0)
+        def custom_write_file(scheme, path, stream):
+            assert isinstance(stream, BytesIO)
+            return (path, scheme, 0)
+
+        mock_destination.write_file.side_effect = custom_write_file
 
         # Run the install
         install(
@@ -128,23 +133,67 @@ class TestInstall:
             },
         )
 
-        mock_destination.assert_has_calls([
-            mock.call.write_script(name='fancy', module='fancy', attr='main', section='console'),
-            mock.call.write_script(name='fancy-gui', module='fancy', attr='main', section='gui'),
-            mock.call.write_file(scheme='purelib', path='fancy/__init__.py', stream=mock.ANY),
-            mock.call.write_file(scheme='purelib', path='fancy/__main__.py', stream=mock.ANY),
-            mock.call.write_file(scheme='purelib', path='fancy-1.0.0.dist-info/top_level.txt', stream=mock.ANY),
-            mock.call.write_file(scheme='purelib', path='fancy-1.0.0.dist-info/entry-points.txt', stream=mock.ANY),
-            mock.call.write_file(scheme='purelib', path='fancy-1.0.0.dist-info/WHEEL', stream=mock.ANY),
-            mock.call.write_file(scheme='purelib', path='fancy-1.0.0.dist-info/METADATA', stream=mock.ANY),
-            mock.call.write_file(scheme='purelib', path='fancy-1.0.0.dist-info/fun_file.txt', stream=mock.ANY),
-            mock.call.finalize_installation(scheme='purelib', record_file_path='fancy-1.0.0.dist-info/RECORD', records=[
-                ("fancy/__init__.py", "purelib", 0),
-                ("fancy/__main__.py", "purelib", 0),
-                ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
-                ("fancy-1.0.0.dist-info/entry-points.txt", "purelib", 0),
-                ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0),
-                ("fancy-1.0.0.dist-info/METADATA", "purelib", 0),
-                ("fancy-1.0.0.dist-info/fun_file.txt", "purelib", 0),
-            ]),
-        ])
+        mock_destination.assert_has_calls(
+            [
+                mock.call.write_script(
+                    name="fancy",
+                    module="fancy",
+                    attr="main",
+                    section="console",
+                ),
+                mock.call.write_script(
+                    name="fancy-gui",
+                    module="fancy",
+                    attr="main",
+                    section="gui",
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy/__init__.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy/__main__.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/top_level.txt",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/entry-points.txt",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/WHEEL",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/METADATA",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/fun_file.txt",
+                    stream=mock.ANY,
+                ),
+                mock.call.finalize_installation(
+                    scheme="purelib",
+                    record_file_path="fancy-1.0.0.dist-info/RECORD",
+                    records=[
+                        ("fancy/__init__.py", "purelib", 0),
+                        ("fancy/__main__.py", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/entry-points.txt", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/METADATA", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/fun_file.txt", "purelib", 0),
+                    ],
+                ),
+            ]
+        )
