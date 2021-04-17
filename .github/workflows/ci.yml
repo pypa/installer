@@ -8,7 +8,6 @@ jobs:
   tests:
     name: tests / ${{ matrix.os }} / ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}-latest
-    needs: pre-commit
 
     strategy:
       matrix:
