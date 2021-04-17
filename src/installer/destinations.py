@@ -75,7 +75,6 @@ class SchemeDictionaryDestination(WheelDestination):
         scheme_dict,
         interpreter,
         script_kind,
-        optimise=(1,),
         hash_algorithm="sha256",
     ):
         # type: (Dict[str, str], str, LauncherKind, Tuple[int, ...], str) -> None
@@ -83,7 +82,6 @@ class SchemeDictionaryDestination(WheelDestination):
         self.scheme_dict = scheme_dict
         self.interpreter = interpreter
         self.script_kind = script_kind
-        self.optimise = optimise
         self.hash_algorithm = hash_algorithm
 
     def _write_file(self, scheme, path, stream):
