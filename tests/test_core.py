@@ -595,3 +595,60 @@ class TestInstall:
                 ),
             ]
         )
+
+    def test_errors_out_when_given_invalid_scheme_in_data(self, mock_destination):
+        # Create a fake wheel
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    # put me in purelib
+                """,
+                "fancy-1.0.0.data/purelib/fancy/purelib.py": b"""\
+                    # put me in purelib
+                """,
+                "fancy-1.0.0.data/invalid/fancy/invalid.py": b"""\
+                    # i am invalid
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "entry-points.txt": b"""\
+                    [console_scripts]
+                    fancy = fancy:main
+
+                    [gui_scripts]
+                    fancy-gui = fancy:main
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                    Summary: A fancy package
+                    Author: Agendaless Consulting
+                    Author-email: nobody@example.com
+                    License: MIT
+                    Keywords: fancy amazing
+                    Platform: UNKNOWN
+                    Classifier: Intended Audience :: Developers
+                """,
+            },
+        )
+
+        with pytest.raises(InvalidWheelSource) as ctx:
+            install(
+                source=source,
+                destination=mock_destination,
+                additional_metadata={},
+            )
+
+        assert "fancy-1.0.0.data/invalid/fancy/invalid.py" in str(ctx.value)
