@@ -11,7 +11,7 @@ from installer.sources import WheelSource
 from installer.utils import SCHEME_NAMES, parse_entrypoints, parse_metadata_file
 
 if TYPE_CHECKING:
-    from typing import Dict
+    from typing import Dict, Tuple
 
     from installer._compat.typing import Binary, FSPath
     from installer.utils import Scheme
@@ -42,25 +42,30 @@ def _process_WHEEL_file(source):
 
 
 def _determine_scheme(path, source, root_scheme):
-    # type: (FSPath, WheelSource, Scheme) -> Scheme
+    # type: (FSPath, WheelSource, Scheme) -> Tuple[Scheme, FSPath]
     """Determine which scheme to place given path in, from source."""
     data_dir = source.data_dir
 
     # If it's in not `{distribution}-{version}.data`, then it's in root_scheme.
-    if posixpath.commonprefix([data_dir, path]) != data_dir:
-        return root_scheme
+    if posixpath.commonpath([data_dir, path]) != data_dir:
+        return root_scheme, path
 
     # Figure out which scheme this goes to.
-    left, right = posixpath.split(path)
-    while left != data_dir:
+    parts = []
+    scheme_name = None
+    left = path
+    while True:
         left, right = posixpath.split(left)
+        parts.append(right)
+        if left == source.data_dir:
+            scheme_name = right
+            break
 
-    scheme_name = right
     if scheme_name not in SCHEME_NAMES:
         msg_fmt = u"{path} is not contained in a valid .data subdirectory."
         raise InvalidWheelSource(source, msg_fmt.format(path=path))
 
-    return cast("Scheme", scheme_name)
+    return cast("Scheme", scheme_name), posixpath.join(*reversed(parts[:-1]))
 
 
 def install(source, destination, additional_metadata):
@@ -94,14 +99,16 @@ def install(source, destination, additional_metadata):
         # Skip the RECORD, which is written at the end, based on this info.
         if path == record_file_path:
             continue
-        scheme = _determine_scheme(
+
+        # Figure out where to write this file.
+        scheme, destination_path = _determine_scheme(
             path=path,
             source=source,
             root_scheme=root_scheme,
         )
         record = destination.write_file(
             scheme=scheme,
-            path=path,
+            path=destination_path,
             stream=stream,
         )
         written_records.append(record)

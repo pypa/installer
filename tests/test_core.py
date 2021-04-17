@@ -449,3 +449,149 @@ class TestInstall:
             )
 
         assert "Incompatible Wheel-Version" in str(ctx.value)
+
+    def test_handles_data_properly(self, mock_destination):
+        # Create a fake wheel
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    # put me in purelib
+                """,
+                "fancy-1.0.0.data/purelib/fancy/purelib.py": b"""\
+                    # put me in purelib
+                """,
+                "fancy-1.0.0.data/platlib/fancy/platlib.py": b"""\
+                    # put me in platlib
+                """,
+                "fancy-1.0.0.data/scripts/fancy/scripts.py": b"""\
+                    # put me in scripts
+                """,
+                "fancy-1.0.0.data/headers/fancy/headers.py": b"""\
+                    # put me in headers
+                """,
+                "fancy-1.0.0.data/data/fancy/data.py": b"""\
+                    # put me in data
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "entry-points.txt": b"""\
+                    [console_scripts]
+                    fancy = fancy:main
+
+                    [gui_scripts]
+                    fancy-gui = fancy:main
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                    Summary: A fancy package
+                    Author: Agendaless Consulting
+                    Author-email: nobody@example.com
+                    License: MIT
+                    Keywords: fancy amazing
+                    Platform: UNKNOWN
+                    Classifier: Intended Audience :: Developers
+                """,
+            },
+        )
+
+        install(
+            source=source,
+            destination=mock_destination,
+            additional_metadata={},
+        )
+
+        mock_destination.assert_has_calls(
+            [
+                mock.call.write_script(
+                    name="fancy",
+                    module="fancy",
+                    attr="main",
+                    section="console",
+                ),
+                mock.call.write_script(
+                    name="fancy-gui",
+                    module="fancy",
+                    attr="main",
+                    section="gui",
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy/__init__.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy/purelib.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="platlib",
+                    path="fancy/platlib.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="scripts",
+                    path="fancy/scripts.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="headers",
+                    path="fancy/headers.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="data",
+                    path="fancy/data.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/top_level.txt",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/entry-points.txt",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/WHEEL",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/METADATA",
+                    stream=mock.ANY,
+                ),
+                mock.call.finalize_installation(
+                    scheme="purelib",
+                    record_file_path="fancy-1.0.0.dist-info/RECORD",
+                    records=[
+                        ("fancy/__init__.py", "purelib", 0),
+                        ("fancy/purelib.py", "purelib", 0),
+                        ("fancy/platlib.py", "platlib", 0),
+                        ("fancy/scripts.py", "scripts", 0),
+                        ("fancy/headers.py", "headers", 0),
+                        ("fancy/data.py", "data", 0),
+                        ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/entry-points.txt", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/METADATA", "purelib", 0),
+                    ],
+                ),
+            ]
+        )
