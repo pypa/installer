@@ -4,14 +4,10 @@ hide-toc: true
 
 # Welcome to installer's documentation
 
-This is a low-level library for installing a Python package from a
-[wheel distribution](Wheel). It provides basic functionality and
-abstractions for handling wheels and installing packages from wheels.
-
-- Logic for "unpacking" a wheel (i.e. installation).
-- Abstractions for various parts of the unpacking process.
-- Extensible simple implementations of the abstractions.
-- Platform-independent Python script wrapper generation.
+```{include} ../README.md
+:start-after: <!-- start readme-pitch -->
+:end-before: <!-- end readme-pitch -->
+```
 
 ```{toctree}
 :hidden:
