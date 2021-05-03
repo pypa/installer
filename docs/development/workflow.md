@@ -18,6 +18,7 @@ this compatibility will be removed in 0.3.0, planned for June 2021.
 - [nox] is used for automating development tasks.
 - [pre-commit] is used for running the linters.
 - [sphinx] is used for generating this documentation.
+- [pytest] is used for running the automated tests.
 
 ## Repository Layout
 
@@ -31,7 +32,8 @@ project.
 - `dist/` -- Generated as part of the release process.
 - `docs/` -- Sources for the documentation.
 - `src/`
-  - `installer/` -- actual source code for the package
+  - `installer/` -- Actual source code for the package
+- `tests/` -- Automated tests for the package.
 - `noxfile.py` -- for [nox].
 - `pyproject.toml` -- for packaging and tooling configuration.
 
@@ -64,6 +66,22 @@ nox -s lint
 
 Run the linters, as configured with [pre-commit].
 
+### Testing
+
+```sh
+nox -s test
+```
+
+Run the tests against all supported Python versions, if an interpreter for
+that version is available locally.
+
+```sh
+nox -s test-3.9
+```
+
+Run the tests against Python 3.9. It is also possible to specify other
+supported Python versions (like `3.7` or `pypy3`).
+
 ### Documentation
 
 ```sh
@@ -94,5 +112,7 @@ automagically reload any open pages using livereload.
 [github flow]: https://guides.github.com/introduction/flow/
 [flit]: https://flit.readthedocs.io/en/stable/
 [nox]: https://nox.readthedocs.io/en/stable/
+[pytest]: https://docs.pytest.org/en/stable/
 [sphinx]: https://www.sphinx-doc.org/en/master/
+[sphinx-autobuild]: https://github.com/executablebooks/sphinx-autobuild
 [pre-commit]: https://pre-commit.com/

@@ -10,7 +10,6 @@ serves as a resource to help you to contribute to the project.
 :hidden:
 
 workflow
-internals
 design
 ```
 
