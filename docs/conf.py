@@ -26,9 +26,10 @@ autodoc_typehints = "description"
 
 if "READTHEDOCS" in os.environ:
     src_folder = pathlib.Path(__file__).resolve().parent.parent / "src"
-    sys.path.append(src_folder)
+    sys.path.append(str(src_folder))
     print("Detected running on ReadTheDocs")
     print(f"Added {src_folder} to sys.path")
+    __import__("installer")
 
 # -- Options for intersphinx ----------------------------------------------------------
 
