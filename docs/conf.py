@@ -1,3 +1,7 @@
+import os
+import pathlib
+import sys
+
 # -- Project information -----------------------------------------------------
 project = "installer"
 
@@ -19,6 +23,9 @@ autodoc_member_order = "bysource"
 # Automatically extract typehints when not specified and add them to
 # descriptions of the relevant function/methods.
 autodoc_typehints = "description"
+
+if "READTHEDOCS" in os.environ:
+    sys.path.append(pathlib.Path(__file__).resolve().parent.parent / "src")
 
 # -- Options for intersphinx ----------------------------------------------------------
 
