@@ -1,4 +1,4 @@
-"""Parsing and handling :pep:`376` RECORD files."""
+"""Provides an object-oriented model for handling :pep:`376` RECORD files."""
 
 import base64
 import csv

@@ -2,48 +2,72 @@
 hide-toc: true
 ---
 
-# Welcome to installer
+# Welcome to installer's documentation
 
 This is a low-level library for installing a Python package from a
-[wheel distribution]. It provides basic functionality and abstractions
-for handling wheels and installing packages from wheels.
+[wheel distribution](Wheel). It provides basic functionality and
+abstractions for handling wheels and installing packages from wheels.
+
+- Logic for "unpacking" a wheel (i.e. installation).
+- Abstractions for various parts of the unpacking process.
+- Extensible simple implementations of the abstractions.
+- Platform-independent Python script wrapper generation.
 
 ```{toctree}
-:caption: API documentation
 :hidden:
 
-api/core
-api/sources
-api/destinations
-api/records
-api/scripts
-api/utils
+installation
+concepts
 ```
 
-```{caution}
-This project is still a work in progress, so the API is not stabilised yet.
+```{toctree}
+:caption: API reference
+:hidden:
+:glob:
+
+api/*
 ```
 
-## Example
+```{toctree}
+:caption: Project
+:hidden:
 
-Installing a local wheel file into the current interpreter, using ``sysconfig``
-for getting relevant locations, can be done as follows:
+history
+development/index
+changelog
+license
+GitHub <https://github.com/pradyunsg/installer>
+PyPI <https://pypi.org/project/installer>
+```
+
+## Basic Usage
 
 ```python
 import sysconfig
 
-from installer import Installer
-from installer.destinations import DictDestination
+from installer import install
+from installer.destinations import SchemeDictDestination
 from installer.sources import WheelFile
 
+# This represents the wheel file, and handle reading from it.
 source = WheelFile("sampleproject-1.3.1-py2.py3-none-any.whl")
+
+# This represents the installation directories, and writes to them.
 destination = SchemeDictDestination(sysconfig.get_config_vars())
 
-amazing_installer = Installer(name="amazing-installer")
-amazing_installer.install(source, destination)
+# This is the additional metadata, generated during installation.
+additional_metadata = {
+    "INSTALLER": b"amazing-installer 0.1.0",
+}
+
+install(
+    source=source,
+    destination=destination,
+    additional_metadata=additional_metadata,
+)
 ```
 
-All these objects implement specific abstractions, which are described in
-this documentation.
-
-[Wheel distribution]: https://packaging.python.org/glossary/#term-wheel
+```{attention}
+The `WheelFile` class mentioned above has not been implemented yet.
+Contributions are welcome!
+```
