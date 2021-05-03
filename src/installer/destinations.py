@@ -33,20 +33,20 @@ class WheelDestination(object):
         Example usage/behaviour::
 
             >>> dest.write_script("pip", "pip._internal.cli", "main", "console")
-            ...
+
         """
         raise NotImplementedError
 
     def write_file(self, scheme, path, stream):
         # type: (Scheme, FSPath, BinaryIO) -> RecordEntry
-        """TODO: write a good one line description of this function.
+        """Write a file to correct ``path`` within the ``scheme``.
 
-        The stream should be closed by the caller.
+        The stream would be closed by the caller, after this call.
 
         Example usage/behaviour::
 
-            >>> stream = open("__init__.py")
-            >>> dest.write_file("purelib", "pkg/__init__.py", stream)
+            >>> with open("__init__.py") as stream:
+            ...     dest.write_file("purelib", "pkg/__init__.py", stream)
 
         """
         raise NotImplementedError
@@ -61,14 +61,13 @@ class WheelDestination(object):
         Example usage/behaviour::
 
             >>> dest.finalize_installation("purelib")
-            ...
 
         """
         raise NotImplementedError
 
 
 class SchemeDictionaryDestination(WheelDestination):
-    """file-system destination based on a scheme dictionary."""
+    """Destination, based on a mapping of {scheme: file-system-path}."""
 
     def __init__(
         self,
@@ -78,7 +77,15 @@ class SchemeDictionaryDestination(WheelDestination):
         hash_algorithm="sha256",
     ):
         # type: (Dict[str, str], str, LauncherKind, str) -> None
-        """Construct destination."""
+        """Construct a ``SchemeDictionaryDestination`` object.
+
+        :param scheme_dict: a mapping of {scheme: file-system-path}
+        :param interpreter: the interpreter to use for generating scripts
+        :param script_kind: the "kind" of launcher script to use
+        :param hash_algorithm: the hashing algorithm to use, which is a member
+            of :any:`hashlib.algorithms_available` (ideally from
+            :any:`hashlib.algorithms_guaranteed`).
+        """
         self.scheme_dict = scheme_dict
         self.interpreter = interpreter
         self.script_kind = script_kind
@@ -97,10 +104,7 @@ class SchemeDictionaryDestination(WheelDestination):
 
     def write_file(self, scheme, path, stream):
         # type: (Scheme, FSPath, BinaryIO) -> RecordEntry
-        """Write a file to file-system.
-
-        The stream should be closed by the caller.
-        """
+        """Write a file to correct ``path`` within the ``scheme``."""
         if scheme == "scripts":
             with fix_shebang(stream, self.interpreter) as fixed_stream:
                 return self._write_file(scheme, path, fixed_stream)
@@ -108,18 +112,18 @@ class SchemeDictionaryDestination(WheelDestination):
 
     def write_script(self, name, module, attr, section):
         # type: (Text, Text, Text, ScriptSection) -> RecordEntry
-        """Write an entrypoint script to the file-system.
-
-        The stream should be closed by the caller.
-        """
+        """Write a script in the correct location to invoke given entry point."""
         script = Script(name, module, attr, section)
         name, data = script.generate(self.interpreter, self.script_kind)
-        return self._write_file("scripts", name, io.BytesIO(data))
+        with io.BytesIO(data) as stream:
+            return self._write_file("scripts", name, stream)
 
     def finalize_installation(self, scheme, record_file_path, records):
         # type: (Scheme, FSPath, Iterable[RecordEntry]) -> None
-        """Write the RECORD file and generate the Python cache."""
+        """Finalize installation, after all the files are written.
+
+        This will write the RECORD file, based on the provided ``record_file_path``.
+        """
         record_list = list(records) + [RecordEntry(record_file_path, None, None)]
         with construct_record_file(record_list) as record_stream:
             self._write_file(scheme, record_file_path, record_stream)
-        # TODO: cache generation

@@ -2,9 +2,8 @@
 This API is not finalised, and may change in a patch version.
 ```
 
-# `installer.utils`
+# `installer`
 
 ```{eval-rst}
-.. automodule:: installer.utils
-    :members:
+.. autofunction:: installer.install
 ```

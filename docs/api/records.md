@@ -1,9 +1,14 @@
-# RECORD file handling
+```{caution}
+This API is not finalised, and may change in a patch version.
+```
 
-`installer.records` provides an object-oriented model for reading and handling
-{pep}`376` RECORD files.
+# `installer.records`
 
-## Usage
+```{eval-rst}
+.. automodule:: installer.records
+```
+
+## Example
 
 ```pycon
 >>> from installer.records import parse_record_file
@@ -31,8 +36,6 @@ False
 ## Reference
 
 ```{eval-rst}
-.. automodule:: installer.records
-
 .. autofunction:: installer.records.parse_record_file
 
 .. autoclass:: installer.records.RecordEntry()
