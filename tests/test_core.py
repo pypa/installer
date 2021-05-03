@@ -59,11 +59,7 @@ class FakeWheelSource(WheelSource):
 
     @property
     def dist_info_filenames(self):
-        return [
-            file
-            for file in self.regular_files
-            if file.startswith(self.dist_info_dir + "/")
-        ]
+        return list(self.dist_info_files)
 
     def read_dist_info(self, filename):
         return self.dist_info_files[filename]
@@ -209,6 +205,102 @@ class TestInstall:
                         ("fancy-1.0.0.dist-info/METADATA", "purelib", 0),
                         ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0),
                         ("fancy-1.0.0.dist-info/entry-points.txt", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/fun_file.txt", "purelib", 0),
+                    ],
+                ),
+            ]
+        )
+
+    def test_no_entrypoints_is_ok(self, mock_destination):
+        # Create a fake wheel
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    def main():
+                        print("I'm a fancy package")
+                """,
+                "fancy/__main__.py": b"""\
+                    if __name__ == "__main__":
+                        from . import main
+                        main()
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                    Summary: A fancy package
+                    Author: Agendaless Consulting
+                    Author-email: nobody@example.com
+                    License: MIT
+                    Keywords: fancy amazing
+                    Platform: UNKNOWN
+                    Classifier: Intended Audience :: Developers
+                """,
+            },
+        )
+
+        install(
+            source=source,
+            destination=mock_destination,
+            additional_metadata={
+                "fun_file.txt": b"this should be in dist-info!",
+            },
+        )
+
+        mock_destination.assert_has_calls(
+            [
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy/__init__.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy/__main__.py",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/METADATA",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/WHEEL",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/top_level.txt",
+                    stream=mock.ANY,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/fun_file.txt",
+                    stream=mock.ANY,
+                ),
+                mock.call.finalize_installation(
+                    scheme="purelib",
+                    record_file_path="fancy-1.0.0.dist-info/RECORD",
+                    records=[
+                        ("fancy/__init__.py", "purelib", 0),
+                        ("fancy/__main__.py", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/METADATA", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0),
                         ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
                         ("fancy-1.0.0.dist-info/fun_file.txt", "purelib", 0),
                     ],

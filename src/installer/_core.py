@@ -83,14 +83,15 @@ def install(source, destination, additional_metadata):
     written_records = []
 
     # Write the entry-points based scripts.
-    entrypoints_text = source.read_dist_info("entry-points.txt")
-    for name, module, attr, section in parse_entrypoints(entrypoints_text):
-        destination.write_script(
-            name=name,
-            module=module,
-            attr=attr,
-            section=section,
-        )
+    if "entry-points.txt" in source.dist_info_filenames:
+        entrypoints_text = source.read_dist_info("entry-points.txt")
+        for name, module, attr, section in parse_entrypoints(entrypoints_text):
+            destination.write_script(
+                name=name,
+                module=module,
+                attr=attr,
+                section=section,
+            )
 
     # Write all the files from the wheel.
     for record_elements, stream in source.get_contents():
