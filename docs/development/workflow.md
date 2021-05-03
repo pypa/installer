@@ -114,4 +114,5 @@ automagically reload any open pages using livereload.
 [nox]: https://nox.readthedocs.io/en/stable/
 [pytest]: https://docs.pytest.org/en/stable/
 [sphinx]: https://www.sphinx-doc.org/en/master/
+[sphinx-autobuild]: https://github.com/executablebooks/sphinx-autobuild
 [pre-commit]: https://pre-commit.com/
