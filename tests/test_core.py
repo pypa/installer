@@ -28,7 +28,11 @@ def mock_destination():
         assert isinstance(stream, BytesIO)
         return (path, scheme, 0)
 
+    def custom_write_script(name, module, attr, section):
+        return (name, module, attr, section)
+
     retval.write_file.side_effect = custom_write_file
+    retval.write_script.side_effect = custom_write_script
 
     return retval
 
@@ -200,6 +204,8 @@ class TestInstall:
                     scheme="purelib",
                     record_file_path="fancy-1.0.0.dist-info/RECORD",
                     records=[
+                        ("fancy", "fancy", "main", "console"),
+                        ("fancy-gui", "fancy", "main", "gui"),
                         ("fancy/__init__.py", "purelib", 0),
                         ("fancy/__main__.py", "purelib", 0),
                         ("fancy-1.0.0.dist-info/METADATA", "purelib", 0),
@@ -417,6 +423,8 @@ class TestInstall:
                     scheme="platlib",
                     record_file_path="fancy-1.0.0.dist-info/RECORD",
                     records=[
+                        ("fancy", "fancy", "main", "console"),
+                        ("fancy-gui", "fancy", "main", "gui"),
                         ("fancy/__init__.py", "platlib", 0),
                         ("fancy/__main__.py", "platlib", 0),
                         ("fancy-1.0.0.dist-info/METADATA", "platlib", 0),
@@ -679,6 +687,8 @@ class TestInstall:
                     scheme="purelib",
                     record_file_path="fancy-1.0.0.dist-info/RECORD",
                     records=[
+                        ("fancy", "fancy", "main", "console"),
+                        ("fancy-gui", "fancy", "main", "gui"),
                         ("fancy/data.py", "data", 0),
                         ("fancy/headers.py", "headers", 0),
                         ("fancy/platlib.py", "platlib", 0),
