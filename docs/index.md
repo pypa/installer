@@ -16,7 +16,6 @@ abstractions for handling wheels and installing packages from wheels.
 ```{toctree}
 :hidden:
 
-installation
 concepts
 ```
 
@@ -32,7 +31,6 @@ api/*
 :caption: Project
 :hidden:
 
-history
 development/index
 changelog
 license
