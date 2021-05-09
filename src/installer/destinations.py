@@ -7,14 +7,18 @@ from installer._compat import FileExistsError
 from installer._compat.typing import TYPE_CHECKING
 from installer.records import Hash, RecordEntry
 from installer.scripts import Script
-from installer.utils import construct_record_file, copyfileobj_with_hashing, fix_shebang
+from installer.utils import (
+    Scheme,
+    construct_record_file,
+    copyfileobj_with_hashing,
+    fix_shebang,
+)
 
 if TYPE_CHECKING:
     from typing import BinaryIO, Dict, Iterable
 
     from installer._compat.typing import FSPath, Text
     from installer.scripts import LauncherKind, ScriptSection
-    from installer.utils import Scheme
 
 
 class WheelDestination(object):
@@ -91,7 +95,9 @@ class SchemeDictionaryDestination(WheelDestination):
         self.script_kind = script_kind
         self.hash_algorithm = hash_algorithm
 
-    def _write_file(self, scheme, path, stream):
+    def write_to_fs(self, scheme, path, stream):
+        # type: (Scheme, FSPath, BinaryIO) -> RecordEntry
+        """Write a file to the file-system."""
         target_path = os.path.join(self.scheme_dict[scheme], path)
         # open(..., "x") is not supported in Python 2 so let's check if a file is there ourselves
         if os.path.exists(target_path):
@@ -104,26 +110,34 @@ class SchemeDictionaryDestination(WheelDestination):
 
     def write_file(self, scheme, path, stream):
         # type: (Scheme, FSPath, BinaryIO) -> RecordEntry
-        """Write a file to correct ``path`` within the ``scheme``."""
+        """Write a file to correct ``path`` within the ``scheme``.
+
+        Uses ``write_to_fs`` to write the data.
+        """
         if scheme == "scripts":
             with fix_shebang(stream, self.interpreter) as fixed_stream:
-                return self._write_file(scheme, path, fixed_stream)
-        return self._write_file(scheme, path, stream)
+                return self.write_to_fs(scheme, path, fixed_stream)
+        return self.write_to_fs(scheme, path, stream)
 
     def write_script(self, name, module, attr, section):
         # type: (Text, Text, Text, ScriptSection) -> RecordEntry
-        """Write a script in the correct location to invoke given entry point."""
+        """Write a script in the correct location to invoke given entry point.
+
+        Uses ``write_to_fs`` to write the data.
+        """
         script = Script(name, module, attr, section)
         name, data = script.generate(self.interpreter, self.script_kind)
         with io.BytesIO(data) as stream:
-            return self._write_file("scripts", name, stream)
+            return self.write_to_fs(Scheme("scripts"), name, stream)
 
     def finalize_installation(self, scheme, record_file_path, records):
         # type: (Scheme, FSPath, Iterable[RecordEntry]) -> None
         """Finalize installation, after all the files are written.
 
         This will write the RECORD file, based on the provided ``record_file_path``.
+
+        Uses ``write_to_fs`` to write the data.
         """
         record_list = list(records) + [RecordEntry(record_file_path, None, None)]
         with construct_record_file(record_list) as record_stream:
-            self._write_file(scheme, record_file_path, record_stream)
+            self.write_to_fs(scheme, record_file_path, record_stream)

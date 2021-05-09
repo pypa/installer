@@ -8,18 +8,20 @@ import re
 import sys
 from collections import namedtuple
 from email.parser import FeedParser
+from typing import NewType
 
 from installer._compat import ConfigParser
 from installer._compat.typing import TYPE_CHECKING, Text, cast
 
+Scheme = NewType("Scheme", str)
+
 if TYPE_CHECKING:
     from email.message import Message
-    from typing import BinaryIO, Iterable, Iterator, NewType, Tuple
+    from typing import BinaryIO, Iterable, Iterator, Tuple
 
     from installer.records import RecordEntry
     from installer.scripts import LauncherKind, ScriptSection
 
-    Scheme = NewType("Scheme", str)
     AllSchemes = Tuple[Scheme, ...]
 
 __all__ = [
