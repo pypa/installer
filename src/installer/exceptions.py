@@ -6,4 +6,4 @@ class InstallerError(Exception):
 
 
 class InvalidWheelSource(InstallerError):
-    """When a wheel source is not valid, such that it violates some requirement."""
+    """When a wheel source violates a contract, or is not supported."""
