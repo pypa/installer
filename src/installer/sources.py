@@ -126,7 +126,7 @@ class WheelFile(WheelSource):
     @classmethod
     @contextmanager
     def open(cls, path):
-        # type: (FSPath) -> WheelFile
+        # type: (FSPath) -> Iterator[WheelFile]
         """Create a wheelfile from a given path."""
         with zipfile.ZipFile(path) as f:
             yield cls(f)
