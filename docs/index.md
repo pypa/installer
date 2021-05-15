@@ -41,12 +41,12 @@ import sys
 import sysconfig
 
 from installer import install
-from installer.destinations import SchemeDictDestination
+from installer.destinations import SchemeDictionaryDestination
 from installer.sources import WheelFile
 
 # Handler for installation directories and writing into them.
-destination = SchemeDictDestination(
-    sysconfig.get_config_vars(),
+destination = SchemeDictionaryDestination(
+    sysconfig.get_paths(),
     interpreter=sys.executable,
     script_kind="posix",
 )
