@@ -138,6 +138,5 @@ class SchemeDictionaryDestination(WheelDestination):
 
         Uses ``write_to_fs`` to write the data.
         """
-        record_list = list(records) + [RecordEntry(record_file_path, None, None)]
-        with construct_record_file(record_list) as record_stream:
+        with construct_record_file(records) as record_stream:
             self.write_to_fs(scheme, record_file_path, record_stream)

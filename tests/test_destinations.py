@@ -5,6 +5,7 @@ import pytest
 
 from installer._compat import FileExistsError
 from installer.destinations import SchemeDictionaryDestination, WheelDestination
+from installer.records import RecordEntry
 from installer.scripts import Script
 from installer.utils import SCHEME_NAMES
 
@@ -95,6 +96,7 @@ class TestSchemeDictionaryDestination:
             destination.write_script(
                 "my_entrypoint", "my_module", "my_function", "console"
             ),
+            RecordEntry("RECORD", None, None),
         ]
 
         destination.finalize_installation("purelib", "RECORD", records)
