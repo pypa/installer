@@ -167,10 +167,10 @@ class SchemeDictionaryDestination(WheelDestination):
           filesystem interaction.
         """
         script = Script(name, module, attr, section)
-        name, data = script.generate(self.interpreter, self.script_kind)
+        script_name, data = script.generate(self.interpreter, self.script_kind)
 
         with io.BytesIO(data) as stream:
-            return self.write_to_fs(Scheme("scripts"), name, stream)
+            return self.write_to_fs(Scheme("scripts"), script_name, stream)
 
     def finalize_installation(self, scheme, record_file_path, records):
         # type: (Scheme, FSPath, Iterable[RecordEntry]) -> None
