@@ -47,10 +47,19 @@ class TestSchemeDictionaryDestination:
         [
             # normal file
             ("data", "my_data.bin", b"my data", b"my data"),
-            # script -- we should fix the shebang
+            # normal file in subfolder
+            ("data", "data_folder/my_data.bin", b"my data", b"my data"),
+            # script file
             (
                 "scripts",
                 "my_script.py",
+                b"#!python\nmy script",
+                b"#!/my/python\nmy script",
+            ),
+            # script file in subfolder
+            (
+                "scripts",
+                "script_folder/my_script.py",
                 b"#!python\nmy script",
                 b"#!/my/python\nmy script",
             ),

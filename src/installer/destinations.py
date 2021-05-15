@@ -1,7 +1,7 @@
 """Handles all file writing and post-installation processing."""
 
 import io
-import os.path
+import os
 
 from installer._compat import FileExistsError
 from installer._compat.typing import TYPE_CHECKING
@@ -122,6 +122,10 @@ class SchemeDictionaryDestination(WheelDestination):
         if os.path.exists(target_path):
             message = "File already exists: {}".format(target_path)
             raise FileExistsError(message)
+
+        parent_folder = os.path.dirname(target_path)
+        if not os.path.exists(parent_folder):
+            os.makedirs(parent_folder)
 
         with open(target_path, "wb") as f:
             hash_, size = copyfileobj_with_hashing(stream, f, self.hash_algorithm)
