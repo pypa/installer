@@ -105,9 +105,14 @@ automagically reload any open pages using livereload.
 
 ## Release process
 
-- Update the changelog
-- Run `nox -s release`
-- Once that command succeeds, you're done!
+- Update the changelog.
+- Update the version number in `__init__.py`.
+- Commit these changes.
+- Create a signed git tag.
+- Run `flit publish`.
+- Update the version number in `__init__.py`.
+- Commit these changes.
+- Push tag and commits.
 
 [github flow]: https://guides.github.com/introduction/flow/
 [flit]: https://flit.readthedocs.io/en/stable/
