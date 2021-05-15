@@ -2,14 +2,14 @@
 
 ## v0.2.2 (May 15, 2021)
 
-- Teach `SchemeDictionaryDestionation` to create subfolders.
+- Teach {any}`SchemeDictionaryDestionation` to create subfolders.
 
 ## v0.2.1 (May 15, 2021)
 
 - Change {any}`parse_record_file` to yield the elements as a tuple, instead of
-  yielding {any}`RecordEntry` objects.
-- Implement {any}`WheelFile`, which was the last remaining bit for an end-to-end
-  wheel installation pipeline.
+  {any}`RecordEntry` objects.
+- Implement {any}`WheelFile`, completing the end-to-end wheel installation
+  pipeline.
 - Generate {any}`RecordEntry` for `RECORD` file in the
   {any}`installer.install`, instead of requiring every `WheelDestination`
   implementation to do the exact same thing.
