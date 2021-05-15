@@ -1,4 +1,5 @@
 import posixpath
+import sys
 import textwrap
 import zipfile
 
@@ -66,11 +67,14 @@ def fancy_wheel(tmp_path):
         """,
     }
 
+    if sys.version_info <= (3, 6):
+        path = str(path)
+
     with zipfile.ZipFile(path, "w") as archive:
         for name, indented_content in files.items():
             archive.writestr(
                 name,
-                data=textwrap.dedent(indented_content.decode("utf-8")).encode("utf-8"),
+                textwrap.dedent(indented_content.decode("utf-8")).encode("utf-8"),
             )
 
     return path
@@ -104,11 +108,11 @@ class TestWheelFile:
     def test_rejects_not_okay_name(self, tmp_path):
         # Create an empty zipfile
         path = tmp_path / "not_a_valid_name.whl"
-        with zipfile.ZipFile(path, "w"):
+        with zipfile.ZipFile(str(path), "w"):
             pass
 
         with pytest.raises(ValueError, match="Not a valid wheel filename: .+"):
-            with WheelFile.open(path):
+            with WheelFile.open(str(path)):
                 pass
 
     def test_provides_correct_dist_info_filenames(self, fancy_wheel):
@@ -156,5 +160,5 @@ class TestWheelFile:
                 got_records.append(record_elements)
                 got_files[record_elements[0]] = stream.read()
 
-        assert got_records == expected_records
+        assert sorted(got_records) == sorted(expected_records)
         assert got_files == files
