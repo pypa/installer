@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.2 (May 15, 2021)
+
+- Teach `SchemeDictionaryDestionation` to create subfolders.
+
 ## v0.2.1 (May 15, 2021)
 
 - Change {any}`parse_record_file` to yield the elements as a tuple, instead of
