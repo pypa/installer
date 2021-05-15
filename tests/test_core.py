@@ -9,6 +9,7 @@ import pytest
 
 from installer import install
 from installer.exceptions import InvalidWheelSource
+from installer.records import RecordEntry
 from installer.sources import WheelSource
 
 
@@ -213,6 +214,7 @@ class TestInstall:
                         ("fancy-1.0.0.dist-info/entry-points.txt", "purelib", 0),
                         ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
                         ("fancy-1.0.0.dist-info/fun_file.txt", "purelib", 0),
+                        RecordEntry("fancy-1.0.0.dist-info/RECORD", None, None),
                     ],
                 ),
             ]
@@ -309,6 +311,7 @@ class TestInstall:
                         ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0),
                         ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
                         ("fancy-1.0.0.dist-info/fun_file.txt", "purelib", 0),
+                        RecordEntry("fancy-1.0.0.dist-info/RECORD", None, None),
                     ],
                 ),
             ]
@@ -432,6 +435,7 @@ class TestInstall:
                         ("fancy-1.0.0.dist-info/entry-points.txt", "platlib", 0),
                         ("fancy-1.0.0.dist-info/top_level.txt", "platlib", 0),
                         ("fancy-1.0.0.dist-info/fun_file.txt", "platlib", 0),
+                        RecordEntry("fancy-1.0.0.dist-info/RECORD", None, None),
                     ],
                 ),
             ]
@@ -699,6 +703,7 @@ class TestInstall:
                         ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0),
                         ("fancy-1.0.0.dist-info/entry-points.txt", "purelib", 0),
                         ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
+                        RecordEntry("fancy-1.0.0.dist-info/RECORD", None, None),
                     ],
                 ),
             ]
