@@ -58,6 +58,11 @@ class Hash(object):
         # type: () -> str
         return "Hash(name={!r}, value={!r})".format(self.name, self.value)
 
+    def __eq__(self, other):
+        if not isinstance(other, Hash):
+            return NotImplemented
+        return self.value == other.value and self.name == other.name
+
     def validate(self, data):
         # type: (bytes) -> bool
         """Validate that ``data`` matches this instance.
@@ -123,6 +128,15 @@ class RecordEntry(object):
         # type: () -> str
         return "RecordEntry(path={!r}, hash_={!r}, size={!r})".format(
             self.path, self.hash_, self.size
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, RecordEntry):
+            return NotImplemented
+        return (
+            self.path == other.path
+            and self.hash_ == other.hash_
+            and self.size == other.size
         )
 
     def validate(self, data):

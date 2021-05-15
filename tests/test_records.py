@@ -128,6 +128,50 @@ class TestRecordEntry:
         )
         assert str(record) == expected_string_value
 
+    def test_equality(self):
+        record = RecordEntry.from_elements(
+            "file.py",
+            "sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI",
+            "3144",
+        )
+        record_same = RecordEntry.from_elements(
+            "file.py",
+            "sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI",
+            "3144",
+        )
+        record_different_name = RecordEntry.from_elements(
+            "file2.py",
+            "sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI",
+            "3144",
+        )
+        record_different_hash_name = RecordEntry.from_elements(
+            "file.py",
+            "md5=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI",
+            "3144",
+        )
+        record_different_hash_value = RecordEntry.from_elements(
+            "file.py",
+            "sha256=qwertyuiodfdsflkgshdlkjghrefawrwerwffsdfflk29",
+            "3144",
+        )
+        record_different_size = RecordEntry.from_elements(
+            "file.py",
+            "sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI",
+            "10",
+        )
+
+        assert record == record_same
+
+        assert record != "random string"
+        assert record != record_different_name
+        assert record != record_different_hash_name
+        assert record != record_different_hash_value
+        assert record != record_different_size
+
+        # Ensure equality is based on current state
+        record_same.hash_ = None
+        assert record != record_same
+
 
 class TestParseRecordFile:
     def test_accepts_empty_iterable(self):
