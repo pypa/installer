@@ -22,17 +22,22 @@ if TYPE_CHECKING:
 
 
 class WheelDestination(object):
-    """Represents the location for wheel installation.
+    """Handles writing the unpacked files, script generation and ``RECORD`` generation.
 
-    Subclasses are expected to handle script generation and rewriting of the
-    RECORD file after installation.
+    Subclasses provide the concrete script generation logic, as well as the RECORD file
+    (re)writing.
     """
 
     def write_script(self, name, module, attr, section):
         # type: (Text, Text, Text, ScriptSection) -> RecordEntry
         """Write a script in the correct location to invoke given entry point.
 
-        The stream should be closed by the caller.
+        :param name: name of the script
+        :param module: module path, to load the entry point from
+        :param attr: final attribute access, for the entry point
+        :param section: Denotes the "entry point section" where this was specified.
+            Valid values are ``"gui"`` and ``"console"``.
+        :type section: str
 
         Example usage/behaviour::
 
@@ -44,6 +49,10 @@ class WheelDestination(object):
     def write_file(self, scheme, path, stream):
         # type: (Scheme, FSPath, BinaryIO) -> RecordEntry
         """Write a file to correct ``path`` within the ``scheme``.
+
+        :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
+        :param path: path within that scheme
+        :param stream: contents of the file
 
         The stream would be closed by the caller, after this call.
 
@@ -59,8 +68,11 @@ class WheelDestination(object):
         # type: (Scheme, FSPath, Iterable[RecordEntry]) -> None
         """Finalize installation, after all the files are written.
 
-        This method is required to (re)write the RECORD file such that it includes
-        all given ``records`` as well as any additional generated content (eg: scripts).
+        Handles (re)writing of the ``RECORD`` file.
+
+        :param scheme: scheme to write the ``RECORD`` file in
+        :param record_file_path: path of the ``RECORD`` file with that scheme
+        :param records: entries to write to the ``RECORD`` file
 
         Example usage/behaviour::
 
@@ -97,46 +109,72 @@ class SchemeDictionaryDestination(WheelDestination):
 
     def write_to_fs(self, scheme, path, stream):
         # type: (Scheme, FSPath, BinaryIO) -> RecordEntry
-        """Write a file to the file-system."""
+        """Write contents of ``stream`` to the correct location on the filesystem.
+
+        :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
+        :param path: path within that scheme
+        :param stream: contents of the file
+
+        - Ensures that an existing file is not being overwritten.
+        - Hashes the written content, to determine the entry in the ``RECORD`` file.
+        """
         target_path = os.path.join(self.scheme_dict[scheme], path)
-        # open(..., "x") is not supported in Python 2 so let's check if a file is there ourselves
         if os.path.exists(target_path):
-            raise FileExistsError(
-                "Target file already exists in the file-system: {}".format(target_path)
-            )
+            message = "File already exists: {}".format(target_path)
+            raise FileExistsError(message)
+
         with open(target_path, "wb") as f:
             hash_, size = copyfileobj_with_hashing(stream, f, self.hash_algorithm)
+
         return RecordEntry(path, Hash(self.hash_algorithm, hash_), size)
 
     def write_file(self, scheme, path, stream):
         # type: (Scheme, FSPath, BinaryIO) -> RecordEntry
         """Write a file to correct ``path`` within the ``scheme``.
 
-        Uses ``write_to_fs`` to write the data.
+        :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
+        :param path: path within that scheme
+        :param stream: contents of the file
+
+        - Changes the shebang for files in the "scripts" scheme.
+        - Uses :py:meth:`SchemeDictionaryDestination.write_to_fs` for the
+          filesystem interaction.
         """
         if scheme == "scripts":
-            with fix_shebang(stream, self.interpreter) as fixed_stream:
-                return self.write_to_fs(scheme, path, fixed_stream)
+            with fix_shebang(stream, self.interpreter) as stream_with_different_shebang:
+                return self.write_to_fs(scheme, path, stream_with_different_shebang)
+
         return self.write_to_fs(scheme, path, stream)
 
     def write_script(self, name, module, attr, section):
         # type: (Text, Text, Text, ScriptSection) -> RecordEntry
-        """Write a script in the correct location to invoke given entry point.
+        """Write a script to invoke an entrypoint.
 
-        Uses ``write_to_fs`` to write the data.
+        :param name: name of the script
+        :param module: module path, to load the entry point from
+        :param attr: final attribute access, for the entry point
+        :param section: Denotes the "entry point section" where this was specified.
+            Valid values are ``"gui"`` and ``"console"``.
+        :type section: str
+
+        - Generates a launcher using :any:`Script.generate`.
+        - Writes to the "scripts" scheme.
+        - Uses :py:meth:`SchemeDictionaryDestination.write_to_fs` for the
+          filesystem interaction.
         """
         script = Script(name, module, attr, section)
         name, data = script.generate(self.interpreter, self.script_kind)
+
         with io.BytesIO(data) as stream:
             return self.write_to_fs(Scheme("scripts"), name, stream)
 
     def finalize_installation(self, scheme, record_file_path, records):
         # type: (Scheme, FSPath, Iterable[RecordEntry]) -> None
-        """Finalize installation, after all the files are written.
+        """Finalize installation, by writing the ``RECORD`` file.
 
-        This will write the RECORD file, based on the provided ``record_file_path``.
-
-        Uses ``write_to_fs`` to write the data.
+        :param scheme: scheme to write the ``RECORD`` file in
+        :param record_file_path: path of the ``RECORD`` file with that scheme
+        :param records: entries to write to the ``RECORD`` file
         """
         with construct_record_file(records) as record_stream:
             self.write_to_fs(scheme, record_file_path, record_stream)
