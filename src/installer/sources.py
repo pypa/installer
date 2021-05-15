@@ -1,6 +1,13 @@
 """Source of information about a wheel file."""
 
-from installer._compat.typing import TYPE_CHECKING
+import os
+import posixpath
+import zipfile
+from contextlib import contextmanager
+
+import installer.records
+import installer.utils
+from installer._compat.typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from typing import BinaryIO, Iterator, List, Tuple
@@ -8,6 +15,9 @@ if TYPE_CHECKING:
     from installer._compat.typing import FSPath, Text
 
     WheelContentElement = Tuple[Tuple[FSPath, str, str], BinaryIO]
+
+
+__all__ = ["WheelSource", "WheelFile"]
 
 
 class WheelSource(object):
@@ -86,3 +96,78 @@ class WheelSource(object):
         provide the same content upon reading from a specific file's stream.
         """
         raise NotImplementedError
+
+
+class WheelFile(WheelSource):
+    """Implements `WheelSource`, for an existing file from the filesystem.
+
+    Example usage::
+
+        >>> with WheelFile.open("sampleproject-2.0.0-py3-none-any.whl") as source:
+        ...     installer.install(source, destination)
+    """
+
+    def __init__(self, f):
+        # type: (zipfile.ZipFile) -> None
+        """Initialize a WheelFile object.
+
+        :param f: An open zipfile, which will stay open as long as this object is used.
+        """
+        self._zipfile = f
+        assert f.filename
+
+        basename = os.path.basename(f.filename)
+        parsed_name = installer.utils.parse_wheel_filename(basename)
+        super(WheelFile, self).__init__(
+            version=parsed_name.version,
+            distribution=parsed_name.distribution,
+        )
+
+    @classmethod
+    @contextmanager
+    def open(cls, path):
+        # type: (FSPath) -> Iterator[WheelFile]
+        """Create a wheelfile from a given path."""
+        with zipfile.ZipFile(path) as f:
+            yield cls(f)
+
+    @property
+    def dist_info_filenames(self):
+        # type: () -> List[FSPath]
+        """Get names of all files in the dist-info directory."""
+        base = self.dist_info_dir
+        return [
+            name[len(base) + 1 :]
+            for name in self._zipfile.namelist()
+            if base == posixpath.commonprefix([name, base])
+        ]
+
+    def read_dist_info(self, filename):
+        # type: (FSPath) -> Text
+        """Get contents, from ``filename`` in the dist-info directory."""
+        path = posixpath.join(self.dist_info_dir, filename)
+        return self._zipfile.read(path).decode("utf-8")
+
+    def get_contents(self):
+        # type: () -> Iterator[WheelContentElement]
+        """Sequential access to all contents of the wheel (including dist-info files).
+
+        This implementation requires that every file that is a part of the wheel
+        archive has a corresponding entry in RECORD. If they are not, an
+        :any:`AssertionError` will be raised.
+        """
+        # Convert the record file into a useful mapping
+        record_lines = self.read_dist_info("RECORD").splitlines()
+        records = installer.records.parse_record_file(record_lines)
+        record_mapping = {record[0]: record for record in records}
+
+        for item in self._zipfile.infolist():
+            record = record_mapping.pop(item.filename)
+            assert record is not None, "In {}, {} is not mentioned in RECORD".format(
+                self._zipfile.filename,
+                item.filename,
+            )  # should not happen for valid wheels
+
+            with self._zipfile.open(item) as stream:
+                stream_casted = cast("BinaryIO", stream)
+                yield record, stream_casted

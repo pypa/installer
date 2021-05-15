@@ -4,12 +4,12 @@ import base64
 import csv
 import hashlib
 
-from installer._compat.typing import TYPE_CHECKING
+from installer._compat.typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-    from typing import Iterator, Optional
+    from typing import Iterable, Iterator, Optional, Tuple
 
-    from installer._compat.typing import FSPath
+    from installer._compat.typing import FSPath, Text
 
 
 __all__ = [
@@ -187,10 +187,13 @@ class RecordEntry(object):
 
 
 def parse_record_file(rows):
-    # type: (Iterator[str]) -> Iterator[RecordEntry]
+    # type: (Iterable[Text]) -> Iterator[Tuple[FSPath, str, str]]
     """Parse a :pep:`376` RECORD.
 
-    :param rows: iterator providing lines of a RECORD.
+    Returns an iterable of 3-value tuples, that can be passed to
+    :any:`RecordEntry.from_elements`.
+
+    :param rows: iterator providing lines of a RECORD (no trailing newlines).
     """
     reader = csv.reader(rows, delimiter=",", quotechar='"', lineterminator="\n")
     for row_index, elements in enumerate(reader):
@@ -200,5 +203,5 @@ def parse_record_file(rows):
             )
             raise InvalidRecordEntry(elements=elements, issues=[message])
 
-        record = RecordEntry.from_elements(elements[0], elements[1], elements[2])
-        yield record
+        value = cast("Tuple[FSPath, str, str]", tuple(elements))
+        yield value

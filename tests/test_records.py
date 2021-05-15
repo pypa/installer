@@ -143,16 +143,14 @@ class TestParseRecordFile:
         records = list(parse_record_file(record_input))
         assert len(records) == 2
 
-        r0 = records[0]
-        assert r0.path == "file.py"
-        assert r0.hash_.name == "sha256"
-        assert r0.hash_.value == "AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI"
-        assert r0.size == 3144
-
-        r1 = records[1]
-        assert r1.path == "distribution-1.0.dist-info/RECORD"
-        assert r1.hash_ is None
-        assert r1.size is None
+        assert records == [
+            (
+                "file.py",
+                "sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI",
+                "3144",
+            ),
+            ("distribution-1.0.dist-info/RECORD", "", ""),
+        ]
 
     @pytest.mark.parametrize(
         "line, element_count",
