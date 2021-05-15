@@ -60,7 +60,7 @@ class Hash(object):
 
     def __eq__(self, other):
         if not isinstance(other, Hash):
-            return NotImplemented
+            return NotImplemented  # no-cover: python2
         return self.value == other.value and self.name == other.name
 
     def validate(self, data):
@@ -132,7 +132,7 @@ class RecordEntry(object):
 
     def __eq__(self, other):
         if not isinstance(other, RecordEntry):
-            return NotImplemented
+            return NotImplemented  # no-cover: python2
         return (
             self.path == other.path
             and self.hash_ == other.hash_

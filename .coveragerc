@@ -1,5 +1,6 @@
 [report]
 exclude_lines =
-     pragma: no cover
+    pragma: no cover
     if TYPE_CHECKING:
     def __repr__
+    no-cover: python2
