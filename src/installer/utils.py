@@ -190,6 +190,9 @@ def parse_entrypoints(text):
 
     # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L90  # noqa
     for section in config.sections():
+        if section not in ["console_scripts", "gui_scripts"]:
+            continue
+
         for name, value in config.items(section):
             assert isinstance(name, Text)
             match = _ENTRYPOINT_REGEX.match(value)
@@ -204,6 +207,5 @@ def parse_entrypoints(text):
             assert isinstance(attrs, Text)
 
             script_section = cast("ScriptSection", section[: -len("_scripts")])
-            assert script_section in ["gui", "console"]
 
             yield name, module, attrs, script_section
