@@ -116,7 +116,7 @@ class TestInstall:
                 "top_level.txt": b"""\
                     fancy
                 """,
-                "entry-points.txt": b"""\
+                "entry_points.txt": b"""\
                     [console_scripts]
                     fancy = fancy:main
 
@@ -188,7 +188,7 @@ class TestInstall:
                 ),
                 mock.call.write_file(
                     scheme="purelib",
-                    path="fancy-1.0.0.dist-info/entry-points.txt",
+                    path="fancy-1.0.0.dist-info/entry_points.txt",
                     stream=mock.ANY,
                 ),
                 mock.call.write_file(
@@ -211,7 +211,7 @@ class TestInstall:
                         ("fancy/__main__.py", "purelib", 0),
                         ("fancy-1.0.0.dist-info/METADATA", "purelib", 0),
                         ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0),
-                        ("fancy-1.0.0.dist-info/entry-points.txt", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/entry_points.txt", "purelib", 0),
                         ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
                         ("fancy-1.0.0.dist-info/fun_file.txt", "purelib", 0),
                         RecordEntry("fancy-1.0.0.dist-info/RECORD", None, None),
@@ -337,7 +337,7 @@ class TestInstall:
                 "top_level.txt": b"""\
                     fancy
                 """,
-                "entry-points.txt": b"""\
+                "entry_points.txt": b"""\
                     [console_scripts]
                     fancy = fancy:main
 
@@ -409,7 +409,7 @@ class TestInstall:
                 ),
                 mock.call.write_file(
                     scheme="platlib",
-                    path="fancy-1.0.0.dist-info/entry-points.txt",
+                    path="fancy-1.0.0.dist-info/entry_points.txt",
                     stream=mock.ANY,
                 ),
                 mock.call.write_file(
@@ -432,7 +432,7 @@ class TestInstall:
                         ("fancy/__main__.py", "platlib", 0),
                         ("fancy-1.0.0.dist-info/METADATA", "platlib", 0),
                         ("fancy-1.0.0.dist-info/WHEEL", "platlib", 0),
-                        ("fancy-1.0.0.dist-info/entry-points.txt", "platlib", 0),
+                        ("fancy-1.0.0.dist-info/entry_points.txt", "platlib", 0),
                         ("fancy-1.0.0.dist-info/top_level.txt", "platlib", 0),
                         ("fancy-1.0.0.dist-info/fun_file.txt", "platlib", 0),
                         RecordEntry("fancy-1.0.0.dist-info/RECORD", None, None),
@@ -461,7 +461,7 @@ class TestInstall:
                 "top_level.txt": b"""\
                     fancy
                 """,
-                "entry-points.txt": b"""\
+                "entry_points.txt": b"""\
                     [console_scripts]
                     fancy = fancy:main
 
@@ -521,7 +521,7 @@ class TestInstall:
                 "top_level.txt": b"""\
                     fancy
                 """,
-                "entry-points.txt": b"""\
+                "entry_points.txt": b"""\
                     [console_scripts]
                     fancy = fancy:main
 
@@ -589,7 +589,7 @@ class TestInstall:
                 "top_level.txt": b"""\
                     fancy
                 """,
-                "entry-points.txt": b"""\
+                "entry_points.txt": b"""\
                     [console_scripts]
                     fancy = fancy:main
 
@@ -679,7 +679,7 @@ class TestInstall:
                 ),
                 mock.call.write_file(
                     scheme="purelib",
-                    path="fancy-1.0.0.dist-info/entry-points.txt",
+                    path="fancy-1.0.0.dist-info/entry_points.txt",
                     stream=mock.ANY,
                 ),
                 mock.call.write_file(
@@ -701,7 +701,7 @@ class TestInstall:
                         ("fancy/__init__.py", "purelib", 0),
                         ("fancy-1.0.0.dist-info/METADATA", "purelib", 0),
                         ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0),
-                        ("fancy-1.0.0.dist-info/entry-points.txt", "purelib", 0),
+                        ("fancy-1.0.0.dist-info/entry_points.txt", "purelib", 0),
                         ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
                         RecordEntry("fancy-1.0.0.dist-info/RECORD", None, None),
                     ],
@@ -729,7 +729,7 @@ class TestInstall:
                 "top_level.txt": b"""\
                     fancy
                 """,
-                "entry-points.txt": b"""\
+                "entry_points.txt": b"""\
                     [console_scripts]
                     fancy = fancy:main
 

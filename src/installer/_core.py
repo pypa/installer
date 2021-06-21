@@ -85,8 +85,8 @@ def install(source, destination, additional_metadata):
     written_records = []
 
     # Write the entry-points based scripts.
-    if "entry-points.txt" in source.dist_info_filenames:
-        entrypoints_text = source.read_dist_info("entry-points.txt")
+    if "entry_points.txt" in source.dist_info_filenames:
+        entrypoints_text = source.read_dist_info("entry_points.txt")
         for name, module, attr, section in parse_entrypoints(entrypoints_text):
             record = destination.write_script(
                 name=name,
