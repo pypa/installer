@@ -170,7 +170,14 @@ class SchemeDictionaryDestination(WheelDestination):
         script_name, data = script.generate(self.interpreter, self.script_kind)
 
         with io.BytesIO(data) as stream:
-            return self.write_to_fs(Scheme("scripts"), script_name, stream)
+            entry = self.write_to_fs(Scheme("scripts"), script_name, stream)
+
+            path = os.path.join(self.scheme_dict[Scheme("scripts")], script_name)
+            mode = os.stat(path).st_mode
+            mode |= (mode & 0o444) >> 2
+            os.chmod(path, mode)
+
+            return entry
 
     def finalize_installation(self, scheme, record_file_path, records):
         # type: (Scheme, FSPath, Iterable[RecordEntry]) -> None

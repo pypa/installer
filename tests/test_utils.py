@@ -175,6 +175,13 @@ class TestParseEntryPoints:
             (u"", []),
             (
                 u"""
+                    [foo]
+                    foo = foo.bar
+                """,
+                [],
+            ),
+            (
+                u"""
                     [console_scripts]
                     package = package.__main__:package
                 """,
