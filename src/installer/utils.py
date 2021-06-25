@@ -188,7 +188,6 @@ def parse_entrypoints(text):
     config.optionxform = Text  # type: ignore
     config.read_string(text)
 
-    # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L90  # noqa
     for section in config.sections():
         if section not in ["console_scripts", "gui_scripts"]:
             continue
