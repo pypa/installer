@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.3 (Jul 29, 2021)
+
+- Fix entry point handling in {any}`installer.install`.
+
 ## v0.2.2 (May 15, 2021)
 
 - Teach {any}`SchemeDictionaryDestionation` to create subfolders.
