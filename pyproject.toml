@@ -10,3 +10,10 @@ home-page = "https://github.com/pradyunsg/installer"
 description-file = "README.md"
 classifiers = ["License :: OSI Approved :: MIT License"]
 requires-python = ">=3.7"
+requires = [
+  "build >= 0.2.0",  # not a hard runtime requirement -- we can softfail
+  "packaging",  # not a hard runtime requirement -- we can softfail
+]
+
+[tool.flit.scripts]
+python-installer = "installer.__main__:entrypoint"
