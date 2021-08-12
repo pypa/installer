@@ -34,9 +34,7 @@ def lint(session):
     session.run("pre-commit", "run", "--all-files", *args)
 
 
-@nox.session(
-    python=["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10", "pypy2", "pypy3"]
-)
+@nox.session(python=["3.7", "3.8", "3.9", "3.10", "pypy3"])
 def test(session):
     session.install(".")
     session.install("-r", "tests/requirements.txt")
@@ -55,9 +53,8 @@ def test(session):
         *session.posargs
     )
 
-    if session.python not in ["2.7", "3.5", "pypy2"]:
-        session.install("-r", "docs/requirements.txt")
-        session.run("sphinx-build", "-b", "doctest", "docs/", "build/docs")
+    session.install("-r", "docs/requirements.txt")
+    session.run("sphinx-build", "-b", "doctest", "docs/", "build/docs")
 
 
 @nox.session(python="3.8")

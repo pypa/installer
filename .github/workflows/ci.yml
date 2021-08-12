@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [Windows, Ubuntu, MacOS]
-        python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
         include:
           # Only run PyPy jobs, on Ubuntu.
           - os: Ubuntu
