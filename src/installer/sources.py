@@ -4,17 +4,13 @@ import os
 import posixpath
 import zipfile
 from contextlib import contextmanager
+from typing import BinaryIO, Iterator, List, Tuple
 
 import installer.records
 import installer.utils
-from installer._compat.typing import TYPE_CHECKING, cast
+from installer._compat.typing import FSPath, Text, cast
 
-if TYPE_CHECKING:
-    from typing import BinaryIO, Iterator, List, Tuple
-
-    from installer._compat.typing import FSPath, Text
-
-    WheelContentElement = Tuple[Tuple[FSPath, str, str], BinaryIO]
+WheelContentElement = Tuple[Tuple[FSPath, str, str], BinaryIO]
 
 
 __all__ = ["WheelSource", "WheelFile"]

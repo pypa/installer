@@ -2,23 +2,18 @@
 
 import io
 import os
+from typing import BinaryIO, Dict, Iterable, Tuple
 
 from installer._compat import FileExistsError
-from installer._compat.typing import TYPE_CHECKING
+from installer._compat.typing import FSPath, Text
 from installer.records import Hash, RecordEntry
-from installer.scripts import Script
+from installer.scripts import LauncherKind, Script, ScriptSection
 from installer.utils import (
     Scheme,
     construct_record_file,
     copyfileobj_with_hashing,
     fix_shebang,
 )
-
-if TYPE_CHECKING:
-    from typing import BinaryIO, Dict, Iterable, Tuple
-
-    from installer._compat.typing import FSPath, Text
-    from installer.scripts import LauncherKind, ScriptSection
 
 
 class WheelDestination(object):

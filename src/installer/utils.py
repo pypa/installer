@@ -7,22 +7,17 @@ import os
 import re
 import sys
 from collections import namedtuple
+from email.message import Message
 from email.parser import FeedParser
-from typing import NewType
+from typing import BinaryIO, Iterable, Iterator, NewType, Tuple
 
 from installer._compat import ConfigParser
-from installer._compat.typing import TYPE_CHECKING, Text, cast
+from installer._compat.typing import Text, cast
+from installer.records import RecordEntry
+from installer.scripts import LauncherKind, ScriptSection
 
 Scheme = NewType("Scheme", str)
-
-if TYPE_CHECKING:
-    from email.message import Message
-    from typing import BinaryIO, Iterable, Iterator, Tuple
-
-    from installer.records import RecordEntry
-    from installer.scripts import LauncherKind, ScriptSection
-
-    AllSchemes = Tuple[Scheme, ...]
+AllSchemes = Tuple[Scheme, ...]
 
 __all__ = [
     "parse_metadata_file",

@@ -3,14 +3,9 @@
 import base64
 import csv
 import hashlib
+from typing import Iterable, Iterator, Optional, Tuple
 
-from installer._compat.typing import TYPE_CHECKING, cast
-
-if TYPE_CHECKING:
-    from typing import Iterable, Iterator, Optional, Tuple
-
-    from installer._compat.typing import FSPath, Text
-
+from installer._compat.typing import FSPath, Text, cast
 
 __all__ = [
     "Hash",

@@ -2,19 +2,14 @@
 
 import posixpath
 from io import BytesIO
+from typing import Dict, Tuple
 
-from installer._compat.typing import TYPE_CHECKING, cast
+from installer._compat.typing import Binary, FSPath, cast
 from installer.destinations import WheelDestination
 from installer.exceptions import InvalidWheelSource
 from installer.records import RecordEntry
 from installer.sources import WheelSource
 from installer.utils import SCHEME_NAMES, Scheme, parse_entrypoints, parse_metadata_file
-
-if TYPE_CHECKING:
-    from typing import Dict, Tuple
-
-    from installer._compat.typing import Binary, FSPath
-
 
 __all__ = ["install"]
 

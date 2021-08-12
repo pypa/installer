@@ -3,16 +3,14 @@
 import io
 import shlex
 import zipfile
+from typing import Literal, Mapping, Optional, Tuple
 
 from installer import _scripts
 from installer._compat import importlib_resources
-from installer._compat.typing import TYPE_CHECKING, Binary, Text
+from installer._compat.typing import Binary, Text
 
-if TYPE_CHECKING:
-    from typing import Literal, Mapping, Optional, Tuple
-
-    LauncherKind = Literal["posix", "win-ia32", "win-amd64", "win-arm", "win-arm64"]
-    ScriptSection = Literal["console", "gui"]
+LauncherKind = Literal["posix", "win-ia32", "win-amd64", "win-arm", "win-arm64"]
+ScriptSection = Literal["console", "gui"]
 
 
 __all__ = ["InvalidScript", "Script"]
