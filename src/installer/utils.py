@@ -61,8 +61,7 @@ _ENTRYPOINT_REGEX = re.compile(
 SCHEME_NAMES = cast("AllSchemes", ("purelib", "platlib", "headers", "scripts", "data"))
 
 
-def parse_metadata_file(contents):
-    # type: (Text) -> Message
+def parse_metadata_file(contents: Text) -> Message:
     """Parse :pep:`376` ``PKG-INFO``-style metadata files.
 
     ``METADATA`` and ``WHEEL`` files (as per :pep:`427`) use the same syntax
@@ -75,8 +74,7 @@ def parse_metadata_file(contents):
     return feed_parser.close()
 
 
-def parse_wheel_filename(filename):
-    # type: (Text) -> WheelFilename
+def parse_wheel_filename(filename: Text) -> WheelFilename:
     """Parse a wheel filename, into it's various components.
 
     :param filename: The filename to parse.
@@ -88,11 +86,10 @@ def parse_wheel_filename(filename):
 
 
 def copyfileobj_with_hashing(
-    source,  # type: BinaryIO
-    dest,  # type: BinaryIO
-    hash_algorithm,  # type: str
-):
-    # type: (...) -> Tuple[str, int]
+    source: BinaryIO,
+    dest: BinaryIO,
+    hash_algorithm: str,
+) -> Tuple[str, int]:
     """Copy a buffer while computing the content's hash and size.
 
     Copies the source buffer into the destination buffer while computing the
@@ -117,8 +114,7 @@ def copyfileobj_with_hashing(
     return hasher.hexdigest(), size
 
 
-def get_launcher_kind():  # pragma: no cover
-    # type: () -> LauncherKind
+def get_launcher_kind() -> LauncherKind:  # pragma: no cover
     """Get the launcher kind for the current machine."""
     if os.name != "nt":
         return "posix"
@@ -136,8 +132,7 @@ def get_launcher_kind():  # pragma: no cover
 
 
 @contextlib.contextmanager
-def fix_shebang(stream, interpreter):
-    # type: (BinaryIO, str) -> Iterator[BinaryIO]
+def fix_shebang(stream: BinaryIO, interpreter: str) -> Iterator[BinaryIO]:
     """Replace ^#!python shebang in a stream with the correct interpreter.
 
     The original stream should be closed by the caller.
@@ -163,8 +158,7 @@ def fix_shebang(stream, interpreter):
         yield stream
 
 
-def construct_record_file(records):
-    # type: (Iterable[Tuple[Scheme, RecordEntry]]) -> BinaryIO
+def construct_record_file(records: Iterable[Tuple[Scheme, RecordEntry]]) -> BinaryIO:
     """Construct a RECORD file given some records.
 
     The original stream should be closed by the caller.
@@ -176,8 +170,7 @@ def construct_record_file(records):
     return stream
 
 
-def parse_entrypoints(text):
-    # type: (Text) -> Iterable[Tuple[Text, Text, Text, ScriptSection]]
+def parse_entrypoints(text: Text) -> Iterable[Tuple[Text, Text, Text, ScriptSection]]:
     # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115  # noqa
     config = ConfigParser(delimiters="=")
     config.optionxform = Text  # type: ignore

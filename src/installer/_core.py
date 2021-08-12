@@ -14,8 +14,7 @@ from installer.utils import SCHEME_NAMES, Scheme, parse_entrypoints, parse_metad
 __all__ = ["install"]
 
 
-def _process_WHEEL_file(source):
-    # type: (WheelSource) -> Scheme
+def _process_WHEEL_file(source: WheelSource) -> Scheme:
     """Process the WHEEL file, from ``source``.
 
     Returns the scheme that the archive root should go in.
@@ -35,8 +34,9 @@ def _process_WHEEL_file(source):
         return cast("Scheme", "platlib")
 
 
-def _determine_scheme(path, source, root_scheme):
-    # type: (FSPath, WheelSource, Scheme) -> Tuple[Scheme, FSPath]
+def _determine_scheme(
+    path: FSPath, source: WheelSource, root_scheme: Scheme
+) -> Tuple[Scheme, FSPath]:
     """Determine which scheme to place given path in, from source."""
     data_dir = source.data_dir
 
@@ -62,8 +62,11 @@ def _determine_scheme(path, source, root_scheme):
     return cast("Scheme", scheme_name), posixpath.join(*reversed(parts[:-1]))
 
 
-def install(source, destination, additional_metadata):
-    # type: (WheelSource, WheelDestination, Dict[str, Binary]) -> None
+def install(
+    source: WheelSource,
+    destination: WheelDestination,
+    additional_metadata: Dict[str, Binary],
+) -> None:
     """Install wheel described by ``source`` into ``destination``.
 
     :param source: wheel to install.

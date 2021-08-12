@@ -22,8 +22,7 @@ class WheelSource(object):
     This is an abstract class, whose methods have to be implemented by subclasses.
     """
 
-    def __init__(self, distribution, version):
-        # type: (Text, Text) -> None
+    def __init__(self, distribution: Text, version: Text) -> None:
         """Initialize a WheelSource object.
 
         :param distribution: distribution name (like ``urllib3``)
@@ -44,8 +43,7 @@ class WheelSource(object):
         return u"{}-{}.data".format(self.distribution, self.version)
 
     @property
-    def dist_info_filenames(self):
-        # type: () -> List[FSPath]
+    def dist_info_filenames(self) -> List[FSPath]:
         """Get names of all files in the dist-info directory.
 
         Sample usage/behaviour::
@@ -55,8 +53,7 @@ class WheelSource(object):
         """
         raise NotImplementedError
 
-    def read_dist_info(self, filename):
-        # type: (FSPath) -> Text
+    def read_dist_info(self, filename: FSPath) -> Text:
         """Get contents, from ``filename`` in the dist-info directory.
 
         Sample usage/behaviour::
@@ -68,8 +65,7 @@ class WheelSource(object):
         """
         raise NotImplementedError
 
-    def get_contents(self):
-        # type: () -> Iterator[WheelContentElement]
+    def get_contents(self) -> Iterator[WheelContentElement]:
         """Sequential access to all contents of the wheel (including dist-info files).
 
         This method should return an iterable. Each value from the iterable must be a
@@ -103,8 +99,7 @@ class WheelFile(WheelSource):
         ...     installer.install(source, destination)
     """
 
-    def __init__(self, f):
-        # type: (zipfile.ZipFile) -> None
+    def __init__(self, f: zipfile.ZipFile) -> None:
         """Initialize a WheelFile object.
 
         :param f: An open zipfile, which will stay open as long as this object is used.
@@ -121,15 +116,13 @@ class WheelFile(WheelSource):
 
     @classmethod
     @contextmanager
-    def open(cls, path):
-        # type: (FSPath) -> Iterator[WheelFile]
+    def open(cls, path: FSPath) -> Iterator["WheelFile"]:
         """Create a wheelfile from a given path."""
         with zipfile.ZipFile(path) as f:
             yield cls(f)
 
     @property
-    def dist_info_filenames(self):
-        # type: () -> List[FSPath]
+    def dist_info_filenames(self) -> List[FSPath]:
         """Get names of all files in the dist-info directory."""
         base = self.dist_info_dir
         return [
@@ -139,14 +132,12 @@ class WheelFile(WheelSource):
             if base == posixpath.commonprefix([name, base])
         ]
 
-    def read_dist_info(self, filename):
-        # type: (FSPath) -> Text
+    def read_dist_info(self, filename: FSPath) -> Text:
         """Get contents, from ``filename`` in the dist-info directory."""
         path = posixpath.join(self.dist_info_dir, filename)
         return self._zipfile.read(path).decode("utf-8")
 
-    def get_contents(self):
-        # type: () -> Iterator[WheelContentElement]
+    def get_contents(self) -> Iterator[WheelContentElement]:
         """Sequential access to all contents of the wheel (including dist-info files).
 
         This implementation requires that every file that is a part of the wheel

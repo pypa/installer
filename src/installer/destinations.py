@@ -23,8 +23,9 @@ class WheelDestination(object):
     (re)writing.
     """
 
-    def write_script(self, name, module, attr, section):
-        # type: (Text, Text, Text, ScriptSection) -> RecordEntry
+    def write_script(
+        self, name: Text, module: Text, attr: Text, section: ScriptSection
+    ) -> RecordEntry:
         """Write a script in the correct location to invoke given entry point.
 
         :param name: name of the script
@@ -41,8 +42,7 @@ class WheelDestination(object):
         """
         raise NotImplementedError
 
-    def write_file(self, scheme, path, stream):
-        # type: (Scheme, FSPath, BinaryIO) -> RecordEntry
+    def write_file(self, scheme: Scheme, path: FSPath, stream: BinaryIO) -> RecordEntry:
         """Write a file to correct ``path`` within the ``scheme``.
 
         :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
@@ -59,8 +59,12 @@ class WheelDestination(object):
         """
         raise NotImplementedError
 
-    def finalize_installation(self, scheme, record_file_path, records):
-        # type: (Scheme, FSPath, Iterable[Tuple[Scheme, RecordEntry]]) -> None
+    def finalize_installation(
+        self,
+        scheme: Scheme,
+        record_file_path: FSPath,
+        records: Iterable[Tuple[Scheme, RecordEntry]],
+    ) -> None:
         """Finalize installation, after all the files are written.
 
         Handles (re)writing of the ``RECORD`` file.
@@ -82,12 +86,11 @@ class SchemeDictionaryDestination(WheelDestination):
 
     def __init__(
         self,
-        scheme_dict,
-        interpreter,
-        script_kind,
-        hash_algorithm="sha256",
-    ):
-        # type: (Dict[str, str], str, LauncherKind, str) -> None
+        scheme_dict: Dict[str, str],
+        interpreter: str,
+        script_kind: LauncherKind,
+        hash_algorithm: str = "sha256",
+    ) -> None:
         """Construct a ``SchemeDictionaryDestination`` object.
 
         :param scheme_dict: a mapping of {scheme: file-system-path}
@@ -102,8 +105,9 @@ class SchemeDictionaryDestination(WheelDestination):
         self.script_kind = script_kind
         self.hash_algorithm = hash_algorithm
 
-    def write_to_fs(self, scheme, path, stream):
-        # type: (Scheme, FSPath, BinaryIO) -> RecordEntry
+    def write_to_fs(
+        self, scheme: Scheme, path: FSPath, stream: BinaryIO
+    ) -> RecordEntry:
         """Write contents of ``stream`` to the correct location on the filesystem.
 
         :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
@@ -127,8 +131,7 @@ class SchemeDictionaryDestination(WheelDestination):
 
         return RecordEntry(path, Hash(self.hash_algorithm, hash_), size)
 
-    def write_file(self, scheme, path, stream):
-        # type: (Scheme, FSPath, BinaryIO) -> RecordEntry
+    def write_file(self, scheme: Scheme, path: FSPath, stream: BinaryIO) -> RecordEntry:
         """Write a file to correct ``path`` within the ``scheme``.
 
         :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
@@ -145,8 +148,9 @@ class SchemeDictionaryDestination(WheelDestination):
 
         return self.write_to_fs(scheme, path, stream)
 
-    def write_script(self, name, module, attr, section):
-        # type: (Text, Text, Text, ScriptSection) -> RecordEntry
+    def write_script(
+        self, name: Text, module: Text, attr: Text, section: ScriptSection
+    ) -> RecordEntry:
         """Write a script to invoke an entrypoint.
 
         :param name: name of the script
@@ -174,8 +178,12 @@ class SchemeDictionaryDestination(WheelDestination):
 
             return entry
 
-    def finalize_installation(self, scheme, record_file_path, records):
-        # type: (Scheme, FSPath, Iterable[Tuple[Scheme, RecordEntry]]) -> None
+    def finalize_installation(
+        self,
+        scheme: Scheme,
+        record_file_path: FSPath,
+        records: Iterable[Tuple[Scheme, RecordEntry]],
+    ) -> None:
         """Finalize installation, by writing the ``RECORD`` file.
 
         :param scheme: scheme to write the ``RECORD`` file in
