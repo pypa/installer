@@ -39,7 +39,7 @@ project.
 
 ## Initial Setup
 
-To work on this project, you need to have git 2.17+ and Python 3.6+.
+To work on this project, you need to have git 2.17+ and Python 3.7+.
 
 - Clone this project using git:
 
