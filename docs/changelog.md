@@ -6,7 +6,7 @@
 
 ## v0.2.2 (May 15, 2021)
 
-- Teach {any}`SchemeDictionaryDestionation` to create subfolders.
+- Teach {any}`SchemeDictionaryDestination` to create subfolders.
 
 ## v0.2.1 (May 15, 2021)
 
