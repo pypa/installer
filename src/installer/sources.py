@@ -162,7 +162,7 @@ class WheelFile(WheelSource):
         record_mapping = {record[0]: record for record in records}
 
         for item in self._zipfile.infolist():
-            record = record_mapping.pop(item.filename)
+            record = record_mapping.pop(item.filename, None)
             assert record is not None, "In {}, {} is not mentioned in RECORD".format(
                 self._zipfile.filename,
                 item.filename,
