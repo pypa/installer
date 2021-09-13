@@ -162,7 +162,7 @@ class WheelFile(WheelSource):
         record_mapping = {record[0]: record for record in records}
 
         for item in self._zipfile.infolist():
-            if not item.filename[-1] == '/':
+            if not item.filename[-1] == "/":
                 record = record_mapping.pop(item.filename, None)
                 assert (
                     record is not None
