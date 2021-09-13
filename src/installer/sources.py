@@ -162,12 +162,15 @@ class WheelFile(WheelSource):
         record_mapping = {record[0]: record for record in records}
 
         for item in self._zipfile.infolist():
-            record = record_mapping.pop(item.filename)
-            assert record is not None, "In {}, {} is not mentioned in RECORD".format(
-                self._zipfile.filename,
-                item.filename,
-            )  # should not happen for valid wheels
+            if not item.filename[-1] == '/':
+                record = record_mapping.pop(item.filename, None)
+                assert (
+                    record is not None
+                ), "In {}, {} is not mentioned in RECORD".format(
+                    self._zipfile.filename,
+                    item.filename,
+                )  # should not happen for valid wheels
 
-            with self._zipfile.open(item) as stream:
-                stream_casted = cast("BinaryIO", stream)
-                yield record, stream_casted
+                with self._zipfile.open(item) as stream:
+                    stream_casted = cast("BinaryIO", stream)
+                    yield record, stream_casted
