@@ -3,10 +3,10 @@
 import io
 import shlex
 import zipfile
+from importlib.resources import read_binary
 from typing import Literal, Mapping, Optional, Tuple
 
 from installer import _scripts
-from installer._compat import importlib_resources
 from installer._compat.typing import Binary, Text
 
 LauncherKind = Literal["posix", "win-ia32", "win-amd64", "win-arm", "win-arm64"]
@@ -122,7 +122,7 @@ class Script(object):
         except KeyError:
             error = "{!r} not in {!r}".format(key, sorted(_ALLOWED_LAUNCHERS))
             raise InvalidScript(error)
-        return importlib_resources.read_binary(_scripts, name)
+        return read_binary(_scripts, name)
 
     def generate(self, executable: str, kind: LauncherKind) -> Tuple[Text, Binary]:
         """Generate a launcher for this script.
