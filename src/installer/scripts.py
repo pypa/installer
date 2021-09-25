@@ -47,11 +47,6 @@ def _is_executable_simple(executable: bytes) -> bool:
     return shebang_length <= 127
 
 
-def _quote_compat(s: str) -> str:  # pragma: no cover
-    """Fallback implementation for ``shlex.quote`` (for Python 2)."""
-    return u"'" + s.replace(u"'", u"'\"'\"'") + u"'"
-
-
 def _build_shebang(executable: str, forlauncher: bool) -> bytes:
     """Build a shebang line.
 
@@ -72,8 +67,7 @@ def _build_shebang(executable: str, forlauncher: bool) -> bytes:
     # Read the following message to understand how the hack works:
     # https://github.com/pradyunsg/installer/pull/4#issuecomment-623668717
 
-    quote = getattr(shlex, "quote", _quote_compat)
-    quoted = quote(executable).encode("utf-8")
+    quoted = shlex.quote(executable).encode("utf-8")
     # I don't understand a lick what this is trying to do.
     return b"#!/bin/sh\n'''exec' " + quoted + b' "$0" "$@"\n' + b"' '''"
 
