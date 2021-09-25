@@ -49,3 +49,4 @@ jobs:
 
       - run: pip install nox
       - run: nox -s test-${{ matrix.python-version }}
+      - run: nox -s doctest-${{ matrix.python-version }}

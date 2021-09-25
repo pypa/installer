@@ -53,8 +53,13 @@ def test(session):
         *session.posargs
     )
 
+
+@nox.session(python=["3.7", "3.8", "3.9", "pypy3"])
+def doctest(session):
+    session.install(".")
     session.install("-r", "docs/requirements.txt")
-    session.run("sphinx-build", "-b", "doctest", "docs/", "build/docs")
+
+    session.run("sphinx-build", "-b", "doctest", "docs/", "build/doctest")
 
 
 @nox.session(python="3.8")
