@@ -7,12 +7,11 @@ import os
 import re
 import sys
 from collections import namedtuple
+from configparser import ConfigParser
 from email.message import Message
 from email.parser import FeedParser
-from typing import BinaryIO, Iterable, Iterator, NewType, Tuple
+from typing import BinaryIO, Iterable, Iterator, NewType, Tuple, cast
 
-from installer._compat import ConfigParser
-from installer._compat.typing import Text, cast
 from installer.records import RecordEntry
 from installer.scripts import LauncherKind, ScriptSection
 
@@ -58,10 +57,10 @@ _ENTRYPOINT_REGEX = re.compile(
 )
 
 # According to https://www.python.org/dev/peps/pep-0427/#id7
-SCHEME_NAMES = cast("AllSchemes", ("purelib", "platlib", "headers", "scripts", "data"))
+SCHEME_NAMES = cast(AllSchemes, ("purelib", "platlib", "headers", "scripts", "data"))
 
 
-def parse_metadata_file(contents: Text) -> Message:
+def parse_metadata_file(contents: str) -> Message:
     """Parse :pep:`376` ``PKG-INFO``-style metadata files.
 
     ``METADATA`` and ``WHEEL`` files (as per :pep:`427`) use the same syntax
@@ -74,7 +73,7 @@ def parse_metadata_file(contents: Text) -> Message:
     return feed_parser.close()
 
 
-def parse_wheel_filename(filename: Text) -> WheelFilename:
+def parse_wheel_filename(filename: str) -> WheelFilename:
     """Parse a wheel filename, into it's various components.
 
     :param filename: The filename to parse.
@@ -170,10 +169,10 @@ def construct_record_file(records: Iterable[Tuple[Scheme, RecordEntry]]) -> Bina
     return stream
 
 
-def parse_entrypoints(text: Text) -> Iterable[Tuple[Text, Text, Text, ScriptSection]]:
+def parse_entrypoints(text: str) -> Iterable[Tuple[str, str, str, ScriptSection]]:
     # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115  # noqa
     config = ConfigParser(delimiters="=")
-    config.optionxform = Text  # type: ignore
+    config.optionxform = str  # type: ignore
     config.read_string(text)
 
     for section in config.sections():
@@ -181,17 +180,17 @@ def parse_entrypoints(text: Text) -> Iterable[Tuple[Text, Text, Text, ScriptSect
             continue
 
         for name, value in config.items(section):
-            assert isinstance(name, Text)
+            assert isinstance(name, str)
             match = _ENTRYPOINT_REGEX.match(value)
             assert match
 
             module = match.group("module")
-            assert isinstance(module, Text)
+            assert isinstance(module, str)
 
             attrs = match.group("attrs")
             # TODO: make this a proper error, which can be caught.
             assert attrs is not None
-            assert isinstance(attrs, Text)
+            assert isinstance(attrs, str)
 
             script_section = cast("ScriptSection", section[: -len("_scripts")])
 

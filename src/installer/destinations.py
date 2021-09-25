@@ -2,10 +2,8 @@
 
 import io
 import os
-from typing import BinaryIO, Dict, Iterable, Tuple
+from typing import BinaryIO, Dict, Iterable, Tuple, Union
 
-from installer._compat import FileExistsError
-from installer._compat.typing import FSPath, Text
 from installer.records import Hash, RecordEntry
 from installer.scripts import LauncherKind, Script, ScriptSection
 from installer.utils import (
@@ -24,7 +22,7 @@ class WheelDestination(object):
     """
 
     def write_script(
-        self, name: Text, module: Text, attr: Text, section: ScriptSection
+        self, name: str, module: str, attr: str, section: ScriptSection
     ) -> RecordEntry:
         """Write a script in the correct location to invoke given entry point.
 
@@ -42,7 +40,9 @@ class WheelDestination(object):
         """
         raise NotImplementedError
 
-    def write_file(self, scheme: Scheme, path: FSPath, stream: BinaryIO) -> RecordEntry:
+    def write_file(
+        self, scheme: Scheme, path: Union[str, "os.PathLike[str]"], stream: BinaryIO
+    ) -> RecordEntry:
         """Write a file to correct ``path`` within the ``scheme``.
 
         :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
@@ -62,7 +62,7 @@ class WheelDestination(object):
     def finalize_installation(
         self,
         scheme: Scheme,
-        record_file_path: FSPath,
+        record_file_path: str,
         records: Iterable[Tuple[Scheme, RecordEntry]],
     ) -> None:
         """Finalize installation, after all the files are written.
@@ -105,9 +105,7 @@ class SchemeDictionaryDestination(WheelDestination):
         self.script_kind = script_kind
         self.hash_algorithm = hash_algorithm
 
-    def write_to_fs(
-        self, scheme: Scheme, path: FSPath, stream: BinaryIO
-    ) -> RecordEntry:
+    def write_to_fs(self, scheme: Scheme, path: str, stream: BinaryIO) -> RecordEntry:
         """Write contents of ``stream`` to the correct location on the filesystem.
 
         :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
@@ -131,7 +129,9 @@ class SchemeDictionaryDestination(WheelDestination):
 
         return RecordEntry(path, Hash(self.hash_algorithm, hash_), size)
 
-    def write_file(self, scheme: Scheme, path: FSPath, stream: BinaryIO) -> RecordEntry:
+    def write_file(
+        self, scheme: Scheme, path: Union[str, "os.PathLike[str]"], stream: BinaryIO
+    ) -> RecordEntry:
         """Write a file to correct ``path`` within the ``scheme``.
 
         :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
@@ -142,14 +142,16 @@ class SchemeDictionaryDestination(WheelDestination):
         - Uses :py:meth:`SchemeDictionaryDestination.write_to_fs` for the
           filesystem interaction.
         """
+        path_ = os.fspath(path)
+
         if scheme == "scripts":
             with fix_shebang(stream, self.interpreter) as stream_with_different_shebang:
-                return self.write_to_fs(scheme, path, stream_with_different_shebang)
+                return self.write_to_fs(scheme, path_, stream_with_different_shebang)
 
-        return self.write_to_fs(scheme, path, stream)
+        return self.write_to_fs(scheme, path_, stream)
 
     def write_script(
-        self, name: Text, module: Text, attr: Text, section: ScriptSection
+        self, name: str, module: str, attr: str, section: ScriptSection
     ) -> RecordEntry:
         """Write a script to invoke an entrypoint.
 
@@ -181,7 +183,7 @@ class SchemeDictionaryDestination(WheelDestination):
     def finalize_installation(
         self,
         scheme: Scheme,
-        record_file_path: FSPath,
+        record_file_path: str,
         records: Iterable[Tuple[Scheme, RecordEntry]],
     ) -> None:
         """Finalize installation, by writing the ``RECORD`` file.

@@ -7,7 +7,6 @@ from importlib.resources import read_binary
 from typing import Literal, Mapping, Optional, Tuple
 
 from installer import _scripts
-from installer._compat.typing import Binary, Text
 
 LauncherKind = Literal["posix", "win-ia32", "win-amd64", "win-arm", "win-arm64"]
 ScriptSection = Literal["console", "gui"]
@@ -38,7 +37,7 @@ if __name__ == "__main__":
 """
 
 
-def _is_executable_simple(executable: Binary) -> bool:
+def _is_executable_simple(executable: bytes) -> bool:
     if b" " in executable:
         return False
     shebang_length = len(executable) + 3  # Prefix #! and newline after.
@@ -48,12 +47,12 @@ def _is_executable_simple(executable: Binary) -> bool:
     return shebang_length <= 127
 
 
-def _quote_compat(s: Text) -> Text:  # pragma: no cover
+def _quote_compat(s: str) -> str:  # pragma: no cover
     """Fallback implementation for ``shlex.quote`` (for Python 2)."""
     return u"'" + s.replace(u"'", u"'\"'\"'") + u"'"
 
 
-def _build_shebang(executable: Text, forlauncher: bool) -> Binary:
+def _build_shebang(executable: str, forlauncher: bool) -> bytes:
     """Build a shebang line.
 
     The non-launcher cases are taken directly from distlib's implementation,
@@ -89,7 +88,7 @@ class Script(object):
     __slots__ = ("name", "module", "attr", "section")
 
     def __init__(
-        self, name: Text, module: Text, attr: Text, section: ScriptSection
+        self, name: str, module: str, attr: str, section: ScriptSection
     ) -> None:
         """Construct a Script object.
 
@@ -113,7 +112,7 @@ class Script(object):
             self.attr,
         )
 
-    def _get_launcher_data(self, kind: LauncherKind) -> Optional[Binary]:
+    def _get_launcher_data(self, kind: LauncherKind) -> Optional[bytes]:
         if kind == "posix":
             return None
         key = (self.section, kind)
@@ -124,7 +123,7 @@ class Script(object):
             raise InvalidScript(error)
         return read_binary(_scripts, name)
 
-    def generate(self, executable: str, kind: LauncherKind) -> Tuple[Text, Binary]:
+    def generate(self, executable: str, kind: LauncherKind) -> Tuple[str, bytes]:
         """Generate a launcher for this script.
 
         :param executable: Path to the executable to invoke.

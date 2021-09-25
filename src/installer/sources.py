@@ -4,13 +4,12 @@ import os
 import posixpath
 import zipfile
 from contextlib import contextmanager
-from typing import BinaryIO, Iterator, List, Tuple
+from typing import BinaryIO, Iterator, List, Tuple, cast
 
 import installer.records
 import installer.utils
-from installer._compat.typing import FSPath, Text, cast
 
-WheelContentElement = Tuple[Tuple[FSPath, str, str], BinaryIO]
+WheelContentElement = Tuple[Tuple[str, str, str], BinaryIO]
 
 
 __all__ = ["WheelSource", "WheelFile"]
@@ -22,7 +21,7 @@ class WheelSource(object):
     This is an abstract class, whose methods have to be implemented by subclasses.
     """
 
-    def __init__(self, distribution: Text, version: Text) -> None:
+    def __init__(self, distribution: str, version: str) -> None:
         """Initialize a WheelSource object.
 
         :param distribution: distribution name (like ``urllib3``)
@@ -43,7 +42,7 @@ class WheelSource(object):
         return u"{}-{}.data".format(self.distribution, self.version)
 
     @property
-    def dist_info_filenames(self) -> List[FSPath]:
+    def dist_info_filenames(self) -> List[str]:
         """Get names of all files in the dist-info directory.
 
         Sample usage/behaviour::
@@ -53,7 +52,7 @@ class WheelSource(object):
         """
         raise NotImplementedError
 
-    def read_dist_info(self, filename: FSPath) -> Text:
+    def read_dist_info(self, filename: str) -> str:
         """Get contents, from ``filename`` in the dist-info directory.
 
         Sample usage/behaviour::
@@ -116,13 +115,13 @@ class WheelFile(WheelSource):
 
     @classmethod
     @contextmanager
-    def open(cls, path: FSPath) -> Iterator["WheelFile"]:
+    def open(cls, path: "os.PathLike[str]") -> Iterator["WheelFile"]:
         """Create a wheelfile from a given path."""
         with zipfile.ZipFile(path) as f:
             yield cls(f)
 
     @property
-    def dist_info_filenames(self) -> List[FSPath]:
+    def dist_info_filenames(self) -> List[str]:
         """Get names of all files in the dist-info directory."""
         base = self.dist_info_dir
         return [
@@ -132,7 +131,7 @@ class WheelFile(WheelSource):
             if base == posixpath.commonprefix([name, base])
         ]
 
-    def read_dist_info(self, filename: FSPath) -> Text:
+    def read_dist_info(self, filename: str) -> str:
         """Get contents, from ``filename`` in the dist-info directory."""
         path = posixpath.join(self.dist_info_dir, filename)
         return self._zipfile.read(path).decode("utf-8")

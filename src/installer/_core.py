@@ -2,9 +2,8 @@
 
 import posixpath
 from io import BytesIO
-from typing import Dict, Tuple
+from typing import Dict, Tuple, cast
 
-from installer._compat.typing import Binary, FSPath, cast
 from installer.destinations import WheelDestination
 from installer.exceptions import InvalidWheelSource
 from installer.records import RecordEntry
@@ -29,14 +28,14 @@ def _process_WHEEL_file(source: WheelSource) -> Scheme:
 
     # Determine where archive root should go.
     if metadata["Root-Is-Purelib"] == "true":
-        return cast("Scheme", "purelib")
+        return cast(Scheme, "purelib")
     else:
-        return cast("Scheme", "platlib")
+        return cast(Scheme, "platlib")
 
 
 def _determine_scheme(
-    path: FSPath, source: WheelSource, root_scheme: Scheme
-) -> Tuple[Scheme, FSPath]:
+    path: str, source: WheelSource, root_scheme: Scheme
+) -> Tuple[Scheme, str]:
     """Determine which scheme to place given path in, from source."""
     data_dir = source.data_dir
 
@@ -59,13 +58,13 @@ def _determine_scheme(
         msg_fmt = u"{path} is not contained in a valid .data subdirectory."
         raise InvalidWheelSource(source, msg_fmt.format(path=path))
 
-    return cast("Scheme", scheme_name), posixpath.join(*reversed(parts[:-1]))
+    return cast(Scheme, scheme_name), posixpath.join(*reversed(parts[:-1]))
 
 
 def install(
     source: WheelSource,
     destination: WheelDestination,
-    additional_metadata: Dict[str, Binary],
+    additional_metadata: Dict[str, bytes],
 ) -> None:
     """Install wheel described by ``source`` into ``destination``.
 

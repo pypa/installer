@@ -3,9 +3,7 @@
 import base64
 import csv
 import hashlib
-from typing import Iterable, Iterator, Optional, Tuple
-
-from installer._compat.typing import FSPath, Text, cast
+from typing import Iterable, Iterator, Optional, Tuple, cast
 
 __all__ = [
     "Hash",
@@ -88,9 +86,7 @@ class RecordEntry(object):
     A list of :py:class:`RecordEntry` objects fully represents a RECORD file.
     """
 
-    def __init__(
-        self, path: FSPath, hash_: Optional[Hash], size: Optional[int]
-    ) -> None:
+    def __init__(self, path: str, hash_: Optional[Hash], size: Optional[int]) -> None:
         r"""Construct a ``RecordEntry`` object.
 
         Most consumers should use :py:meth:`RecordEntry.from_elements`, since no
@@ -143,13 +139,12 @@ class RecordEntry(object):
         return True
 
     @classmethod
-    def from_elements(cls, path: FSPath, hash_: str, size: str) -> "RecordEntry":
+    def from_elements(cls, path: str, hash_: str, size: str) -> "RecordEntry":
         r"""Build a RecordEntry object, from values of the elements.
 
         Typical usage::
 
-            reader = csv.reader(f)
-            for row in reader:
+            for row in parse_record_file(f):
                 record = RecordEntry.from_elements(row[0], row[1], row[2])
 
         Meaning of each element is specified in :pep:`376`.
@@ -187,7 +182,7 @@ class RecordEntry(object):
         return cls(path=path, hash_=hash_value, size=size_value)
 
 
-def parse_record_file(rows: Iterable[Text]) -> Iterator[Tuple[FSPath, str, str]]:
+def parse_record_file(rows: Iterable[str]) -> Iterator[Tuple[str, str, str]]:
     """Parse a :pep:`376` RECORD.
 
     Returns an iterable of 3-value tuples, that can be passed to
@@ -203,5 +198,5 @@ def parse_record_file(rows: Iterable[Text]) -> Iterator[Tuple[FSPath, str, str]]
             )
             raise InvalidRecordEntry(elements=elements, issues=[message])
 
-        value = cast("Tuple[FSPath, str, str]", tuple(elements))
+        value = cast(Tuple[str, str, str], tuple(elements))
         yield value

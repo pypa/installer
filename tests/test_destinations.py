@@ -3,7 +3,6 @@ import os.path
 
 import pytest
 
-from installer._compat import FileExistsError
 from installer.destinations import SchemeDictionaryDestination, WheelDestination
 from installer.records import RecordEntry
 from installer.scripts import Script
