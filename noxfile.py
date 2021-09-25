@@ -4,7 +4,7 @@ import os
 
 import nox
 
-nox.options.sessions = ["lint", "test"]
+nox.options.sessions = ["lint", "test", "doctest"]
 nox.options.reuse_existing_virtualenvs = True
 
 
