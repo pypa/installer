@@ -22,9 +22,11 @@ _ALLOWED_LAUNCHERS = {
     ("console", "win-ia32"): "t32.exe",
     ("console", "win-amd64"): "t64.exe",
     ("console", "win-arm"): "t_arm.exe",
+    ("console", "win-arm64"): "t64-arm.exe",
     ("gui", "win-ia32"): "w32.exe",
     ("gui", "win-amd64"): "w64.exe",
     ("gui", "win-arm"): "w_arm.exe",
+    ("gui", "win-arm64"): "w64-arm.exe",
 }  # type: Mapping[Tuple[ScriptSection, LauncherKind], str]
 
 _SCRIPT_TEMPLATE = """\

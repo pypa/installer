@@ -15,9 +15,11 @@ LAUNCHERS = [
     "t32.exe",
     "t64.exe",
     "t_arm.exe",
+    "t64-arm.exe",
     "w32.exe",
     "w64.exe",
     "w_arm.exe",
+    "w64-arm.exe",
 ]
 
 
