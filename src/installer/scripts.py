@@ -4,18 +4,21 @@ import io
 import shlex
 import zipfile
 from importlib.resources import read_binary
-from typing import Literal, Mapping, Optional, Tuple
+from typing import TYPE_CHECKING, Mapping, Optional, Tuple
 
 from installer import _scripts
 
-LauncherKind = Literal["posix", "win-ia32", "win-amd64", "win-arm", "win-arm64"]
-ScriptSection = Literal["console", "gui"]
+if TYPE_CHECKING:
+    from typing import Literal
+
+    LauncherKind = Literal["posix", "win-ia32", "win-amd64", "win-arm", "win-arm64"]
+    ScriptSection = Literal["console", "gui"]
 
 
 __all__ = ["InvalidScript", "Script"]
 
 
-_ALLOWED_LAUNCHERS: Mapping[Tuple[ScriptSection, LauncherKind], str] = {
+_ALLOWED_LAUNCHERS: Mapping[Tuple["ScriptSection", "LauncherKind"], str] = {
     ("console", "win-ia32"): "t32.exe",
     ("console", "win-amd64"): "t64.exe",
     ("console", "win-arm"): "t_arm.exe",
@@ -82,7 +85,7 @@ class Script(object):
     __slots__ = ("name", "module", "attr", "section")
 
     def __init__(
-        self, name: str, module: str, attr: str, section: ScriptSection
+        self, name: str, module: str, attr: str, section: "ScriptSection"
     ) -> None:
         """Construct a Script object.
 
@@ -106,7 +109,7 @@ class Script(object):
             self.attr,
         )
 
-    def _get_launcher_data(self, kind: LauncherKind) -> Optional[bytes]:
+    def _get_launcher_data(self, kind: "LauncherKind") -> Optional[bytes]:
         if kind == "posix":
             return None
         key = (self.section, kind)
@@ -117,7 +120,7 @@ class Script(object):
             raise InvalidScript(error)
         return read_binary(_scripts, name)
 
-    def generate(self, executable: str, kind: LauncherKind) -> Tuple[str, bytes]:
+    def generate(self, executable: str, kind: "LauncherKind") -> Tuple[str, bytes]:
         """Generate a launcher for this script.
 
         :param executable: Path to the executable to invoke.

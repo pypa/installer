@@ -2,16 +2,19 @@
 
 import io
 import os
-from typing import BinaryIO, Dict, Iterable, Tuple, Union
+from typing import TYPE_CHECKING, BinaryIO, Dict, Iterable, Tuple, Union
 
 from installer.records import Hash, RecordEntry
-from installer.scripts import LauncherKind, Script, ScriptSection
+from installer.scripts import Script
 from installer.utils import (
     Scheme,
     construct_record_file,
     copyfileobj_with_hashing,
     fix_shebang,
 )
+
+if TYPE_CHECKING:
+    from installer.scripts import LauncherKind, ScriptSection
 
 
 class WheelDestination(object):
@@ -22,7 +25,7 @@ class WheelDestination(object):
     """
 
     def write_script(
-        self, name: str, module: str, attr: str, section: ScriptSection
+        self, name: str, module: str, attr: str, section: "ScriptSection"
     ) -> RecordEntry:
         """Write a script in the correct location to invoke given entry point.
 
@@ -88,7 +91,7 @@ class SchemeDictionaryDestination(WheelDestination):
         self,
         scheme_dict: Dict[str, str],
         interpreter: str,
-        script_kind: LauncherKind,
+        script_kind: "LauncherKind",
         hash_algorithm: str = "sha256",
     ) -> None:
         """Construct a ``SchemeDictionaryDestination`` object.
@@ -151,7 +154,7 @@ class SchemeDictionaryDestination(WheelDestination):
         return self.write_to_fs(scheme, path_, stream)
 
     def write_script(
-        self, name: str, module: str, attr: str, section: ScriptSection
+        self, name: str, module: str, attr: str, section: "ScriptSection"
     ) -> RecordEntry:
         """Write a script to invoke an entrypoint.
 

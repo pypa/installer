@@ -10,10 +10,12 @@ from collections import namedtuple
 from configparser import ConfigParser
 from email.message import Message
 from email.parser import FeedParser
-from typing import BinaryIO, Iterable, Iterator, NewType, Tuple, cast
+from typing import TYPE_CHECKING, BinaryIO, Iterable, Iterator, NewType, Tuple, cast
 
 from installer.records import RecordEntry
-from installer.scripts import LauncherKind, ScriptSection
+
+if TYPE_CHECKING:
+    from installer.scripts import LauncherKind, ScriptSection
 
 Scheme = NewType("Scheme", str)
 AllSchemes = Tuple[Scheme, ...]
@@ -113,7 +115,7 @@ def copyfileobj_with_hashing(
     return hasher.hexdigest(), size
 
 
-def get_launcher_kind() -> LauncherKind:  # pragma: no cover
+def get_launcher_kind() -> "LauncherKind":  # pragma: no cover
     """Get the launcher kind for the current machine."""
     if os.name != "nt":
         return "posix"
@@ -169,7 +171,7 @@ def construct_record_file(records: Iterable[Tuple[Scheme, RecordEntry]]) -> Bina
     return stream
 
 
-def parse_entrypoints(text: str) -> Iterable[Tuple[str, str, str, ScriptSection]]:
+def parse_entrypoints(text: str) -> Iterable[Tuple[str, str, str, "ScriptSection"]]:
     # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115  # noqa
     config = ConfigParser(delimiters="=")
     config.optionxform = str  # type: ignore
