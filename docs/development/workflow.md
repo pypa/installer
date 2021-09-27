@@ -9,11 +9,6 @@ you would use when working on this project.
 This project uses the [GitHub Flow] for collaboration. The codebase
 is Python.
 
-```{note}
-This project currently maintains compatibility with Python 2 but
-this compatibility will be removed in 0.3.0, planned for June 2021.
-```
-
 - [flit] is used for automating development tasks.
 - [nox] is used for automating development tasks.
 - [pre-commit] is used for running the linters.
