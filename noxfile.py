@@ -62,7 +62,7 @@ def doctest(session):
     session.run("sphinx-build", "-b", "doctest", "docs/", "build/doctest")
 
 
-@nox.session(python="3.8")
+@nox.session(python="3.8", name="update-launchers")
 def update_launchers(session):
     session.install("httpx")
     session.run("python", "tools/update_launchers.py")
