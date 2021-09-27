@@ -148,7 +148,7 @@ class TestWheelFile:
         files = {}
         with zipfile.ZipFile(fancy_wheel) as archive:
             for file in archive.namelist():
-                if file[-1] == "/":
+                if file[-1:] == "/":
                     continue
                 files[file] = archive.read(file)
 

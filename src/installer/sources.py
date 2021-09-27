@@ -139,7 +139,7 @@ class WheelFile(WheelSource):
         return [
             name[len(base) + 1 :]
             for name in self._zipfile.namelist()
-            if name[-1] != "/"
+            if name[-1:] != "/"
             if base == posixpath.commonprefix([name, base])
         ]
 
@@ -163,7 +163,7 @@ class WheelFile(WheelSource):
         record_mapping = {record[0]: record for record in records}
 
         for item in self._zipfile.infolist():
-            if item.filename[-1] == "/":  # looks like a directory
+            if item.filename[-1:] == "/":  # looks like a directory
                 continue
 
             record = record_mapping.pop(item.filename, None)
