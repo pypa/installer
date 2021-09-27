@@ -13,6 +13,7 @@ from installer.sources import WheelFile, WheelSource
 def fancy_wheel(tmp_path):
     path = tmp_path / "fancy-1.0.0-py2.py3-none-any.whl"
     files = {
+        "fancy/": b"""""",
         "fancy/__init__.py": b"""\
             def main():
                 print("I'm fancy.")
@@ -22,9 +23,11 @@ def fancy_wheel(tmp_path):
                 from . import main
                 main()
         """,
+        "fancy-1.0.0.data/data/fancy/": b"""""",
         "fancy-1.0.0.data/data/fancy/data.py": b"""\
             # put me in data
         """,
+        "fancy-1.0.0.dist-info/": b"""""",
         "fancy-1.0.0.dist-info/top_level.txt": b"""\
             fancy
         """,
@@ -145,6 +148,8 @@ class TestWheelFile:
         files = {}
         with zipfile.ZipFile(fancy_wheel) as archive:
             for file in archive.namelist():
+                if file[-1:] == "/":
+                    continue
                 files[file] = archive.read(file)
 
         expected_record_lines = (

@@ -139,6 +139,7 @@ class WheelFile(WheelSource):
         return [
             name[len(base) + 1 :]
             for name in self._zipfile.namelist()
+            if name[-1:] != "/"
             if base == posixpath.commonprefix([name, base])
         ]
 
@@ -162,7 +163,10 @@ class WheelFile(WheelSource):
         record_mapping = {record[0]: record for record in records}
 
         for item in self._zipfile.infolist():
-            record = record_mapping.pop(item.filename)
+            if item.filename[-1:] == "/":  # looks like a directory
+                continue
+
+            record = record_mapping.pop(item.filename, None)
             assert record is not None, "In {}, {} is not mentioned in RECORD".format(
                 self._zipfile.filename,
                 item.filename,
