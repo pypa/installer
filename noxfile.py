@@ -36,7 +36,7 @@ def lint(session):
 
 @nox.session(python=["3.7", "3.8", "3.9", "3.10", "pypy3"])
 def test(session):
-    session.install(".")
+    _install_this_project_with_flit(session, editable=True)
     session.install("-r", "tests/requirements.txt")
 
     htmlcov_output = os.path.join(session.virtualenv.location, "htmlcov")
