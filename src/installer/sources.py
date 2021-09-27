@@ -139,6 +139,7 @@ class WheelFile(WheelSource):
         return [
             name[len(base) + 1 :]
             for name in self._zipfile.namelist()
+            if name[-1] != "/"
             if base == posixpath.commonprefix([name, base])
         ]
 
