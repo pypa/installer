@@ -19,6 +19,7 @@ from typing import (
     NewType,
     Optional,
     Tuple,
+    Union,
     cast,
 )
 
@@ -38,6 +39,7 @@ __all__ = [
     "fix_shebang",
     "construct_record_file",
     "parse_entrypoints",
+    "make_file_executable",
     "WheelFilename",
     "SCHEME_NAMES",
 ]
@@ -229,3 +231,17 @@ def parse_entrypoints(text: str) -> Iterable[Tuple[str, str, str, "ScriptSection
             script_section = cast("ScriptSection", section[: -len("_scripts")])
 
             yield name, module, attrs, script_section
+
+
+def _current_umask() -> int:
+    """Get the current umask which involves having to set it temporarily."""
+    mask = os.umask(0)
+    os.umask(mask)
+    return mask
+
+
+# Borrowed from:
+# https://github.com/pypa/pip/blob/0f21fb92/src/pip/_internal/utils/unpacking.py#L93
+def make_file_executable(path: Union[str, "os.PathLike[str]"]) -> None:
+    """Make the file at the provided path executable."""
+    os.chmod(path, (0o777 & ~_current_umask() | 0o111))
