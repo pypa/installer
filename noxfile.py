@@ -34,7 +34,7 @@ def lint(session):
     session.run("pre-commit", "run", "--all-files", *args)
 
 
-@nox.session(python=["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "pypy2", "pypy3"])
+@nox.session(python=["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10", pypy2", "pypy3"])
 def test(session):
     session.install(".")
     session.install("-r", "tests/requirements.txt")
