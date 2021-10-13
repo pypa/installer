@@ -54,7 +54,7 @@ def test(session):
     )
 
 
-@nox.session(python=["3.7", "3.8", "3.9", "pypy3"])
+@nox.session(python=["3.7", "3.8", "3.9", "3.10", "pypy3"])
 def doctest(session):
     session.install(".")
     session.install("-r", "docs/requirements.txt")
