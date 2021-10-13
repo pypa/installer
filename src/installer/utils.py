@@ -184,9 +184,9 @@ def construct_record_file(
     """Construct a RECORD file.
 
     :param records:
-        Same as the contents passed into :ref:``WheelDestination.finalize_installation``
+        ``records`` as passed into :ref:``WheelDestination.finalize_installation``
     :param prefix_for_scheme:
-        A function to get a prefix to add for RECORD entries, within a scheme
+        function to get a prefix to add for RECORD entries, within a scheme
 
     :return: A stream that can be written to file. Must be closed by the caller.
     """
@@ -198,6 +198,12 @@ def construct_record_file(
 
 
 def parse_entrypoints(text: str) -> Iterable[Tuple[str, str, str, "ScriptSection"]]:
+    """Parse ``entry_points.txt``-style files.
+
+    :param contents: entire contents of the file
+    :return:
+        name of the script, module to use, attribute to call, kind of script (cli / gui)
+    """
     # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115  # noqa
     config = ConfigParser(delimiters="=")
     config.optionxform = str  # type: ignore
