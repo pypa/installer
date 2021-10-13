@@ -2,7 +2,7 @@
 
 import io
 import os
-from typing import TYPE_CHECKING, BinaryIO, Dict, Iterable, Tuple, Union
+from typing import TYPE_CHECKING, BinaryIO, Dict, Iterable, Optional, Tuple, Union
 
 from installer.records import Hash, RecordEntry
 from installer.scripts import Script
@@ -195,5 +195,15 @@ class SchemeDictionaryDestination(WheelDestination):
         :param record_file_path: path of the ``RECORD`` file with that scheme
         :param records: entries to write to the ``RECORD`` file
         """
-        with construct_record_file(records) as record_stream:
+
+        def prefix_for_scheme(file_scheme: str) -> Optional[str]:
+            if file_scheme == scheme:
+                return None
+            path = os.path.relpath(
+                self.scheme_dict[file_scheme],
+                start=self.scheme_dict[scheme],
+            )
+            return path + "/"
+
+        with construct_record_file(records, prefix_for_scheme) as record_stream:
             self.write_to_fs(scheme, record_file_path, record_stream)
