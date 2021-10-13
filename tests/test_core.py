@@ -39,9 +39,7 @@ def mock_destination():
 
 
 class FakeWheelSource(WheelSource):
-    # NOTE: For Python 2 compatibility, this doesn't use keyword only arguments.
-    #       Change that once the support is dropped.
-    def __init__(self, distribution, version, regular_files, dist_info_files):
+    def __init__(self, *, distribution, version, regular_files, dist_info_files):
         super(FakeWheelSource, self).__init__(distribution, version)
 
         self.dist_info_files = {

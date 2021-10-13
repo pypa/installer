@@ -12,13 +12,11 @@ jobs:
     strategy:
       matrix:
         os: [Windows, Ubuntu, MacOS]
-        python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
         include:
           # Only run PyPy jobs, on Ubuntu.
           - os: Ubuntu
-            python-version: pypy2
-          - os: Ubuntu
-            python-version: pypy3
+            python-version: pypy-3.7
 
     steps:
       - uses: actions/checkout@v2
@@ -27,11 +25,6 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-
-      # Nox needs a recent Python 3 version (can't run on Python 2 / PyPy 2)
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
 
       # Setup pip's cache
       - name: Save date (for cache)
@@ -48,4 +41,13 @@ jobs:
           restore-keys: pip-v1-${{ runner.os }}
 
       - run: pip install nox
-      - run: nox -s test-${{ matrix.python-version }}
+
+      - run: >
+          nox
+          -s test-${{ matrix.python-version }}
+          -s doctest-${{ matrix.python-version }}
+          --error-on-missing-interpreters
+        if: matrix.python-version != 'pypy-3.7'
+
+      - run: nox --error-on-missing-interpreters -s test-pypy3 doctest-pypy3
+        if: matrix.python-version == 'pypy-3.7'

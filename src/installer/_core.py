@@ -2,25 +2,18 @@
 
 import posixpath
 from io import BytesIO
+from typing import Dict, Tuple, cast
 
-from installer._compat.typing import TYPE_CHECKING, cast
 from installer.destinations import WheelDestination
 from installer.exceptions import InvalidWheelSource
 from installer.records import RecordEntry
 from installer.sources import WheelSource
 from installer.utils import SCHEME_NAMES, Scheme, parse_entrypoints, parse_metadata_file
 
-if TYPE_CHECKING:
-    from typing import Dict, Tuple
-
-    from installer._compat.typing import Binary, FSPath
-
-
 __all__ = ["install"]
 
 
-def _process_WHEEL_file(source):
-    # type: (WheelSource) -> Scheme
+def _process_WHEEL_file(source: WheelSource) -> Scheme:
     """Process the WHEEL file, from ``source``.
 
     Returns the scheme that the archive root should go in.
@@ -35,13 +28,14 @@ def _process_WHEEL_file(source):
 
     # Determine where archive root should go.
     if metadata["Root-Is-Purelib"] == "true":
-        return cast("Scheme", "purelib")
+        return cast(Scheme, "purelib")
     else:
-        return cast("Scheme", "platlib")
+        return cast(Scheme, "platlib")
 
 
-def _determine_scheme(path, source, root_scheme):
-    # type: (FSPath, WheelSource, Scheme) -> Tuple[Scheme, FSPath]
+def _determine_scheme(
+    path: str, source: WheelSource, root_scheme: Scheme
+) -> Tuple[Scheme, str]:
     """Determine which scheme to place given path in, from source."""
     data_dir = source.data_dir
 
@@ -64,11 +58,14 @@ def _determine_scheme(path, source, root_scheme):
         msg_fmt = u"{path} is not contained in a valid .data subdirectory."
         raise InvalidWheelSource(source, msg_fmt.format(path=path))
 
-    return cast("Scheme", scheme_name), posixpath.join(*reversed(parts[:-1]))
+    return cast(Scheme, scheme_name), posixpath.join(*reversed(parts[:-1]))
 
 
-def install(source, destination, additional_metadata):
-    # type: (WheelSource, WheelDestination, Dict[str, Binary]) -> None
+def install(
+    source: WheelSource,
+    destination: WheelDestination,
+    additional_metadata: Dict[str, bytes],
+) -> None:
     """Install wheel described by ``source`` into ``destination``.
 
     :param source: wheel to install.

@@ -4,7 +4,7 @@ import os
 
 import nox
 
-nox.options.sessions = ["lint", "test"]
+nox.options.sessions = ["lint", "test", "doctest"]
 nox.options.reuse_existing_virtualenvs = True
 
 
@@ -34,11 +34,9 @@ def lint(session):
     session.run("pre-commit", "run", "--all-files", *args)
 
 
-@nox.session(
-    python=["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10", "pypy2", "pypy3"]
-)
+@nox.session(python=["3.7", "3.8", "3.9", "3.10", "pypy3"])
 def test(session):
-    session.install(".")
+    _install_this_project_with_flit(session, editable=True)
     session.install("-r", "tests/requirements.txt")
 
     htmlcov_output = os.path.join(session.virtualenv.location, "htmlcov")
@@ -55,12 +53,16 @@ def test(session):
         *session.posargs
     )
 
-    if session.python not in ["2.7", "3.5", "pypy2"]:
-        session.install("-r", "docs/requirements.txt")
-        session.run("sphinx-build", "-b", "doctest", "docs/", "build/docs")
+
+@nox.session(python=["3.7", "3.8", "3.9", "3.10", "pypy3"])
+def doctest(session):
+    session.install(".")
+    session.install("-r", "docs/requirements.txt")
+
+    session.run("sphinx-build", "-b", "doctest", "docs/", "build/doctest")
 
 
-@nox.session(python="3.8")
+@nox.session(python="3.8", name="update-launchers")
 def update_launchers(session):
     session.install("httpx")
     session.run("python", "tools/update_launchers.py")

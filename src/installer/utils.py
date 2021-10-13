@@ -7,22 +7,18 @@ import os
 import re
 import sys
 from collections import namedtuple
+from configparser import ConfigParser
+from email.message import Message
 from email.parser import FeedParser
-from typing import NewType
+from typing import TYPE_CHECKING, BinaryIO, Iterable, Iterator, NewType, Tuple, cast
 
-from installer._compat import ConfigParser
-from installer._compat.typing import TYPE_CHECKING, Text, cast
-
-Scheme = NewType("Scheme", str)
+from installer.records import RecordEntry
 
 if TYPE_CHECKING:
-    from email.message import Message
-    from typing import BinaryIO, Iterable, Iterator, Tuple
-
-    from installer.records import RecordEntry
     from installer.scripts import LauncherKind, ScriptSection
 
-    AllSchemes = Tuple[Scheme, ...]
+Scheme = NewType("Scheme", str)
+AllSchemes = Tuple[Scheme, ...]
 
 __all__ = [
     "parse_metadata_file",
@@ -63,11 +59,10 @@ _ENTRYPOINT_REGEX = re.compile(
 )
 
 # According to https://www.python.org/dev/peps/pep-0427/#id7
-SCHEME_NAMES = cast("AllSchemes", ("purelib", "platlib", "headers", "scripts", "data"))
+SCHEME_NAMES = cast(AllSchemes, ("purelib", "platlib", "headers", "scripts", "data"))
 
 
-def parse_metadata_file(contents):
-    # type: (Text) -> Message
+def parse_metadata_file(contents: str) -> Message:
     """Parse :pep:`376` ``PKG-INFO``-style metadata files.
 
     ``METADATA`` and ``WHEEL`` files (as per :pep:`427`) use the same syntax
@@ -80,8 +75,7 @@ def parse_metadata_file(contents):
     return feed_parser.close()
 
 
-def parse_wheel_filename(filename):
-    # type: (Text) -> WheelFilename
+def parse_wheel_filename(filename: str) -> WheelFilename:
     """Parse a wheel filename, into it's various components.
 
     :param filename: The filename to parse.
@@ -93,11 +87,10 @@ def parse_wheel_filename(filename):
 
 
 def copyfileobj_with_hashing(
-    source,  # type: BinaryIO
-    dest,  # type: BinaryIO
-    hash_algorithm,  # type: str
-):
-    # type: (...) -> Tuple[str, int]
+    source: BinaryIO,
+    dest: BinaryIO,
+    hash_algorithm: str,
+) -> Tuple[str, int]:
     """Copy a buffer while computing the content's hash and size.
 
     Copies the source buffer into the destination buffer while computing the
@@ -122,8 +115,7 @@ def copyfileobj_with_hashing(
     return hasher.hexdigest(), size
 
 
-def get_launcher_kind():  # pragma: no cover
-    # type: () -> LauncherKind
+def get_launcher_kind() -> "LauncherKind":  # pragma: no cover
     """Get the launcher kind for the current machine."""
     if os.name != "nt":
         return "posix"
@@ -141,8 +133,7 @@ def get_launcher_kind():  # pragma: no cover
 
 
 @contextlib.contextmanager
-def fix_shebang(stream, interpreter):
-    # type: (BinaryIO, str) -> Iterator[BinaryIO]
+def fix_shebang(stream: BinaryIO, interpreter: str) -> Iterator[BinaryIO]:
     """Replace ^#!python shebang in a stream with the correct interpreter.
 
     The original stream should be closed by the caller.
@@ -168,8 +159,7 @@ def fix_shebang(stream, interpreter):
         yield stream
 
 
-def construct_record_file(records):
-    # type: (Iterable[Tuple[Scheme, RecordEntry]]) -> BinaryIO
+def construct_record_file(records: Iterable[Tuple[Scheme, RecordEntry]]) -> BinaryIO:
     """Construct a RECORD file given some records.
 
     The original stream should be closed by the caller.
@@ -181,11 +171,10 @@ def construct_record_file(records):
     return stream
 
 
-def parse_entrypoints(text):
-    # type: (Text) -> Iterable[Tuple[Text, Text, Text, ScriptSection]]
+def parse_entrypoints(text: str) -> Iterable[Tuple[str, str, str, "ScriptSection"]]:
     # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115  # noqa
     config = ConfigParser(delimiters="=")
-    config.optionxform = Text  # type: ignore
+    config.optionxform = str  # type: ignore
     config.read_string(text)
 
     for section in config.sections():
@@ -193,17 +182,17 @@ def parse_entrypoints(text):
             continue
 
         for name, value in config.items(section):
-            assert isinstance(name, Text)
+            assert isinstance(name, str)
             match = _ENTRYPOINT_REGEX.match(value)
             assert match
 
             module = match.group("module")
-            assert isinstance(module, Text)
+            assert isinstance(module, str)
 
             attrs = match.group("attrs")
             # TODO: make this a proper error, which can be caught.
             assert attrs is not None
-            assert isinstance(attrs, Text)
+            assert isinstance(attrs, str)
 
             script_section = cast("ScriptSection", section[: -len("_scripts")])
 

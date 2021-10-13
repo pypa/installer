@@ -3,13 +3,13 @@
 import io
 import shlex
 import zipfile
+from importlib.resources import read_binary
+from typing import TYPE_CHECKING, Mapping, Optional, Tuple
 
 from installer import _scripts
-from installer._compat import importlib_resources
-from installer._compat.typing import TYPE_CHECKING, Binary, Text
 
 if TYPE_CHECKING:
-    from typing import Literal, Mapping, Optional, Tuple
+    from typing import Literal
 
     LauncherKind = Literal["posix", "win-ia32", "win-amd64", "win-arm", "win-arm64"]
     ScriptSection = Literal["console", "gui"]
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 __all__ = ["InvalidScript", "Script"]
 
 
-_ALLOWED_LAUNCHERS = {
+_ALLOWED_LAUNCHERS: Mapping[Tuple["ScriptSection", "LauncherKind"], str] = {
     ("console", "win-ia32"): "t32.exe",
     ("console", "win-amd64"): "t64.exe",
     ("console", "win-arm"): "t_arm.exe",
@@ -27,7 +27,7 @@ _ALLOWED_LAUNCHERS = {
     ("gui", "win-amd64"): "w64.exe",
     ("gui", "win-arm"): "w_arm.exe",
     ("gui", "win-arm64"): "w64-arm.exe",
-}  # type: Mapping[Tuple[ScriptSection, LauncherKind], str]
+}
 
 _SCRIPT_TEMPLATE = """\
 # -*- coding: utf-8 -*-
@@ -40,8 +40,7 @@ if __name__ == "__main__":
 """
 
 
-def _is_executable_simple(executable):
-    # type: (Binary) -> bool
+def _is_executable_simple(executable: bytes) -> bool:
     if b" " in executable:
         return False
     shebang_length = len(executable) + 3  # Prefix #! and newline after.
@@ -51,14 +50,7 @@ def _is_executable_simple(executable):
     return shebang_length <= 127
 
 
-def _quote_compat(s):  # pragma: no cover
-    # type: (Text) -> Text
-    """Fallback implementation for ``shlex.quote`` (for Python 2)."""
-    return u"'" + s.replace(u"'", u"'\"'\"'") + u"'"
-
-
-def _build_shebang(executable, forlauncher):
-    # type: (Text, bool) -> Binary
+def _build_shebang(executable: str, forlauncher: bool) -> bytes:
     """Build a shebang line.
 
     The non-launcher cases are taken directly from distlib's implementation,
@@ -78,8 +70,7 @@ def _build_shebang(executable, forlauncher):
     # Read the following message to understand how the hack works:
     # https://github.com/pradyunsg/installer/pull/4#issuecomment-623668717
 
-    quote = getattr(shlex, "quote", _quote_compat)
-    quoted = quote(executable).encode("utf-8")
+    quoted = shlex.quote(executable).encode("utf-8")
     # I don't understand a lick what this is trying to do.
     return b"#!/bin/sh\n'''exec' " + quoted + b' "$0" "$@"\n' + b"' '''"
 
@@ -93,8 +84,9 @@ class Script(object):
 
     __slots__ = ("name", "module", "attr", "section")
 
-    def __init__(self, name, module, attr, section):
-        # type: (Text, Text, Text, ScriptSection) -> None
+    def __init__(
+        self, name: str, module: str, attr: str, section: "ScriptSection"
+    ) -> None:
         """Construct a Script object.
 
         :param name: name of the script
@@ -110,16 +102,14 @@ class Script(object):
         self.attr = attr
         self.section = section
 
-    def __repr__(self):
-        # type: () -> str
+    def __repr__(self) -> str:
         return "Script(name={!r}, module={!r}, attr={!r}".format(
             self.name,
             self.module,
             self.attr,
         )
 
-    def _get_launcher_data(self, kind):
-        # type: (LauncherKind) -> Optional[Binary]
+    def _get_launcher_data(self, kind: "LauncherKind") -> Optional[bytes]:
         if kind == "posix":
             return None
         key = (self.section, kind)
@@ -128,10 +118,9 @@ class Script(object):
         except KeyError:
             error = "{!r} not in {!r}".format(key, sorted(_ALLOWED_LAUNCHERS))
             raise InvalidScript(error)
-        return importlib_resources.read_binary(_scripts, name)
+        return read_binary(_scripts, name)
 
-    def generate(self, executable, kind):
-        # type: (str, LauncherKind) -> Tuple[Text, Binary]
+    def generate(self, executable: str, kind: "LauncherKind") -> Tuple[str, bytes]:
         """Generate a launcher for this script.
 
         :param executable: Path to the executable to invoke.
