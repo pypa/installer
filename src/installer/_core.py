@@ -8,13 +8,12 @@ from installer.destinations import WheelDestination
 from installer.exceptions import InvalidWheelSource
 from installer.records import RecordEntry
 from installer.sources import WheelSource
-from installer.utils import SCHEME_NAMES, parse_entrypoints, parse_metadata_file
+from installer.utils import SCHEME_NAMES, Scheme, parse_entrypoints, parse_metadata_file
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple
 
     from installer._compat.typing import Binary, FSPath
-    from installer.utils import Scheme
 
 
 __all__ = ["install"]
@@ -94,7 +93,7 @@ def install(source, destination, additional_metadata):
                 attr=attr,
                 section=section,
             )
-            written_records.append(record)
+            written_records.append((Scheme("scripts"), record))
 
     # Write all the files from the wheel.
     for record_elements, stream in source.get_contents():
@@ -115,7 +114,7 @@ def install(source, destination, additional_metadata):
             path=destination_path,
             stream=stream,
         )
-        written_records.append(record)
+        written_records.append((scheme, record))
 
     # Write all the installation-specific metadata
     for filename, contents in additional_metadata.items():
@@ -127,9 +126,9 @@ def install(source, destination, additional_metadata):
                 path=path,
                 stream=other_stream,
             )
-        written_records.append(record)
+        written_records.append((root_scheme, record))
 
-    written_records.append(RecordEntry(record_file_path, None, None))
+    written_records.append((root_scheme, RecordEntry(record_file_path, None, None)))
     destination.finalize_installation(
         scheme=root_scheme,
         record_file_path=record_file_path,

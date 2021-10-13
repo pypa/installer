@@ -169,13 +169,13 @@ def fix_shebang(stream, interpreter):
 
 
 def construct_record_file(records):
-    # type: (Iterable[RecordEntry]) -> BinaryIO
+    # type: (Iterable[Tuple[Scheme, RecordEntry]]) -> BinaryIO
     """Construct a RECORD file given some records.
 
     The original stream should be closed by the caller.
     """
     stream = io.BytesIO()
-    for record in records:
+    for scheme, record in records:
         stream.write(str(record).encode("utf-8") + b"\n")
     stream.seek(0)
     return stream

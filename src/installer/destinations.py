@@ -15,7 +15,7 @@ from installer.utils import (
 )
 
 if TYPE_CHECKING:
-    from typing import BinaryIO, Dict, Iterable
+    from typing import BinaryIO, Dict, Iterable, Tuple
 
     from installer._compat.typing import FSPath, Text
     from installer.scripts import LauncherKind, ScriptSection
@@ -65,7 +65,7 @@ class WheelDestination(object):
         raise NotImplementedError
 
     def finalize_installation(self, scheme, record_file_path, records):
-        # type: (Scheme, FSPath, Iterable[RecordEntry]) -> None
+        # type: (Scheme, FSPath, Iterable[Tuple[Scheme, RecordEntry]]) -> None
         """Finalize installation, after all the files are written.
 
         Handles (re)writing of the ``RECORD`` file.
@@ -180,7 +180,7 @@ class SchemeDictionaryDestination(WheelDestination):
             return entry
 
     def finalize_installation(self, scheme, record_file_path, records):
-        # type: (Scheme, FSPath, Iterable[RecordEntry]) -> None
+        # type: (Scheme, FSPath, Iterable[Tuple[Scheme, RecordEntry]]) -> None
         """Finalize installation, by writing the ``RECORD`` file.
 
         :param scheme: scheme to write the ``RECORD`` file in

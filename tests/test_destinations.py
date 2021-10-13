@@ -95,17 +95,43 @@ class TestSchemeDictionaryDestination:
 
     def test_finalize_write_record(self, destination):
         records = [
-            destination.write_file("data", "my_data1.bin", io.BytesIO(b"my data 1")),
-            destination.write_file("data", "my_data2.bin", io.BytesIO(b"my data 2")),
-            destination.write_file("data", "my_data3.bin", io.BytesIO(b"my data 3")),
-            destination.write_file("scripts", "my_script", io.BytesIO(b"my script")),
-            destination.write_file(
-                "scripts", "my_script2", io.BytesIO(b"#!python\nmy script")
+            (
+                "data",
+                destination.write_file(
+                    "data", "my_data1.bin", io.BytesIO(b"my data 1")
+                ),
             ),
-            destination.write_script(
-                "my_entrypoint", "my_module", "my_function", "console"
+            (
+                "data",
+                destination.write_file(
+                    "data", "my_data2.bin", io.BytesIO(b"my data 2")
+                ),
             ),
-            RecordEntry("RECORD", None, None),
+            (
+                "data",
+                destination.write_file(
+                    "data", "my_data3.bin", io.BytesIO(b"my data 3")
+                ),
+            ),
+            (
+                "scripts",
+                destination.write_file(
+                    "scripts", "my_script", io.BytesIO(b"my script")
+                ),
+            ),
+            (
+                "scripts",
+                destination.write_file(
+                    "scripts", "my_script2", io.BytesIO(b"#!python\nmy script")
+                ),
+            ),
+            (
+                "scripts",
+                destination.write_script(
+                    "my_entrypoint", "my_module", "my_function", "console"
+                ),
+            ),
+            ("purelib", RecordEntry("RECORD", None, None)),
         ]
 
         destination.finalize_installation("purelib", "RECORD", records)

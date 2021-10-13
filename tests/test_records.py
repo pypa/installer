@@ -34,26 +34,31 @@ def record_input(request):
 
 SAMPLE_RECORDS = [
     (
+        "purelib",
         ("test1.py", "sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4", 6),
         b"test1\n",
         True,
     ),
     (
+        "purelib",
         ("test2.py", "sha256=fW_Xd08Nh2JNptzxbQ09EEwxkedx--LznIau1LK_Gg8", 6),
         b"test2\n",
         True,
     ),
     (
+        "purelib",
         ("test3.py", "sha256=qwPDTx7OCCEf4qgDn9ZCQZmz9de1X_E7ETSzZHdsRcU", 6),
         b"test3\n",
         True,
     ),
     (
+        "purelib",
         ("test4.py", "sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4", 7),
         b"test1\n",
         False,
     ),
     (
+        "purelib",
         (
             "test5.py",
             "sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4",
@@ -62,7 +67,7 @@ SAMPLE_RECORDS = [
         b"test1\n",
         True,
     ),
-    (("test6.py", None, None), b"test1\n", True),
+    ("purelib", ("test6.py", None, None), b"test1\n", True),
 ]
 
 
@@ -100,8 +105,12 @@ class TestRecordEntry:
     def test_valid_elements(self, path, hash_, size):
         RecordEntry.from_elements(path, hash_, size)
 
-    @pytest.mark.parametrize(("elements", "data", "passes_validation"), SAMPLE_RECORDS)
-    def test_populates_attributes_correctly(self, elements, data, passes_validation):
+    @pytest.mark.parametrize(
+        ("scheme", "elements", "data", "passes_validation"), SAMPLE_RECORDS
+    )
+    def test_populates_attributes_correctly(
+        self, scheme, elements, data, passes_validation
+    ):
         path, hash_string, size = elements
 
         record = RecordEntry.from_elements(path, hash_string, size)
@@ -114,13 +123,17 @@ class TestRecordEntry:
             assert record.hash_.name == "sha256"
             assert record.hash_.value == hash_string[len("sha256=") :]
 
-    @pytest.mark.parametrize(("elements", "data", "passes_validation"), SAMPLE_RECORDS)
-    def test_validation(self, elements, data, passes_validation):
+    @pytest.mark.parametrize(
+        ("scheme", "elements", "data", "passes_validation"), SAMPLE_RECORDS
+    )
+    def test_validation(self, scheme, elements, data, passes_validation):
         record = RecordEntry.from_elements(*elements)
         assert record.validate(data) == passes_validation
 
-    @pytest.mark.parametrize(("elements", "data", "passes_validation"), SAMPLE_RECORDS)
-    def test_string_representation(self, elements, data, passes_validation):
+    @pytest.mark.parametrize(
+        ("scheme", "elements", "data", "passes_validation"), SAMPLE_RECORDS
+    )
+    def test_string_representation(self, scheme, elements, data, passes_validation):
         record = RecordEntry.from_elements(*elements)
 
         expected_string_value = ",".join(
