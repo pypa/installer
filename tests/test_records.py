@@ -212,8 +212,16 @@ class TestParseRecordFile:
     @pytest.mark.parametrize(
         "line, element_count",
         [
-            ("file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144,", 4),
-            ("distribution-1.0.dist-info/RECORD,,,,", 5),
+            pytest.param(
+                "file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144,",
+                4,
+                id="four",
+            ),
+            pytest.param(
+                "distribution-1.0.dist-info/RECORD,,,,",
+                5,
+                id="five",
+            ),
         ],
     )
     def test_rejects_wrong_element_count(self, line, element_count):

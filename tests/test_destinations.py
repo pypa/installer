@@ -44,23 +44,29 @@ class TestSchemeDictionaryDestination:
     @pytest.mark.parametrize(
         ("scheme", "path", "data", "expected"),
         [
-            # normal file
-            ("data", "my_data.bin", b"my data", b"my data"),
-            # normal file in subfolder
-            ("data", "data_folder/my_data.bin", b"my data", b"my data"),
-            # script file
-            (
+            pytest.param(
+                "data", "my_data.bin", b"my data", b"my data", id="normal file"
+            ),
+            pytest.param(
+                "data",
+                "data_folder/my_data.bin",
+                b"my data",
+                b"my data",
+                id="normal file in subfolder",
+            ),
+            pytest.param(
                 "scripts",
                 "my_script.py",
                 b"#!python\nmy script",
                 b"#!/my/python\nmy script",
+                id="script file",
             ),
-            # script file in subfolder
-            (
+            pytest.param(
                 "scripts",
                 "script_folder/my_script.py",
                 b"#!python\nmy script",
                 b"#!/my/python\nmy script",
+                id="script file in subfolder",
             ),
         ],
     )

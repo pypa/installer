@@ -112,21 +112,25 @@ class TestScript:
     @pytest.mark.parametrize(
         ("data", "expected"),
         [
-            (
+            pytest.param(
                 b"#!python\ntest",
                 b"#!/my/python\ntest",
+                id="python",
             ),
-            (
+            pytest.param(
                 b"#!pythonw\ntest",
                 b"#!/my/python\ntest",
+                id="pythonw",
             ),
-            (
+            pytest.param(
                 b"#!python something\ntest",
                 b"#!/my/python\ntest",
+                id="python-with-args",
             ),
-            (
+            pytest.param(
                 b"#!python",
                 b"#!/my/python\n",
+                id="python-no-content",
             ),
         ],
     )
@@ -173,15 +177,16 @@ class TestParseEntryPoints:
     @pytest.mark.parametrize(
         ("script", "expected"),
         [
-            (u"", []),
-            (
+            pytest.param(u"", [], id="empty"),
+            pytest.param(
                 u"""
                     [foo]
                     foo = foo.bar
                 """,
                 [],
+                id="unrelated",
             ),
-            (
+            pytest.param(
                 u"""
                     [console_scripts]
                     package = package.__main__:package
@@ -189,8 +194,9 @@ class TestParseEntryPoints:
                 [
                     ("package", "package.__main__", "package", "console"),
                 ],
+                id="cli",
             ),
-            (
+            pytest.param(
                 u"""
                     [gui_scripts]
                     package = package.__main__:package
@@ -198,8 +204,9 @@ class TestParseEntryPoints:
                 [
                     ("package", "package.__main__", "package", "gui"),
                 ],
+                id="gui",
             ),
-            (
+            pytest.param(
                 u"""
                     [console_scripts]
                     magic-cli = magic.cli:main
@@ -211,6 +218,7 @@ class TestParseEntryPoints:
                     ("magic-cli", "magic.cli", "main", "console"),
                     ("magic-gui", "magic.gui", "main", "gui"),
                 ],
+                id="cli-and-gui",
             ),
         ],
     )
