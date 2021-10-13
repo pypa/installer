@@ -10,7 +10,17 @@ from collections import namedtuple
 from configparser import ConfigParser
 from email.message import Message
 from email.parser import FeedParser
-from typing import TYPE_CHECKING, BinaryIO, Iterable, Iterator, NewType, Tuple, cast
+from typing import (
+    TYPE_CHECKING,
+    BinaryIO,
+    Callable,
+    Iterable,
+    Iterator,
+    NewType,
+    Optional,
+    Tuple,
+    cast,
+)
 
 from installer.records import RecordEntry
 
@@ -167,14 +177,22 @@ def fix_shebang(stream: BinaryIO, interpreter: str) -> Iterator[BinaryIO]:
         yield stream
 
 
-def construct_record_file(records: Iterable[Tuple[Scheme, RecordEntry]]) -> BinaryIO:
-    """Construct a RECORD file given some records.
+def construct_record_file(
+    records: Iterable[Tuple[Scheme, RecordEntry]],
+    prefix_for_scheme: Callable[[Scheme], Optional[str]] = lambda _: None,
+) -> BinaryIO:
+    """Construct a RECORD file.
 
-    The original stream should be closed by the caller.
+    :param records:
+        Same as the contents passed into :ref:``WheelDestination.finalize_installation``
+    :param prefix_for_scheme:
+        A function to get a prefix to add for RECORD entries, within a scheme
+
+    :return: A stream that can be written to file. Must be closed by the caller.
     """
     stream = io.BytesIO()
     for scheme, record in records:
-        stream.write(str(record).encode("utf-8") + b"\n")
+        stream.write(record.to_line(prefix_for_scheme(scheme)) + b"\n")
     stream.seek(0)
     return stream
 

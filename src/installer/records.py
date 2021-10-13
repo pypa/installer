@@ -102,13 +102,25 @@ class RecordEntry(object):
         self.hash_ = hash_
         self.size = size
 
-    def __str__(self) -> str:
-        return ",".join(
+    def to_line(self, path_prefix: Optional[str] = None) -> bytes:
+        """Convert this into a line that can be written in a RECORD file.
+
+        :param path_prefix: A prefix to attach to the path -- must end in `/`
+        :return: A binary-encoded line, that doesn't contain a newline
+        """
+        if path_prefix is not None:
+            assert path_prefix.endswith("/")
+            path = path_prefix + self.path
+        else:
+            path = self.path
+
+        entry = ",".join(
             [
                 (str(elem) if elem is not None else "")
-                for elem in [self.path, self.hash_, self.size]
+                for elem in [path, self.hash_, self.size]
             ]
         )
+        return entry.encode("utf-8")
 
     def __repr__(self) -> str:
         return "RecordEntry(path={!r}, hash_={!r}, size={!r})".format(

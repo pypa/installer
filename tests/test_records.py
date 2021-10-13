@@ -139,7 +139,20 @@ class TestRecordEntry:
         expected_string_value = ",".join(
             [(str(elem) if elem is not None else "") for elem in elements]
         )
-        assert str(record) == expected_string_value
+        assert record.to_line() == expected_string_value.encode()
+
+    @pytest.mark.parametrize(
+        ("scheme", "elements", "data", "passes_validation"), SAMPLE_RECORDS
+    )
+    def test_string_representation_with_prefix(
+        self, scheme, elements, data, passes_validation
+    ):
+        record = RecordEntry.from_elements(*elements)
+
+        expected_string_value = "prefix/" + ",".join(
+            [(str(elem) if elem is not None else "") for elem in elements]
+        )
+        assert record.to_line("prefix/") == expected_string_value.encode()
 
     def test_equality(self):
         record = RecordEntry.from_elements(
