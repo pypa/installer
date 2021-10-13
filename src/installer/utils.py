@@ -23,6 +23,11 @@ AllSchemes = Tuple[Scheme, ...]
 __all__ = [
     "parse_metadata_file",
     "parse_wheel_filename",
+    "copyfileobj_with_hashing",
+    "get_launcher_kind",
+    "fix_shebang",
+    "construct_record_file",
+    "parse_entrypoints",
     "WheelFilename",
     "SCHEME_NAMES",
 ]
@@ -68,7 +73,7 @@ def parse_metadata_file(contents: str) -> Message:
     ``METADATA`` and ``WHEEL`` files (as per :pep:`427`) use the same syntax
     and can also be parsed using this function.
 
-    :param contents: The entire contents of the file.
+    :param contents: The entire contents of the file
     """
     feed_parser = FeedParser()
     feed_parser.feed(contents)
@@ -78,7 +83,7 @@ def parse_metadata_file(contents: str) -> Message:
 def parse_wheel_filename(filename: str) -> WheelFilename:
     """Parse a wheel filename, into it's various components.
 
-    :param filename: The filename to parse.
+    :param filename: The filename to parse
     """
     wheel_info = _WHEEL_FILENAME_REGEX.match(filename)
     if not wheel_info:
@@ -94,7 +99,7 @@ def copyfileobj_with_hashing(
     """Copy a buffer while computing the content's hash and size.
 
     Copies the source buffer into the destination buffer while computing the
-    hash of the contents. Adapted from :ref:`shutil.copyfileobj`.
+    hash of the contents. Adapted from :any:`shutil.copyfileobj`.
 
     :param source: buffer holding the source data
     :param dest: destination buffer
@@ -134,9 +139,12 @@ def get_launcher_kind() -> "LauncherKind":  # pragma: no cover
 
 @contextlib.contextmanager
 def fix_shebang(stream: BinaryIO, interpreter: str) -> Iterator[BinaryIO]:
-    """Replace ^#!python shebang in a stream with the correct interpreter.
+    """Replace ``#!python`` shebang in a stream with the correct interpreter.
 
-    The original stream should be closed by the caller.
+    :param stream: stream to modify
+    :param interpreter: "correct interpreter" to substitute the shebang with
+
+    :returns: A context manager, that provides an appropriately modified stream.
     """
     stream.seek(0)
     if stream.read(8) == b"#!python":
