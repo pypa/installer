@@ -156,7 +156,8 @@ class TestScript:
 class TestConstructRecord:
     def test_construct(self):
         records = [
-            RecordEntry.from_elements(*elements) for elements, _, _ in SAMPLE_RECORDS
+            (scheme, RecordEntry.from_elements(*elements))
+            for scheme, elements, _, _ in SAMPLE_RECORDS
         ]
         assert construct_record_file(records).read() == (
             b"test1.py,sha256=Y0sCextp4SQtQNU-MSs7SsdxD1W-gfKJtUlEbvZ3i-4,6\n"
