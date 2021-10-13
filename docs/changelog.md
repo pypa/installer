@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.0 (Oct 13, 2021)
+
+- Pass schemes into {any}`WheelDestination.finalize_installation`.
+
 ## v0.3.0 (Oct 11, 2021)
 
 - Add support for ARM 64 exectuables on Windows.
