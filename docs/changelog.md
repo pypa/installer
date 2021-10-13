@@ -6,7 +6,7 @@
 
 ## v0.3.0 (Oct 11, 2021)
 
-- Add support for ARM 64 exectuables on Windows.
+- Add support for ARM 64 executables on Windows.
 - Improve handling of wheels that contain entries for directories.
 
 ## v0.2.3 (Jul 29, 2021)
