@@ -80,7 +80,7 @@ def install(
     record_file_path = posixpath.join(source.dist_info_dir, u"RECORD")
     written_records = []
 
-    # Write the entry-points based scripts.
+    # Write the entry_points based scripts.
     if "entry_points.txt" in source.dist_info_filenames:
         entrypoints_text = source.read_dist_info("entry_points.txt")
         for name, module, attr, section in parse_entrypoints(entrypoints_text):

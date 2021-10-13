@@ -31,7 +31,7 @@ def fancy_wheel(tmp_path):
         "fancy-1.0.0.dist-info/top_level.txt": b"""\
             fancy
         """,
-        "fancy-1.0.0.dist-info/entry-points.txt": b"""\
+        "fancy-1.0.0.dist-info/entry_points.txt": b"""\
             [console_scripts]
             fancy = fancy:main
 
@@ -63,7 +63,7 @@ def fancy_wheel(tmp_path):
             fancy/__main__.py,,
             fancy-1.0.0.data/data/fancy/data.py,,
             fancy-1.0.0.dist-info/top_level.txt,,
-            fancy-1.0.0.dist-info/entry-points.txt,,
+            fancy-1.0.0.dist-info/entry_points.txt,,
             fancy-1.0.0.dist-info/WHEEL,,
             fancy-1.0.0.dist-info/METADATA,,
             fancy-1.0.0.dist-info/RECORD,,
@@ -124,7 +124,7 @@ class TestWheelFile:
                 "METADATA",
                 "RECORD",
                 "WHEEL",
-                "entry-points.txt",
+                "entry_points.txt",
                 "top_level.txt",
             ]
 
