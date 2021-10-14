@@ -15,7 +15,7 @@ WheelContentElement = Tuple[Tuple[str, str, str], BinaryIO]
 __all__ = ["WheelSource", "WheelFile"]
 
 
-class WheelSource(object):
+class WheelSource:
     """Represents an installable wheel.
 
     This is an abstract class, whose methods have to be implemented by subclasses.
@@ -27,19 +27,19 @@ class WheelSource(object):
         :param distribution: distribution name (like ``urllib3``)
         :param version: version associated with the wheel
         """
-        super(WheelSource, self).__init__()
+        super().__init__()
         self.distribution = distribution
         self.version = version
 
     @property
     def dist_info_dir(self):
         """Name of the dist-info directory."""
-        return u"{}-{}.dist-info".format(self.distribution, self.version)
+        return f"{self.distribution}-{self.version}.dist-info"
 
     @property
     def data_dir(self):
         """Name of the data directory."""
-        return u"{}-{}.data".format(self.distribution, self.version)
+        return f"{self.distribution}-{self.version}.data"
 
     @property
     def dist_info_filenames(self) -> List[str]:
@@ -108,7 +108,7 @@ class WheelFile(WheelSource):
 
         basename = os.path.basename(f.filename)
         parsed_name = installer.utils.parse_wheel_filename(basename)
-        super(WheelFile, self).__init__(
+        super().__init__(
             version=parsed_name.version,
             distribution=parsed_name.distribution,
         )

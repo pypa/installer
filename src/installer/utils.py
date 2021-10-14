@@ -97,7 +97,7 @@ def parse_wheel_filename(filename: str) -> WheelFilename:
     """
     wheel_info = _WHEEL_FILENAME_REGEX.match(filename)
     if not wheel_info:
-        raise ValueError("Not a valid wheel filename: {}".format(filename))
+        raise ValueError(f"Not a valid wheel filename: {filename}")
     return WheelFilename(*wheel_info.groups())
 
 
@@ -160,7 +160,7 @@ def fix_shebang(stream: BinaryIO, interpreter: str) -> Iterator[BinaryIO]:
     if stream.read(8) == b"#!python":
         new_stream = io.BytesIO()
         # write our new shebang
-        new_stream.write("#!{}\n".format(interpreter).encode())
+        new_stream.write(f"#!{interpreter}\n".encode())
         # copy the rest of the stream
         stream.seek(0)
         stream.readline()  # skip first line

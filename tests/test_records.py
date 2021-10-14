@@ -241,7 +241,7 @@ class TestParseRecordFile:
         with pytest.raises(InvalidRecordEntry) as exc_info:
             list(parse_record_file([line]))
 
-        message = "expected 3 elements, got {}".format(element_count)
+        message = f"expected 3 elements, got {element_count}"
         assert message in str(exc_info.value)
 
     def test_shows_correct_row_number(self):

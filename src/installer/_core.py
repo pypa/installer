@@ -18,7 +18,7 @@ def _process_WHEEL_file(source: WheelSource) -> Scheme:
 
     Returns the scheme that the archive root should go in.
     """
-    stream = source.read_dist_info(u"WHEEL")
+    stream = source.read_dist_info("WHEEL")
     metadata = parse_metadata_file(stream)
 
     # Ensure compatibility with this wheel version.
@@ -55,7 +55,7 @@ def _determine_scheme(
             break
 
     if scheme_name not in SCHEME_NAMES:
-        msg_fmt = u"{path} is not contained in a valid .data subdirectory."
+        msg_fmt = "{path} is not contained in a valid .data subdirectory."
         raise InvalidWheelSource(source, msg_fmt.format(path=path))
 
     return cast(Scheme, scheme_name), posixpath.join(*reversed(parts[:-1]))
@@ -77,7 +77,7 @@ def install(
     root_scheme = _process_WHEEL_file(source)
 
     # RECORD handling
-    record_file_path = posixpath.join(source.dist_info_dir, u"RECORD")
+    record_file_path = posixpath.join(source.dist_info_dir, "RECORD")
     written_records = []
 
     # Write the entry_points based scripts.
