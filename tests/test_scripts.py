@@ -34,7 +34,7 @@ def _read_launcher_data(section, kind):
     suffix = {"win-ia32": "32", "win-amd64": "64", "win-arm": "_arm"}[kind]
     filename = os.path.join(
         os.path.dirname(os.path.abspath(_scripts.__file__)),
-        "{}{}.exe".format(prefix, suffix),
+        f"{prefix}{suffix}.exe",
     )
     with open(filename, "rb") as f:
         return f.read()

@@ -79,7 +79,7 @@ class InvalidScript(ValueError):
     """Raised if the user provides incorrect script section or kind."""
 
 
-class Script(object):
+class Script:
     """Describes a script based on an entry point declaration."""
 
     __slots__ = ("name", "module", "attr", "section")
@@ -116,7 +116,7 @@ class Script(object):
         try:
             name = _ALLOWED_LAUNCHERS[key]
         except KeyError:
-            error = "{!r} not in {!r}".format(key, sorted(_ALLOWED_LAUNCHERS))
+            error = f"{key!r} not in {sorted(_ALLOWED_LAUNCHERS)!r}"
             raise InvalidScript(error)
         return read_binary(_scripts, name)
 
@@ -146,6 +146,6 @@ class Script(object):
         stream = io.BytesIO()
         with zipfile.ZipFile(stream, "w") as zf:
             zf.writestr("__main__.py", code)
-        name = "{}.exe".format(self.name)
+        name = f"{self.name}.exe"
         data = launcher + shebang + b"\n" + stream.getvalue()
         return (name, data)

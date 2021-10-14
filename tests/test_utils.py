@@ -93,7 +93,7 @@ class TestParseWheelFilename:
             parse_wheel_filename(string)
 
 
-class TestCopyFileObjWithHashing(object):
+class TestCopyFileObjWithHashing:
     def test_basic_functionality(self):
         data = b"input data is this"
         hash_ = hashlib.sha256(data).hexdigest()
@@ -177,9 +177,9 @@ class TestParseEntryPoints:
     @pytest.mark.parametrize(
         ("script", "expected"),
         [
-            pytest.param(u"", [], id="empty"),
+            pytest.param("", [], id="empty"),
             pytest.param(
-                u"""
+                """
                     [foo]
                     foo = foo.bar
                 """,
@@ -187,7 +187,7 @@ class TestParseEntryPoints:
                 id="unrelated",
             ),
             pytest.param(
-                u"""
+                """
                     [console_scripts]
                     package = package.__main__:package
                 """,
@@ -197,7 +197,7 @@ class TestParseEntryPoints:
                 id="cli",
             ),
             pytest.param(
-                u"""
+                """
                     [gui_scripts]
                     package = package.__main__:package
                 """,
@@ -207,7 +207,7 @@ class TestParseEntryPoints:
                 id="gui",
             ),
             pytest.param(
-                u"""
+                """
                     [console_scripts]
                     magic-cli = magic.cli:main
 

@@ -46,11 +46,11 @@ def test(session):
         "--cov=installer",
         "--cov-fail-under=100",
         "--cov-report=term-missing",
-        "--cov-report=html:{}".format(htmlcov_output),
+        f"--cov-report=html:{htmlcov_output}",
         "--cov-context=test",
         "-n",
         "auto",
-        *session.posargs
+        *session.posargs,
     )
 
 

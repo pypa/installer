@@ -38,7 +38,7 @@ def mock_destination():
 
 class FakeWheelSource(WheelSource):
     def __init__(self, *, distribution, version, regular_files, dist_info_files):
-        super(FakeWheelSource, self).__init__(distribution, version)
+        super().__init__(distribution, version)
 
         self.dist_info_files = {
             file: textwrap.dedent(content.decode("utf-8"))
@@ -70,7 +70,7 @@ class FakeWheelSource(WheelSource):
         # insertion order for dictionaries.
         for file, content in sorted(self.regular_files.items()):
             hashed, size = hash_and_size(content)
-            record = (file, "sha256={}".format(hashed), str(size))
+            record = (file, f"sha256={hashed}", str(size))
             with BytesIO(content) as stream:
                 yield record, stream
 
@@ -81,7 +81,7 @@ class FakeWheelSource(WheelSource):
             hashed, size = hash_and_size(content)
             record = (
                 self.dist_info_dir + "/" + file,
-                "sha256={}".format(hashed),
+                f"sha256={hashed}",
                 str(size),
             )
             with BytesIO(content) as stream:

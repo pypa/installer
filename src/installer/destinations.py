@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from installer.scripts import LauncherKind, ScriptSection
 
 
-class WheelDestination(object):
+class WheelDestination:
     """Handles writing the unpacked files, script generation and ``RECORD`` generation.
 
     Subclasses provide the concrete script generation logic, as well as the RECORD file
@@ -120,7 +120,7 @@ class SchemeDictionaryDestination(WheelDestination):
         """
         target_path = os.path.join(self.scheme_dict[scheme], path)
         if os.path.exists(target_path):
-            message = "File already exists: {}".format(target_path)
+            message = f"File already exists: {target_path}"
             raise FileExistsError(message)
 
         parent_folder = os.path.dirname(target_path)

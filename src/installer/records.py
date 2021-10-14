@@ -17,7 +17,7 @@ class InvalidRecordEntry(Exception):
     """Raised when a RecordEntry is not valid, due to improper element values or count."""
 
     def __init__(self, elements, issues):  # noqa: D107
-        super(InvalidRecordEntry, self).__init__(", ".join(issues))
+        super().__init__(", ".join(issues))
         self.issues = issues
         self.elements = elements
 
@@ -27,7 +27,7 @@ class InvalidRecordEntry(Exception):
         )
 
 
-class Hash(object):
+class Hash:
     """Represents the "hash" element of a RecordEntry."""
 
     def __init__(self, name: str, value: str) -> None:
@@ -43,10 +43,10 @@ class Hash(object):
         self.value = value
 
     def __str__(self) -> str:
-        return "{}={}".format(self.name, self.value)
+        return f"{self.name}={self.value}"
 
     def __repr__(self) -> str:
-        return "Hash(name={!r}, value={!r})".format(self.name, self.value)
+        return f"Hash(name={self.name!r}, value={self.value!r})"
 
     def __eq__(self, other):
         if not isinstance(other, Hash):
@@ -80,7 +80,7 @@ class Hash(object):
         return cls(name, value)
 
 
-class RecordEntry(object):
+class RecordEntry:
     """Represents a single record in a RECORD file.
 
     A list of :py:class:`RecordEntry` objects fully represents a RECORD file.
@@ -96,7 +96,7 @@ class RecordEntry(object):
         :param hash\_: hash of the file's contents
         :param size: file's size in bytes
         """
-        super(RecordEntry, self).__init__()
+        super().__init__()
 
         self.path = path
         self.hash_ = hash_
