@@ -1,10 +1,8 @@
-from __future__ import unicode_literals
-
 import hashlib
 import textwrap
 from io import BytesIO
+from unittest import mock
 
-import mock
 import pytest
 
 from installer import install
