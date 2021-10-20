@@ -12,6 +12,10 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 requires-python = ">=3.7"
+dynamic = [
+    "version",
+    "description",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/pradyunsg/installer"
