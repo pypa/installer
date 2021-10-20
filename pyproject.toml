@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "installer"
 authors = [
-  { name = "Pradyun Gedam", email = "pradyunsg@gmail.com" },
+    { name = "Pradyun Gedam", email = "pradyunsg@gmail.com" },
 ]
 readme = "README.md"
 classifiers = [
