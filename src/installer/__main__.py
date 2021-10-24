@@ -157,9 +157,8 @@ def check_python_version(metadata: Message) -> None:
 def check_dependencies(metadata: Message) -> None:
     """Check if the project dependencies are met."""
     try:
-        import packaging  # noqa: F401
-
         import build
+        import packaging  # noqa: F401
     except ModuleNotFoundError as e:
         warnings.warn(f"'{e.name}' module not available, skipping dependency check")
         return
