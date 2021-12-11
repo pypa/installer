@@ -2,6 +2,7 @@
 
 import io
 import os
+import sysconfig
 from typing import TYPE_CHECKING, BinaryIO, Dict, Iterable, Optional, Tuple, Union
 
 from installer.records import Hash, RecordEntry
@@ -12,6 +13,7 @@ from installer.utils import (
     copyfileobj_with_hashing,
     fix_shebang,
 )
+from src.installer.utils import SCHEME_NAMES, change_root
 
 if TYPE_CHECKING:
     from installer.scripts import LauncherKind, ScriptSection
@@ -89,10 +91,11 @@ class SchemeDictionaryDestination(WheelDestination):
 
     def __init__(
         self,
-        scheme_dict: Dict[str, str],
+        scheme_dict: Optional[Dict[str, str]],
         interpreter: str,
         script_kind: "LauncherKind",
         hash_algorithm: str = "sha256",
+        root: Optional["os.PathLike[str]"] = None,
     ) -> None:
         """Construct a ``SchemeDictionaryDestination`` object.
 
@@ -103,10 +106,16 @@ class SchemeDictionaryDestination(WheelDestination):
             of :any:`hashlib.algorithms_available` (ideally from
             :any:`hashlib.algorithms_guaranteed`).
         """
-        self.scheme_dict = scheme_dict
+        if scheme_dict is not None:
+            self.scheme_dict = scheme_dict
+        else:
+            self.scheme_dict = sysconfig.get_paths()
         self.interpreter = interpreter
         self.script_kind = script_kind
         self.hash_algorithm = hash_algorithm
+        if root is not None:
+            for scheme in SCHEME_NAMES:
+                self.scheme_dict[scheme] = change_root(root, self.scheme_dict[scheme])
 
     def write_to_fs(self, scheme: Scheme, path: str, stream: BinaryIO) -> RecordEntry:
         """Write contents of ``stream`` to the correct location on the filesystem.
