@@ -35,6 +35,7 @@ autodoc_preserve_defaults = True
 # Automatically extract typehints when not specified and add them to
 # descriptions of the relevant function/methods.
 autodoc_typehints = "description"
+autodoc_typehints_description_target = "documented"
 
 if "READTHEDOCS" in os.environ:
     src_folder = pathlib.Path(__file__).resolve().parent.parent / "src"
