@@ -1,3 +1,4 @@
+"""CLI - run as python -m installer"""
 import argparse
 
 from . import install
@@ -6,6 +7,7 @@ from .sources import WheelFile
 
 
 def main():
+    """Entry point for CLI"""
     ap = argparse.ArgumentParser("python -m installer")
     ap.add_argument("wheel_file", help="Path to a .whl file to install")
 
