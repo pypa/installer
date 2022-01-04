@@ -29,8 +29,8 @@ def main():
     )
     dest_args.add_argument(
         "--platlib",
-        required=True,
-        help="Directory for platform-dependent Python modules",
+        help="Directory for platform-dependent Python modules (same as purelib "
+        "if not specified)",
     )
     dest_args.add_argument(
         "--headers", required=True, help="Directory for C header files"
@@ -46,7 +46,7 @@ def main():
     destination = SchemeDictionaryDestination(
         {
             "purelib": args.purelib,
-            "platlib": args.platlib,
+            "platlib": args.platlib if args.platlib is not None else args.purelib,
             "headers": args.headers,
             "scripts": args.scripts,
             "data": args.data,
