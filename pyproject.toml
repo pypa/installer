@@ -14,6 +14,3 @@ requires = [
   "build >= 0.2.0",  # not a hard runtime requirement -- we can softfail
   "packaging",  # not a hard runtime requirement -- we can softfail
 ]
-
-[tool.flit.scripts]
-python-installer = "installer.__main__:entrypoint"
