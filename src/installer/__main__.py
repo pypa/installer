@@ -4,11 +4,8 @@ import argparse
 import compileall
 import distutils.dist
 import pathlib
-import platform
 import sys
 import sysconfig
-import warnings
-from email.message import Message
 from typing import TYPE_CHECKING, Collection, Dict, Iterable, Optional, Sequence, Tuple
 
 import installer
@@ -20,10 +17,6 @@ from installer.utils import Scheme
 
 if TYPE_CHECKING:
     from installer.scripts import LauncherKind
-
-
-class InstallerCompatibilityError(Exception):
-    """Error raised when the install target is not compatible with the environment."""
 
 
 class _MainDestination(installer.destinations.SchemeDictionaryDestination):
@@ -102,12 +95,6 @@ def main_parser() -> argparse.ArgumentParser:
         default=(0, 1),
         help="generate bytecode for the specified optimization level(s) (default=0, 1)",
     )
-    parser.add_argument(
-        "--skip-dependency-check",
-        "-s",
-        action="store_true",
-        help="don't check if the wheel dependencies are met",
-    )
     return parser
 
 
@@ -130,52 +117,6 @@ def get_scheme_dict(distribution_name: str) -> Dict[str, str]:
     return scheme_dict
 
 
-def check_python_version(metadata: Message) -> None:
-    """Check if the project support the current interpreter."""
-    try:
-        import packaging.specifiers
-    except ImportError:
-        warnings.warn(
-            "'packaging' module not available, "
-            "skipping python version compatibility check"
-        )
-        return
-
-    requirement = metadata["Requires-Python"]
-    if not requirement:
-        return
-
-    versions = requirement.split(",")
-    for version in versions:
-        specifier = packaging.specifiers.Specifier(version)
-        if platform.python_version() not in specifier:
-            raise InstallerCompatibilityError(
-                "Incompatible python version, needed: {}".format(version)
-            )
-
-
-def check_dependencies(metadata: Message) -> None:
-    """Check if the project dependencies are met."""
-    try:
-        import build
-        import packaging  # noqa: F401
-    except ModuleNotFoundError as e:
-        warnings.warn(f"'{e.name}' module not available, skipping dependency check")
-        return
-
-    missing = {
-        unmet
-        for requirement in metadata.get_all("Requires-Dist") or []
-        for unmet_list in build.check_dependency(requirement)
-        for unmet in unmet_list
-    }
-    if missing:
-        missing_list = ", ".join(missing)
-        raise InstallerCompatibilityError(
-            "Missing requirements: {}".format(missing_list)
-        )
-
-
 def main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
     """Process arguments and perform the install."""
     parser = main_parser()
@@ -184,13 +125,6 @@ def main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
     args = parser.parse_args(cli_args)
 
     with installer.sources.WheelFile.open(args.wheel) as source:
-        # compability checks
-        metadata_contents = source.read_dist_info("METADATA")
-        metadata = installer.utils.parse_metadata_file(metadata_contents)
-        check_python_version(metadata)
-        if not args.skip_dependency_check:
-            check_dependencies(metadata)
-
         destination = _MainDestination(
             get_scheme_dict(source.distribution),
             sys.executable,
