@@ -1,77 +1,15 @@
 """Installer CLI."""
 
 import argparse
-import compileall
 import distutils.dist
-import pathlib
 import sys
 import sysconfig
-from typing import TYPE_CHECKING, Collection, Dict, Iterable, Optional, Sequence, Tuple
+from typing import Dict, Optional, Sequence
 
 import installer
 import installer.destinations
 import installer.sources
 import installer.utils
-from installer.records import RecordEntry
-from installer.utils import Scheme
-
-if TYPE_CHECKING:
-    from installer.scripts import LauncherKind
-
-
-class _MainDestination(installer.destinations.SchemeDictionaryDestination):
-    destdir: Optional[pathlib.Path]
-
-    def __init__(
-        self,
-        scheme_dict: Dict[str, str],
-        interpreter: str,
-        script_kind: "LauncherKind",
-        hash_algorithm: str = "sha256",
-        optimization_levels: Collection[int] = (0, 1),
-        destdir: Optional[str] = None,
-    ) -> None:
-        if destdir:
-            self.destdir = pathlib.Path(destdir).absolute()
-            self.destdir.mkdir(exist_ok=True, parents=True)
-            scheme_dict = {
-                name: self._destdir_path(value) for name, value in scheme_dict.items()
-            }
-        else:
-            self.destdir = None
-        super().__init__(scheme_dict, interpreter, script_kind, hash_algorithm)
-        self.optimization_levels = optimization_levels
-
-    def _destdir_path(self, file: str) -> str:
-        assert self.destdir
-        file_path = pathlib.Path(file)
-        rel_path = file_path.relative_to(file_path.anchor)
-        return str(self.destdir.joinpath(*rel_path.parts))
-
-    def _compile_record(self, scheme: Scheme, record: RecordEntry) -> None:
-        if scheme not in ("purelib", "platlib"):
-            return
-        for level in self.optimization_levels:
-            target_path = pathlib.Path(self.scheme_dict[scheme], record.path)
-            if sys.version_info < (3, 9):
-                compileall.compile_file(target_path, optimize=level)
-            else:
-                compileall.compile_file(
-                    target_path,
-                    optimize=level,
-                    stripdir=str(self.destdir),
-                )
-
-    def finalize_installation(
-        self,
-        scheme: Scheme,
-        record_file_path: str,
-        records: Iterable[Tuple[Scheme, RecordEntry]],
-    ) -> None:
-        record_list = list(records)
-        super().finalize_installation(scheme, record_file_path, record_list)
-        for scheme, record in record_list:
-            self._compile_record(scheme, record)
 
 
 def main_parser() -> argparse.ArgumentParser:
@@ -125,11 +63,11 @@ def main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
     args = parser.parse_args(cli_args)
 
     with installer.sources.WheelFile.open(args.wheel) as source:
-        destination = _MainDestination(
+        destination = installer.destinations.SchemeDictionaryDestination(
             get_scheme_dict(source.distribution),
             sys.executable,
             installer.utils.get_launcher_kind(),
-            optimization_levels=args.optimize,
+            bytecode_optimization_levels=args.optimize,
             destdir=args.destdir,
         )
         installer.install(source, destination, {})
