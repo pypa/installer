@@ -240,8 +240,18 @@ class SchemeDictionaryDestination(WheelDestination):
         :param record_file_path: path of the ``RECORD`` file with that scheme
         :param records: entries to write to the ``RECORD`` file
         """
+
+        def prefix_for_scheme(file_scheme: str) -> Optional[str]:
+            if file_scheme == scheme:
+                return None
+            path = os.path.relpath(
+                self.scheme_dict[file_scheme],
+                start=self.scheme_dict[scheme],
+            )
+            return path + "/"
+
         record_list = list(records)
-        with construct_record_file(records) as record_stream:
+        with construct_record_file(record_list, prefix_for_scheme) as record_stream:
             self.write_to_fs(scheme, record_file_path, record_stream)
 
         for scheme, record in record_list:

@@ -1,12 +1,21 @@
 [build-system]
-requires = ["flit_core >=2,<3"]
+requires = ["flit_core >=3.2.0,<4"]
 build-backend = "flit_core.buildapi"
 
-[tool.flit.metadata]
-module = "installer"
-author = "Pradyun Gedam"
-author-email = "pradyunsg@gmail.com"
-home-page = "https://github.com/pradyunsg/installer"
-description-file = "README.md"
-classifiers = ["License :: OSI Approved :: MIT License"]
+[project]
+name = "installer"
+authors = [
+    { name = "Pradyun Gedam", email = "pradyunsg@gmail.com" },
+]
+readme = "README.md"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+]
 requires-python = ">=3.7"
+dynamic = [
+    "version",
+    "description",
+]
+
+[project.urls]
+"GitHub" = "https://github.com/pradyunsg/installer"

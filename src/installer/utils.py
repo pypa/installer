@@ -184,7 +184,7 @@ def construct_record_file(
     """Construct a RECORD file.
 
     :param records:
-        ``records`` as passed into :ref:``WheelDestination.finalize_installation``
+        ``records`` as passed into :any:`WheelDestination.finalize_installation`
     :param prefix_for_scheme:
         function to get a prefix to add for RECORD entries, within a scheme
 
@@ -200,7 +200,7 @@ def construct_record_file(
 def parse_entrypoints(text: str) -> Iterable[Tuple[str, str, str, "ScriptSection"]]:
     """Parse ``entry_points.txt``-style files.
 
-    :param contents: entire contents of the file
+    :param text: entire contents of the file
     :return:
         name of the script, module to use, attribute to call, kind of script (cli / gui)
     """
