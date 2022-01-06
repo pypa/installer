@@ -21,7 +21,6 @@ def main_parser() -> argparse.ArgumentParser:
         "-d",
         metavar="/",
         type=str,
-        default="/",
         help="destination directory (prefix to prepend to each file)",
     )
     parser.add_argument(
