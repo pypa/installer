@@ -24,13 +24,17 @@ def main_parser() -> argparse.ArgumentParser:
         help="destination directory (prefix to prepend to each file)",
     )
     parser.add_argument(
-        "--optimize",
-        "-o",
-        nargs="*",
+        "--compile-bytecode",
+        action="append",
         metavar="level",
         type=int,
-        default=(0, 1),
+        choices=[0, 1, 2],
         help="generate bytecode for the specified optimization level(s) (default=0, 1)",
+    )
+    parser.add_argument(
+        "--no-compile-bytecode",
+        action="store_true",
+        help="don't generate bytecode for installed modules",
     )
     return parser
 
@@ -61,12 +65,18 @@ def main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
         parser.prog = program
     args = parser.parse_args(cli_args)
 
+    bytecode_levels = args.compile_bytecode
+    if args.no_compile_bytecode:
+        bytecode_levels = []
+    elif not bytecode_levels:
+        bytecode_levels = [0, 1]
+
     with installer.sources.WheelFile.open(args.wheel) as source:
         destination = installer.destinations.SchemeDictionaryDestination(
             get_scheme_dict(source.distribution),
             sys.executable,
             installer.utils.get_launcher_kind(),
-            bytecode_optimization_levels=args.optimize,
+            bytecode_optimization_levels=bytecode_levels,
             destdir=args.destdir,
         )
         installer.install(source, destination, {})
