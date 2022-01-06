@@ -213,7 +213,7 @@ class SchemeDictionaryDestination(WheelDestination):
             return entry
 
     def _compile_bytecode(self, scheme: Scheme, record: RecordEntry) -> None:
-        """Compile bytecode for a single .py file"""
+        """Compile bytecode for a single .py file."""
         if scheme not in ("purelib", "platlib"):
             return
 
