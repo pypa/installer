@@ -44,8 +44,7 @@ jobs:
 
       - run: >
           nox
-          -s test-${{ matrix.python-version }}
-          -s doctest-${{ matrix.python-version }}
+          -s test-${{ matrix.python-version }} doctest-${{ matrix.python-version }}
           --error-on-missing-interpreters
         if: matrix.python-version != 'pypy-3.7'
 
