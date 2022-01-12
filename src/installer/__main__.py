@@ -82,10 +82,5 @@ def main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
         installer.install(source, destination, {})
 
 
-def entrypoint() -> None:
-    """CLI entrypoint."""
-    main(sys.argv[1:])
-
-
 if __name__ == "__main__":
     main(sys.argv[1:], "python -m installer")
