@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
+    Any,
     BinaryIO,
     Collection,
     Dict,
@@ -219,7 +220,7 @@ class SchemeDictionaryDestination(WheelDestination):
 
         target_path = self._destdir_path(scheme, record.path)
         for level in self.bytecode_optimization_levels:
-            kwargs = {}
+            kwargs: Dict[str, Any] = {}
             if sys.version_info >= (3, 9):  # pragma: no cover
                 kwargs["stripdir"] = str(self.destdir)
             compileall.compile_file(target_path, optimize=level, **kwargs)
