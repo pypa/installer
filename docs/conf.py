@@ -12,7 +12,6 @@ project = "installer"
 copyright = "2020, Pradyun Gedam"
 author = "Pradyun Gedam"
 
-
 # -- General configuration -------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 extensions = [
