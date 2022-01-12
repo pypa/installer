@@ -219,14 +219,10 @@ class SchemeDictionaryDestination(WheelDestination):
 
         target_path = self._destdir_path(scheme, record.path)
         for level in self.bytecode_optimization_levels:
-            if sys.version_info < (3, 9):
-                compileall.compile_file(target_path, optimize=level)
-            else:
-                compileall.compile_file(
-                    target_path,
-                    optimize=level,
-                    stripdir=str(self.destdir),
-                )
+            kwargs = {}
+            if sys.version_info >= (3, 9):  # pragma: no cover
+                kwargs['stripdir'] = str(self.destdir)
+            compileall.compile_file(target_path, optimize=level, **kwargs)
 
     def finalize_installation(
         self,

@@ -82,5 +82,5 @@ def main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
         installer.install(source, destination, {})
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main(sys.argv[1:], "python -m installer")
