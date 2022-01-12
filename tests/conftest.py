@@ -4,6 +4,7 @@ import zipfile
 
 import pytest
 
+
 @pytest.fixture
 def fancy_wheel(tmp_path):
     path = tmp_path / "fancy-1.0.0-py2.py3-none-any.whl"
