@@ -40,7 +40,7 @@ def main_parser() -> argparse.ArgumentParser:
 
 
 def get_scheme_dict(distribution_name: str) -> Dict[str, str]:
-    """Calculate the scheme disctionary for the current Python environment."""
+    """Calculate the scheme dictionary for the current Python environment."""
     scheme_dict = sysconfig.get_paths()
 
     # calculate 'headers' path, sysconfig does not have an equivalent
