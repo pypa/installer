@@ -19,7 +19,7 @@ def main_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--destdir",
         "-d",
-        metavar="/",
+        metavar="path",
         type=str,
         help="destination directory (prefix to prepend to each file)",
     )
