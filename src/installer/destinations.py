@@ -106,7 +106,7 @@ class SchemeDictionaryDestination(WheelDestination):
         interpreter: str,
         script_kind: "LauncherKind",
         hash_algorithm: str = "sha256",
-        bytecode_optimization_levels: Collection[int] = (0, 1),
+        bytecode_optimization_levels: Collection[int] = (),
         destdir: Optional[str] = None,
     ) -> None:
         """Construct a ``SchemeDictionaryDestination`` object.
@@ -118,7 +118,9 @@ class SchemeDictionaryDestination(WheelDestination):
             of :any:`hashlib.algorithms_available` (ideally from
             :any:`hashlib.algorithms_guaranteed`).
         :param bytecode_optimization_levels: Compile cached bytecode for
-            installed .py files with these optimization levels.
+            installed .py files with these optimization levels. The bytecode
+            is specific to the minor version of Python (e.g. 3.10) used to
+            generate it.
         :param destdir: A staging directory in which to write all files. This
             is expected to be the filesystem root at runtime, so embedded paths
             will be written as though this was the root.
