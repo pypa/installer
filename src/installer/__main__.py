@@ -2,7 +2,6 @@
 
 import argparse
 import os.path
-import re
 import sys
 import sysconfig
 from typing import Dict, Optional, Sequence
