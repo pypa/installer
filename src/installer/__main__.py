@@ -2,6 +2,7 @@
 
 import argparse
 import os.path
+import re
 import sys
 import sysconfig
 from typing import Dict, Optional, Sequence
@@ -43,9 +44,13 @@ def get_scheme_dict(distribution_name: str) -> Dict[str, str]:
     """Calculate the scheme dictionary for the current Python environment."""
     scheme_dict = sysconfig.get_paths()
 
-    # calculate 'headers' path, not currently in sysconfig -
-    # see https://bugs.python.org/issue44445. This copies what distutils does.
-    scheme_dict["headers"] = os.path.join(scheme_dict["include"], distribution_name)
+    # calculate 'headers' path, not currently in sysconfig - see
+    # https://bugs.python.org/issue44445. This is based on what distutils does.
+    # For new wheels, the name we get from the wheel filename should already
+    # be normalised (based on PEP 503, but with _ instead of -), but this is
+    # not the case for many existing wheels, so normalise it here.
+    normed_name = re.sub(r"[-_.]+", "_", distribution_name).lower()
+    scheme_dict["headers"] = os.path.join(scheme_dict["include"], normed_name)
 
     return scheme_dict
 
