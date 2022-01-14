@@ -100,8 +100,8 @@ class RecordEntry:
         super().__init__()
 
         # Convert Windows paths to use / for consistency
-        if os.sep == '\\':
-            path = path.replace('\\', '/')  # pragma: no cover
+        if os.sep == "\\":
+            path = path.replace("\\", "/")  # pragma: no cover
         self.path = path
         self.hash_ = hash_
         self.size = size
