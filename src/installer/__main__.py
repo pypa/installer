@@ -46,11 +46,8 @@ def get_scheme_dict(distribution_name: str) -> Dict[str, str]:
 
     # calculate 'headers' path, not currently in sysconfig - see
     # https://bugs.python.org/issue44445. This is based on what distutils does.
-    # For new wheels, the name we get from the wheel filename should already
-    # be normalised (based on PEP 503, but with _ instead of -), but this is
-    # not the case for many existing wheels, so normalise it here.
-    normed_name = re.sub(r"[-_.]+", "_", distribution_name).lower()
-    scheme_dict["headers"] = os.path.join(scheme_dict["include"], normed_name)
+    # TODO: figure out original vs normalised names
+    scheme_dict["headers"] = os.path.join(scheme_dict["include"], distribution_name)
 
     return scheme_dict
 
