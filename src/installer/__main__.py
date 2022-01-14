@@ -1,7 +1,7 @@
 """Installer CLI."""
 
 import argparse
-import distutils.dist
+import os.path
 import sys
 import sysconfig
 from typing import Dict, Optional, Sequence
@@ -43,17 +43,9 @@ def get_scheme_dict(distribution_name: str) -> Dict[str, str]:
     """Calculate the scheme dictionary for the current Python environment."""
     scheme_dict = sysconfig.get_paths()
 
-    # calculate 'headers' path, sysconfig does not have an equivalent
-    # see https://bugs.python.org/issue44445
-    dist_dict = {
-        "name": distribution_name,
-    }
-    distribution = distutils.dist.Distribution(dist_dict)
-    install_cmd = distribution.get_command_obj("install")
-    assert install_cmd
-    install_cmd.finalize_options()
-    # install_cmd.install_headers is not type hinted
-    scheme_dict["headers"] = install_cmd.install_headers  # type: ignore
+    # calculate 'headers' path, not currently in sysconfig -
+    # see https://bugs.python.org/issue44445. This copies what distutils does.
+    scheme_dict["headers"] = os.path.join(scheme_dict["include"], distribution_name)
 
     return scheme_dict
 
