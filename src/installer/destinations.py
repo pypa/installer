@@ -132,7 +132,7 @@ class SchemeDictionaryDestination(WheelDestination):
         self.bytecode_optimization_levels = bytecode_optimization_levels
         self.destdir = destdir
 
-    def _destdir_path(self, scheme: Scheme, path: str) -> str:
+    def _path_with_destdir(self, scheme: Scheme, path: str) -> str:
         file = os.path.join(self.scheme_dict[scheme], path)
         if self.destdir is not None:
             file_path = Path(file)
@@ -150,7 +150,7 @@ class SchemeDictionaryDestination(WheelDestination):
         - Ensures that an existing file is not being overwritten.
         - Hashes the written content, to determine the entry in the ``RECORD`` file.
         """
-        target_path = self._destdir_path(scheme, path)
+        target_path = self._path_with_destdir(scheme, path)
         if os.path.exists(target_path):
             message = f"File already exists: {target_path}"
             raise FileExistsError(message)
@@ -208,7 +208,7 @@ class SchemeDictionaryDestination(WheelDestination):
         with io.BytesIO(data) as stream:
             entry = self.write_to_fs(Scheme("scripts"), script_name, stream)
 
-            path = self._destdir_path(Scheme("scripts"), script_name)
+            path = self._path_with_destdir(Scheme("scripts"), script_name)
             mode = os.stat(path).st_mode
             mode |= (mode & 0o444) >> 2
             os.chmod(path, mode)
@@ -220,7 +220,7 @@ class SchemeDictionaryDestination(WheelDestination):
         if scheme not in ("purelib", "platlib"):
             return
 
-        target_path = self._destdir_path(scheme, record.path)
+        target_path = self._path_with_destdir(scheme, record.path)
         for level in self.bytecode_optimization_levels:
             kwargs: Dict[str, Any] = {}
             if sys.version_info >= (3, 9):  # pragma: no cover
