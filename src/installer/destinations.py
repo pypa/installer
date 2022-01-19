@@ -225,7 +225,7 @@ class SchemeDictionaryDestination(WheelDestination):
             kwargs: Dict[str, Any] = {}
             if sys.version_info >= (3, 9):  # pragma: no cover
                 kwargs["stripdir"] = str(self.destdir)
-            compileall.compile_file(target_path, optimize=level, **kwargs)
+            compileall.compile_file(target_path, optimize=level, quiet=1, **kwargs)
 
     def finalize_installation(
         self,
