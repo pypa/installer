@@ -161,9 +161,10 @@ class TestWheelFile:
         got_records = []
         got_files = {}
         with WheelFile.open(fancy_wheel) as source:
-            for record_elements, stream in source.get_contents():
+            for record_elements, stream, is_executable in source.get_contents():
                 got_records.append(record_elements)
                 got_files[record_elements[0]] = stream.read()
+                assert not is_executable
 
         assert sorted(got_records) == sorted(expected_records)
         assert got_files == files

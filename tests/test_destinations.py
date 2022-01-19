@@ -20,7 +20,9 @@ class TestWheelDestination:
             destination.write_script(name=None, module=None, attr=None, section=None)
 
         with pytest.raises(NotImplementedError):
-            destination.write_file(scheme=None, path=None, stream=None)
+            destination.write_file(
+                scheme=None, path=None, stream=None, is_executable=False
+            )
 
         with pytest.raises(NotImplementedError):
             destination.finalize_installation(
@@ -71,7 +73,7 @@ class TestSchemeDictionaryDestination:
         ],
     )
     def test_write_file(self, destination, scheme, path, data, expected):
-        record = destination.write_file(scheme, path, io.BytesIO(data))
+        record = destination.write_file(scheme, path, io.BytesIO(data), False)
         file_path = os.path.join(destination.scheme_dict[scheme], path)
         with open(file_path, "rb") as f:
             file_data = f.read()
@@ -80,9 +82,9 @@ class TestSchemeDictionaryDestination:
         assert record.path == path
 
     def test_write_record_duplicate(self, destination):
-        destination.write_file("data", "my_data.bin", io.BytesIO(b"my data")),
+        destination.write_file("data", "my_data.bin", io.BytesIO(b"my data"), False)
         with pytest.raises(FileExistsError):
-            destination.write_file("data", "my_data.bin", io.BytesIO(b"my data")),
+            destination.write_file("data", "my_data.bin", io.BytesIO(b"my data"), False)
 
     def test_write_script(self, destination):
         script_args = ("my_entrypoint", "my_module", "my_function", "console")
@@ -103,31 +105,46 @@ class TestSchemeDictionaryDestination:
             (
                 "data",
                 destination.write_file(
-                    "data", "my_data1.bin", io.BytesIO(b"my data 1")
+                    "data",
+                    "my_data1.bin",
+                    io.BytesIO(b"my data 1"),
+                    is_executable=False,
                 ),
             ),
             (
                 "data",
                 destination.write_file(
-                    "data", "my_data2.bin", io.BytesIO(b"my data 2")
+                    "data",
+                    "my_data2.bin",
+                    io.BytesIO(b"my data 2"),
+                    is_executable=False,
                 ),
             ),
             (
                 "data",
                 destination.write_file(
-                    "data", "my_data3.bin", io.BytesIO(b"my data 3")
+                    "data",
+                    "my_data3.bin",
+                    io.BytesIO(b"my data 3"),
+                    is_executable=False,
                 ),
             ),
             (
                 "scripts",
                 destination.write_file(
-                    "scripts", "my_script", io.BytesIO(b"my script")
+                    "scripts",
+                    "my_script",
+                    io.BytesIO(b"my script"),
+                    is_executable=True,
                 ),
             ),
             (
                 "scripts",
                 destination.write_file(
-                    "scripts", "my_script2", io.BytesIO(b"#!python\nmy script")
+                    "scripts",
+                    "my_script2",
+                    io.BytesIO(b"#!python\nmy script"),
+                    is_executable=False,
                 ),
             ),
             (
