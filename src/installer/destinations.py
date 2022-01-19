@@ -3,11 +3,9 @@
 import compileall
 import io
 import os
-import sys
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
-    Any,
     BinaryIO,
     Collection,
     Dict,
@@ -221,11 +219,13 @@ class SchemeDictionaryDestination(WheelDestination):
             return
 
         target_path = self._path_with_destdir(scheme, record.path)
+        dir_path_to_embed = os.path.dirname(  # Without destdir
+            os.path.join(self.scheme_dict[scheme], record.path)
+        )
         for level in self.bytecode_optimization_levels:
-            kwargs: Dict[str, Any] = {}
-            if sys.version_info >= (3, 9):  # pragma: no cover
-                kwargs["stripdir"] = str(self.destdir)
-            compileall.compile_file(target_path, optimize=level, quiet=1, **kwargs)
+            compileall.compile_file(
+                target_path, optimize=level, quiet=1, ddir=dir_path_to_embed
+            )
 
     def finalize_installation(
         self,
