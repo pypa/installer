@@ -22,6 +22,7 @@ from installer.utils import (
     construct_record_file,
     copyfileobj_with_hashing,
     fix_shebang,
+    make_file_executable,
 )
 
 if TYPE_CHECKING:
@@ -55,13 +56,18 @@ class WheelDestination:
         raise NotImplementedError
 
     def write_file(
-        self, scheme: Scheme, path: Union[str, "os.PathLike[str]"], stream: BinaryIO
+        self,
+        scheme: Scheme,
+        path: Union[str, "os.PathLike[str]"],
+        stream: BinaryIO,
+        is_executable: bool,
     ) -> RecordEntry:
         """Write a file to correct ``path`` within the ``scheme``.
 
         :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
         :param path: path within that scheme
         :param stream: contents of the file
+        :param is_executable: whether the file should be made executable
 
         The stream would be closed by the caller, after this call.
 
@@ -138,12 +144,19 @@ class SchemeDictionaryDestination(WheelDestination):
             return os.path.join(self.destdir, rel_path)
         return file
 
-    def write_to_fs(self, scheme: Scheme, path: str, stream: BinaryIO) -> RecordEntry:
+    def write_to_fs(
+        self,
+        scheme: Scheme,
+        path: str,
+        stream: BinaryIO,
+        is_executable: bool,
+    ) -> RecordEntry:
         """Write contents of ``stream`` to the correct location on the filesystem.
 
         :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
         :param path: path within that scheme
         :param stream: contents of the file
+        :param is_executable: whether the file should be made executable
 
         - Ensures that an existing file is not being overwritten.
         - Hashes the written content, to determine the entry in the ``RECORD`` file.
@@ -160,16 +173,24 @@ class SchemeDictionaryDestination(WheelDestination):
         with open(target_path, "wb") as f:
             hash_, size = copyfileobj_with_hashing(stream, f, self.hash_algorithm)
 
+        if is_executable:
+            make_file_executable(target_path)
+
         return RecordEntry(path, Hash(self.hash_algorithm, hash_), size)
 
     def write_file(
-        self, scheme: Scheme, path: Union[str, "os.PathLike[str]"], stream: BinaryIO
+        self,
+        scheme: Scheme,
+        path: Union[str, "os.PathLike[str]"],
+        stream: BinaryIO,
+        is_executable: bool,
     ) -> RecordEntry:
         """Write a file to correct ``path`` within the ``scheme``.
 
         :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
         :param path: path within that scheme
         :param stream: contents of the file
+        :param is_executable: whether the file should be made executable
 
         - Changes the shebang for files in the "scripts" scheme.
         - Uses :py:meth:`SchemeDictionaryDestination.write_to_fs` for the
@@ -179,9 +200,11 @@ class SchemeDictionaryDestination(WheelDestination):
 
         if scheme == "scripts":
             with fix_shebang(stream, self.interpreter) as stream_with_different_shebang:
-                return self.write_to_fs(scheme, path_, stream_with_different_shebang)
+                return self.write_to_fs(
+                    scheme, path_, stream_with_different_shebang, is_executable
+                )
 
-        return self.write_to_fs(scheme, path_, stream)
+        return self.write_to_fs(scheme, path_, stream, is_executable)
 
     def write_script(
         self, name: str, module: str, attr: str, section: "ScriptSection"
@@ -204,7 +227,9 @@ class SchemeDictionaryDestination(WheelDestination):
         script_name, data = script.generate(self.interpreter, self.script_kind)
 
         with io.BytesIO(data) as stream:
-            entry = self.write_to_fs(Scheme("scripts"), script_name, stream)
+            entry = self.write_to_fs(
+                Scheme("scripts"), script_name, stream, is_executable=True
+            )
 
             path = self._path_with_destdir(Scheme("scripts"), script_name)
             mode = os.stat(path).st_mode
@@ -251,7 +276,9 @@ class SchemeDictionaryDestination(WheelDestination):
 
         record_list = list(records)
         with construct_record_file(record_list, prefix_for_scheme) as record_stream:
-            self.write_to_fs(scheme, record_file_path, record_stream)
+            self.write_to_fs(
+                scheme, record_file_path, record_stream, is_executable=False
+            )
 
         for scheme, record in record_list:
             self._compile_bytecode(scheme, record)

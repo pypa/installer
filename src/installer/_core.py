@@ -93,7 +93,7 @@ def install(
             written_records.append((Scheme("scripts"), record))
 
     # Write all the files from the wheel.
-    for record_elements, stream in source.get_contents():
+    for record_elements, stream, is_executable in source.get_contents():
         source_record = RecordEntry.from_elements(*record_elements)
         path = source_record.path
         # Skip the RECORD, which is written at the end, based on this info.
@@ -110,6 +110,7 @@ def install(
             scheme=scheme,
             path=destination_path,
             stream=stream,
+            is_executable=is_executable,
         )
         written_records.append((scheme, record))
 
@@ -122,6 +123,7 @@ def install(
                 scheme=root_scheme,
                 path=path,
                 stream=other_stream,
+                is_executable=is_executable,
             )
         written_records.append((root_scheme, record))
 

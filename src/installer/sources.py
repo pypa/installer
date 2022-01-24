@@ -2,6 +2,7 @@
 
 import os
 import posixpath
+import stat
 import zipfile
 from contextlib import contextmanager
 from typing import BinaryIO, Iterator, List, Tuple, cast
@@ -9,7 +10,7 @@ from typing import BinaryIO, Iterator, List, Tuple, cast
 import installer.records
 import installer.utils
 
-WheelContentElement = Tuple[Tuple[str, str, str], BinaryIO]
+WheelContentElement = Tuple[Tuple[str, str, str], BinaryIO, bool]
 
 
 __all__ = ["WheelSource", "WheelFile"]
@@ -68,12 +69,13 @@ class WheelSource:
         """Sequential access to all contents of the wheel (including dist-info files).
 
         This method should return an iterable. Each value from the iterable must be a
-        tuple containing 2 elements:
+        tuple containing 3 elements:
 
         - record: 3-value tuple, to pass to
           :py:meth:`RecordEntry.from_elements <installer.records.RecordEntry.from_elements>`.
         - stream: An :py:class:`io.BufferedReader` object, providing the contents of the
           file at the location provided by the first element (path).
+        - is_executable: A boolean, representing whether the item has an executable bit.
 
         All paths must be relative to the root of the wheel.
 
@@ -81,7 +83,7 @@ class WheelSource:
 
             >>> iterable = wheel_source.get_contents()
             >>> next(iterable)
-            (('pkg/__init__.py', '', '0'), <...>)
+            (('pkg/__init__.py', '', '0'), <...>, False)
 
         This method may be called multiple times. Each iterable returned must
         provide the same content upon reading from a specific file's stream.
@@ -158,6 +160,11 @@ class WheelFile(WheelSource):
                 item.filename,
             )  # should not happen for valid wheels
 
+            # Borrowed from:
+            # https://github.com/pypa/pip/blob/0f21fb92/src/pip/_internal/utils/unpacking.py#L96-L100
+            mode = item.external_attr >> 16
+            is_executable = bool(mode and stat.S_ISREG(mode) and mode & 0o111)
+
             with self._zipfile.open(item) as stream:
                 stream_casted = cast("BinaryIO", stream)
-                yield record, stream_casted
+                yield record, stream_casted, is_executable
