@@ -1,8 +1,19 @@
 """Handles all file writing and post-installation processing."""
 
+import compileall
 import io
 import os
-from typing import TYPE_CHECKING, BinaryIO, Dict, Iterable, Optional, Tuple, Union
+from pathlib import Path
+from typing import (
+    TYPE_CHECKING,
+    BinaryIO,
+    Collection,
+    Dict,
+    Iterable,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from installer.records import Hash, RecordEntry
 from installer.scripts import Script
@@ -99,6 +110,8 @@ class SchemeDictionaryDestination(WheelDestination):
         interpreter: str,
         script_kind: "LauncherKind",
         hash_algorithm: str = "sha256",
+        bytecode_optimization_levels: Collection[int] = (),
+        destdir: Optional[str] = None,
     ) -> None:
         """Construct a ``SchemeDictionaryDestination`` object.
 
@@ -108,11 +121,28 @@ class SchemeDictionaryDestination(WheelDestination):
         :param hash_algorithm: the hashing algorithm to use, which is a member
             of :any:`hashlib.algorithms_available` (ideally from
             :any:`hashlib.algorithms_guaranteed`).
+        :param bytecode_optimization_levels: Compile cached bytecode for
+            installed .py files with these optimization levels. The bytecode
+            is specific to the minor version of Python (e.g. 3.10) used to
+            generate it.
+        :param destdir: A staging directory in which to write all files. This
+            is expected to be the filesystem root at runtime, so embedded paths
+            will be written as though this was the root.
         """
         self.scheme_dict = scheme_dict
         self.interpreter = interpreter
         self.script_kind = script_kind
         self.hash_algorithm = hash_algorithm
+        self.bytecode_optimization_levels = bytecode_optimization_levels
+        self.destdir = destdir
+
+    def _path_with_destdir(self, scheme: Scheme, path: str) -> str:
+        file = os.path.join(self.scheme_dict[scheme], path)
+        if self.destdir is not None:
+            file_path = Path(file)
+            rel_path = file_path.relative_to(file_path.anchor)
+            return os.path.join(self.destdir, rel_path)
+        return file
 
     def write_to_fs(
         self,
@@ -131,7 +161,7 @@ class SchemeDictionaryDestination(WheelDestination):
         - Ensures that an existing file is not being overwritten.
         - Hashes the written content, to determine the entry in the ``RECORD`` file.
         """
-        target_path = os.path.join(self.scheme_dict[scheme], path)
+        target_path = self._path_with_destdir(scheme, path)
         if os.path.exists(target_path):
             message = f"File already exists: {target_path}"
             raise FileExistsError(message)
@@ -201,12 +231,26 @@ class SchemeDictionaryDestination(WheelDestination):
                 Scheme("scripts"), script_name, stream, is_executable=True
             )
 
-            path = os.path.join(self.scheme_dict[Scheme("scripts")], script_name)
+            path = self._path_with_destdir(Scheme("scripts"), script_name)
             mode = os.stat(path).st_mode
             mode |= (mode & 0o444) >> 2
             os.chmod(path, mode)
 
             return entry
+
+    def _compile_bytecode(self, scheme: Scheme, record: RecordEntry) -> None:
+        """Compile bytecode for a single .py file."""
+        if scheme not in ("purelib", "platlib"):
+            return
+
+        target_path = self._path_with_destdir(scheme, record.path)
+        dir_path_to_embed = os.path.dirname(  # Without destdir
+            os.path.join(self.scheme_dict[scheme], record.path)
+        )
+        for level in self.bytecode_optimization_levels:
+            compileall.compile_file(
+                target_path, optimize=level, quiet=1, ddir=dir_path_to_embed
+            )
 
     def finalize_installation(
         self,
@@ -214,7 +258,7 @@ class SchemeDictionaryDestination(WheelDestination):
         record_file_path: str,
         records: Iterable[Tuple[Scheme, RecordEntry]],
     ) -> None:
-        """Finalize installation, by writing the ``RECORD`` file.
+        """Finalize installation, by writing the ``RECORD`` file & compiling bytecode.
 
         :param scheme: scheme to write the ``RECORD`` file in
         :param record_file_path: path of the ``RECORD`` file with that scheme
@@ -230,7 +274,11 @@ class SchemeDictionaryDestination(WheelDestination):
             )
             return path + "/"
 
-        with construct_record_file(records, prefix_for_scheme) as record_stream:
+        record_list = list(records)
+        with construct_record_file(record_list, prefix_for_scheme) as record_stream:
             self.write_to_fs(
                 scheme, record_file_path, record_stream, is_executable=False
             )
+
+        for scheme, record in record_list:
+            self._compile_bytecode(scheme, record)
