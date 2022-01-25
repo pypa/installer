@@ -1,9 +1,9 @@
 """Installer CLI."""
 
 import argparse
-import os.path
 import sys
 import sysconfig
+from pathlib import Path
 from typing import Dict, Optional, Sequence
 
 import installer
@@ -15,12 +15,12 @@ import installer.utils
 def main_parser() -> argparse.ArgumentParser:
     """Construct the main parser."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("wheel", type=str, help="wheel file to install")
+    parser.add_argument("wheel", type=Path, help="wheel file to install")
     parser.add_argument(
         "--destdir",
         "-d",
         metavar="path",
-        type=str,
+        type=Path,
         help="destination directory (prefix to prepend to each file)",
     )
     parser.add_argument(
@@ -46,11 +46,12 @@ def get_scheme_dict(distribution_name: str) -> Dict[str, str]:
     # calculate 'headers' path, not currently in sysconfig - see
     # https://bugs.python.org/issue44445. This is based on what distutils does.
     # TODO: figure out original vs normalised distribution names
-    scheme_dict["headers"] = os.path.join(
-        sysconfig.get_path(
-            "include", vars={"installed_base": sysconfig.get_config_var("base")}
-        ),
-        distribution_name,
+    scheme_dict["headers"] = str(
+        Path(
+            sysconfig.get_path(
+                "include", vars={"installed_base": sysconfig.get_config_var("base")}
+            )
+        ).joinpath(distribution_name)
     )
 
     return scheme_dict

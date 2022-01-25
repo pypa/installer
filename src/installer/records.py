@@ -3,8 +3,8 @@
 import base64
 import csv
 import hashlib
-import os
-from typing import Iterable, Iterator, Optional, Tuple, cast
+from pathlib import PurePosixPath
+from typing import Iterable, Iterator, Optional, Tuple, Union, cast
 
 __all__ = [
     "Hash",
@@ -87,7 +87,12 @@ class RecordEntry:
     A list of :py:class:`RecordEntry` objects fully represents a RECORD file.
     """
 
-    def __init__(self, path: str, hash_: Optional[Hash], size: Optional[int]) -> None:
+    def __init__(
+        self,
+        path: Union[str, PurePosixPath],
+        hash_: Optional[Hash],
+        size: Optional[int],
+    ) -> None:
         r"""Construct a ``RecordEntry`` object.
 
         Most consumers should use :py:meth:`RecordEntry.from_elements`, since no
@@ -99,25 +104,25 @@ class RecordEntry:
         """
         super().__init__()
 
-        self.path = path
+        self._path = PurePosixPath(path)
         self.hash_ = hash_
         self.size = size
 
-    def to_line(self, path_prefix: Optional[str] = None) -> bytes:
+    @property
+    def path(self):
+        """File's path string."""
+        return str(self._path)
+
+    def to_line(self, path_prefix: Optional[PurePosixPath] = None) -> bytes:
         """Convert this into a line that can be written in a RECORD file.
 
         :param path_prefix: A prefix to attach to the path -- must end in `/`
         :return: A binary-encoded line, that doesn't contain a newline
         """
         if path_prefix is not None:
-            assert path_prefix.endswith("/")
-            path = path_prefix + self.path
+            path = path_prefix.joinpath(self._path)
         else:
-            path = self.path
-
-        # Convert Windows paths to use / for consistency
-        if os.sep == "\\":
-            path = path.replace("\\", "/")  # pragma: no cover
+            path = self._path
 
         entry = ",".join(
             [
@@ -136,7 +141,7 @@ class RecordEntry:
         if not isinstance(other, RecordEntry):
             return NotImplemented
         return (
-            self.path == other.path
+            self._path == PurePosixPath(other.path)
             and self.hash_ == other.hash_
             and self.size == other.size
         )

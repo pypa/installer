@@ -3,7 +3,7 @@
 import compileall
 import io
 import os
-from pathlib import Path
+from pathlib import Path, PurePath, PurePosixPath
 from typing import (
     TYPE_CHECKING,
     BinaryIO,
@@ -111,7 +111,7 @@ class SchemeDictionaryDestination(WheelDestination):
         script_kind: "LauncherKind",
         hash_algorithm: str = "sha256",
         bytecode_optimization_levels: Collection[int] = (),
-        destdir: Optional[str] = None,
+        destdir: Optional["os.PathLike[str]"] = None,
     ) -> None:
         """Construct a ``SchemeDictionaryDestination`` object.
 
@@ -134,20 +134,20 @@ class SchemeDictionaryDestination(WheelDestination):
         self.script_kind = script_kind
         self.hash_algorithm = hash_algorithm
         self.bytecode_optimization_levels = bytecode_optimization_levels
-        self.destdir = destdir
+        self.destdir: Optional[Path] = Path(destdir) if destdir is not None else destdir
 
-    def _path_with_destdir(self, scheme: Scheme, path: str) -> str:
-        file = os.path.join(self.scheme_dict[scheme], path)
+    def _path_with_destdir(self, scheme: Scheme, path: PurePosixPath) -> Path:
+        file = Path(self.scheme_dict[scheme]).joinpath(path)
         if self.destdir is not None:
             file_path = Path(file)
             rel_path = file_path.relative_to(file_path.anchor)
-            return os.path.join(self.destdir, rel_path)
+            return self.destdir.joinpath(rel_path)
         return file
 
     def write_to_fs(
         self,
         scheme: Scheme,
-        path: str,
+        path: Union[str, "os.PathLike[str]"],
         stream: BinaryIO,
         is_executable: bool,
     ) -> RecordEntry:
@@ -161,16 +161,17 @@ class SchemeDictionaryDestination(WheelDestination):
         - Ensures that an existing file is not being overwritten.
         - Hashes the written content, to determine the entry in the ``RECORD`` file.
         """
+        path = PurePosixPath(path)
         target_path = self._path_with_destdir(scheme, path)
-        if os.path.exists(target_path):
+        if target_path.exists():
             message = f"File already exists: {target_path}"
             raise FileExistsError(message)
 
-        parent_folder = os.path.dirname(target_path)
-        if not os.path.exists(parent_folder):
-            os.makedirs(parent_folder)
+        parent_folder = target_path.parent
+        if not parent_folder.exists():
+            parent_folder.mkdir(parents=True)
 
-        with open(target_path, "wb") as f:
+        with target_path.open("wb") as f:
             hash_, size = copyfileobj_with_hashing(stream, f, self.hash_algorithm)
 
         if is_executable:
@@ -196,7 +197,7 @@ class SchemeDictionaryDestination(WheelDestination):
         - Uses :py:meth:`SchemeDictionaryDestination.write_to_fs` for the
           filesystem interaction.
         """
-        path_ = os.fspath(path)
+        path_ = PurePosixPath(path)
 
         if scheme == "scripts":
             with fix_shebang(stream, self.interpreter) as stream_with_different_shebang:
@@ -231,10 +232,12 @@ class SchemeDictionaryDestination(WheelDestination):
                 Scheme("scripts"), script_name, stream, is_executable=True
             )
 
-            path = self._path_with_destdir(Scheme("scripts"), script_name)
-            mode = os.stat(path).st_mode
+            path = self._path_with_destdir(
+                Scheme("scripts"), PurePosixPath(script_name)
+            )
+            mode = path.stat().st_mode
             mode |= (mode & 0o444) >> 2
-            os.chmod(path, mode)
+            path.chmod(mode)
 
             return entry
 
@@ -244,8 +247,10 @@ class SchemeDictionaryDestination(WheelDestination):
             return
 
         target_path = self._path_with_destdir(scheme, record.path)
-        dir_path_to_embed = os.path.dirname(  # Without destdir
-            os.path.join(self.scheme_dict[scheme], record.path)
+        dir_path_to_embed = (
+            Path(self.scheme_dict[scheme])  # Without destdir
+            .joinpath(record.path)
+            .parent
         )
         for level in self.bytecode_optimization_levels:
             compileall.compile_file(
@@ -255,7 +260,7 @@ class SchemeDictionaryDestination(WheelDestination):
     def finalize_installation(
         self,
         scheme: Scheme,
-        record_file_path: str,
+        record_file_path: Union[str, "os.PathLike[str]"],
         records: Iterable[Tuple[Scheme, RecordEntry]],
     ) -> None:
         """Finalize installation, by writing the ``RECORD`` file & compiling bytecode.
@@ -265,14 +270,17 @@ class SchemeDictionaryDestination(WheelDestination):
         :param records: entries to write to the ``RECORD`` file
         """
 
-        def prefix_for_scheme(file_scheme: str) -> Optional[str]:
+        def prefix_for_scheme(file_scheme: str) -> Optional[PurePosixPath]:
             if file_scheme == scheme:
                 return None
-            path = os.path.relpath(
-                self.scheme_dict[file_scheme],
-                start=self.scheme_dict[scheme],
+            return PurePosixPath(
+                PurePath(
+                    os.path.relpath(
+                        self.scheme_dict[file_scheme],
+                        start=self.scheme_dict[scheme],
+                    )
+                ).as_posix()
             )
-            return path + "/"
 
         record_list = list(records)
         with construct_record_file(record_list, prefix_for_scheme) as record_stream:

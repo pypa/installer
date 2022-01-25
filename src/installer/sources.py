@@ -5,6 +5,7 @@ import posixpath
 import stat
 import zipfile
 from contextlib import contextmanager
+from pathlib import Path
 from typing import BinaryIO, Iterator, List, Tuple, cast
 
 import installer.records
@@ -108,7 +109,7 @@ class WheelFile(WheelSource):
         self._zipfile = f
         assert f.filename
 
-        basename = os.path.basename(f.filename)
+        basename = Path(f.filename).name
         parsed_name = installer.utils.parse_wheel_filename(basename)
         super().__init__(
             version=parsed_name.version,

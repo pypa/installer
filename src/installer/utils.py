@@ -10,6 +10,7 @@ from collections import namedtuple
 from configparser import ConfigParser
 from email.message import Message
 from email.parser import FeedParser
+from pathlib import Path, PurePosixPath
 from typing import (
     TYPE_CHECKING,
     BinaryIO,
@@ -181,7 +182,7 @@ def fix_shebang(stream: BinaryIO, interpreter: str) -> Iterator[BinaryIO]:
 
 def construct_record_file(
     records: Iterable[Tuple[Scheme, RecordEntry]],
-    prefix_for_scheme: Callable[[Scheme], Optional[str]] = lambda _: None,
+    prefix_for_scheme: Callable[[Scheme], Optional[PurePosixPath]] = lambda _: None,
 ) -> BinaryIO:
     """Construct a RECORD file.
 
@@ -244,4 +245,4 @@ def _current_umask() -> int:
 # https://github.com/pypa/pip/blob/0f21fb92/src/pip/_internal/utils/unpacking.py#L93
 def make_file_executable(path: Union[str, "os.PathLike[str]"]) -> None:
     """Make the file at the provided path executable."""
-    os.chmod(path, (0o777 & ~_current_umask() | 0o111))
+    Path(path).chmod(0o777 & ~_current_umask() | 0o111)
