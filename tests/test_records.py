@@ -154,7 +154,9 @@ class TestRecordEntry:
         expected_string_value = "prefix/" + ",".join(
             [(str(elem) if elem is not None else "") for elem in elements]
         )
-        assert record.to_line(PurePosixPath("prefix/")) == expected_string_value.encode()
+        assert (
+            record.to_line(PurePosixPath("prefix/")) == expected_string_value.encode()
+        )
 
     def test_equality(self):
         record = RecordEntry.from_elements(
