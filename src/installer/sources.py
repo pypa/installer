@@ -158,7 +158,10 @@ class WheelFile(WheelSource):
         :any:`AssertionError` will be raised.
         """
         # Convert the record file into a useful mapping
-        record_lines = [ line.replace("\\", "/") for line in self.read_dist_info("RECORD").splitlines()]
+        record_lines = [
+            line.replace("\\", "/")
+            for line in self.read_dist_info("RECORD").splitlines()
+        ]
         records = installer.records.parse_record_file(record_lines)
         record_mapping = {record[0]: record for record in records}
 
