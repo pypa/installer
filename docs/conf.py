@@ -22,6 +22,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
     "myst_parser",
+    "sphinxarg.ext",
 ]
 
 # -- Options for HTML output -----------------------------------------------------------

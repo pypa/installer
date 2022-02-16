@@ -24,6 +24,14 @@ api/*
 ```
 
 ```{toctree}
+:caption: CLI reference
+:hidden:
+:glob:
+
+cli/*
+```
+
+```{toctree}
 :caption: Project
 :hidden:
 
