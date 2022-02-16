@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.5.0 (Feb 16, 2022)
+
+- Add a CLI, to install a wheel into the currently-running Python.
+- Convert Windows paths to `/` separated when writing `RECORD`.
+- Drop support for Python 3.6 and lower.
+- Preserve the executable bit from wheels being installed.
+- Write records in `RECORD` with relative paths.
+- Improve API documentation.
+
 ## v0.4.0 (Oct 13, 2021)
 
 - Pass schemes into {any}`WheelDestination.finalize_installation`.
