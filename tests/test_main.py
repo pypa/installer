@@ -1,4 +1,5 @@
-from installer.__main__ import get_scheme_dict, main
+from installer.__main__ import _get_scheme_dict as get_scheme_dict
+from installer.__main__ import _main as main
 
 
 def test_get_scheme_dict():

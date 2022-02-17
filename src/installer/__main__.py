@@ -12,7 +12,7 @@ import installer.sources
 import installer.utils
 
 
-def main_parser() -> argparse.ArgumentParser:
+def _get_main_parser() -> argparse.ArgumentParser:
     """Construct the main parser."""
     parser = argparse.ArgumentParser()
     parser.add_argument("wheel", type=str, help="wheel file to install")
@@ -39,7 +39,7 @@ def main_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def get_scheme_dict(distribution_name: str) -> Dict[str, str]:
+def _get_scheme_dict(distribution_name: str) -> Dict[str, str]:
     """Calculate the scheme dictionary for the current Python environment."""
     scheme_dict = sysconfig.get_paths()
 
@@ -56,9 +56,9 @@ def get_scheme_dict(distribution_name: str) -> Dict[str, str]:
     return scheme_dict
 
 
-def main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
+def _main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
     """Process arguments and perform the install."""
-    parser = main_parser()
+    parser = _get_main_parser()
     if program:
         parser.prog = program
     args = parser.parse_args(cli_args)
@@ -71,7 +71,7 @@ def main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
 
     with installer.sources.WheelFile.open(args.wheel) as source:
         destination = installer.destinations.SchemeDictionaryDestination(
-            get_scheme_dict(source.distribution),
+            _get_scheme_dict(source.distribution),
             sys.executable,
             installer.utils.get_launcher_kind(),
             bytecode_optimization_levels=bytecode_levels,
@@ -81,4 +81,4 @@ def main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
 
 
 if __name__ == "__main__":  # pragma: no cover
-    main(sys.argv[1:], "python -m installer")
+    _main(sys.argv[1:], "python -m installer")
