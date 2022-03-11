@@ -38,9 +38,9 @@
   {any}`RecordEntry` objects.
 - Implement {any}`WheelFile`, completing the end-to-end wheel installation
   pipeline.
-- Generate {any}`RecordEntry` for `RECORD` file in the
-  {any}`installer.install`, instead of requiring every `WheelDestination`
-  implementation to do the exact same thing.
+- Generate {any}`RecordEntry` for `RECORD` file in the {any}`installer.install`,
+  instead of requiring every `WheelDestination` implementation to do the exact
+  same thing.
 
 ## v0.2.0 (May 3, 2021)
 
@@ -48,9 +48,9 @@
 
 ---
 
-Thank you to [Dan Ryan] and [Tzu-ping Chung] for the project name on
-PyPI. The PyPI releases before 0.2.0 come from
-<https://github.com/sarugaku/installer> and have been [yanked].
+Thank you to [Dan Ryan] and [Tzu-ping Chung] for the project name on PyPI. The
+PyPI releases before 0.2.0 come from <https://github.com/sarugaku/installer> and
+have been [yanked].
 
 [dan ryan]: https://github.com/techalchemy
 [tzu-ping chung]: https://github.com/uranusjr

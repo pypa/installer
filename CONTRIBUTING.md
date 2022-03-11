@@ -13,8 +13,8 @@ and mailing lists is expected to follow the [PyPA Code of Conduct][coc].
 ## Bugs and Feature Requests
 
 If you have found any bugs or would like to request a new feature, please do
-check if there is an existing issue already filed for the same, in the
-project's GitHub [issue tracker]. If not, please file a new issue.
+check if there is an existing issue already filed for the same, in the project's
+GitHub [issue tracker]. If not, please file a new issue.
 
 If you want to help out by fixing bugs, choose an open issue in the [issue
 tracker] to work on and claim it by posting a comment saying "I would like to
@@ -35,7 +35,7 @@ land a single large feature.
 
 Checklist:
 
-1. All pull requests *must* be made against the `main` branch.
+1. All pull requests _must_ be made against the `main` branch.
 2. Include tests for any functionality you implement. Any contributions helping
    improve existing tests are welcome.
 3. Update documentation as necessary and provide documentation for any new
@@ -94,8 +94,10 @@ $ nox -s test -- -k "basic"
 
 [pytest]: https://docs.pytest.org/en/stable/
 [coverage]: https://coverage.readthedocs.io/
-[code coverage isn't everything]: https://bryanpendleton.blogspot.com/2011/02/code-coverage-isnt-everything-but-its.html
-[pytest's rich CLI]: https://docs.pytest.org/en/latest/usage.html#specifying-tests-selecting-tests
+[code coverage isn't everything]:
+  https://bryanpendleton.blogspot.com/2011/02/code-coverage-isnt-everything-but-its.html
+[pytest's rich cli]:
+  https://docs.pytest.org/en/latest/usage.html#specifying-tests-selecting-tests
 
 ### Documentation
 
@@ -107,4 +109,4 @@ To build the documentation:
 $ nox -s docs
 ```
 
-[Sphinx]: https://www.sphinx-doc.org/
+[sphinx]: https://www.sphinx-doc.org/
