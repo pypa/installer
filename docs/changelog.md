@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.5.1 (Mar 11, 2022)
+
+- Change all names in `installer.__main__` to be underscore prefixed.
+- Update project URL after move to the `pypa` organisation.
+- Rewrite imports to be compatible with `vendoring`.
+
 ## v0.5.0 (Feb 16, 2022)
 
 - Add a CLI, to install a wheel into the currently-running Python.
