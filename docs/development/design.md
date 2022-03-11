@@ -3,7 +3,7 @@
 ## What this is for
 
 This project is born out of [this discussion][1]. Effectively, the volunteers
-who maintain the Python Packaging toolchain identified a need for a library in
+who maintain the Python packaging toolchain identified a need for a library in
 the ecology that handles the details of "wheel -> installed package". This is
 that library.
 

@@ -18,7 +18,7 @@ objects from an on-disk wheel, or something else entirely.
 
 This protocol/abstraction is designed to be implementable without a
 direct dependency on this library. This allows for other libraries in
-the Python Packaging ecosystem to provide implementations of the
+the Python packaging ecosystem to provide implementations of the
 protocol, allowing for more code reuse opportunities.
 
 One of the benefits of this fully described interface is the possibility
