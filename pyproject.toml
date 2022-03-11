@@ -18,4 +18,4 @@ dynamic = [
 ]
 
 [project.urls]
-"GitHub" = "https://github.com/pradyunsg/installer"
+"GitHub" = "https://github.com/pypa/installer"
