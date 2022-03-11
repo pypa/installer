@@ -7,9 +7,9 @@ import sysconfig
 from typing import Dict, Optional, Sequence
 
 import installer
-import installer.destinations
-import installer.sources
-import installer.utils
+from installer.destinations import SchemeDictionaryDestination
+from installer.sources import WheelFile
+from installer.utils import get_launcher_kind
 
 
 def _get_main_parser() -> argparse.ArgumentParser:
@@ -43,13 +43,14 @@ def _get_scheme_dict(distribution_name: str) -> Dict[str, str]:
     """Calculate the scheme dictionary for the current Python environment."""
     scheme_dict = sysconfig.get_paths()
 
+    installed_base = sysconfig.get_config_var("base")
+    assert installed_base
+
     # calculate 'headers' path, not currently in sysconfig - see
     # https://bugs.python.org/issue44445. This is based on what distutils does.
     # TODO: figure out original vs normalised distribution names
     scheme_dict["headers"] = os.path.join(
-        sysconfig.get_path(
-            "include", vars={"installed_base": sysconfig.get_config_var("base")}
-        ),
+        sysconfig.get_path("include", vars={"installed_base": installed_base}),
         distribution_name,
     )
 
@@ -69,11 +70,11 @@ def _main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
     elif not bytecode_levels:
         bytecode_levels = [0, 1]
 
-    with installer.sources.WheelFile.open(args.wheel) as source:
-        destination = installer.destinations.SchemeDictionaryDestination(
-            _get_scheme_dict(source.distribution),
-            sys.executable,
-            installer.utils.get_launcher_kind(),
+    with WheelFile.open(args.wheel) as source:
+        destination = SchemeDictionaryDestination(
+            scheme_dict=_get_scheme_dict(source.distribution),
+            interpreter=sys.executable,
+            script_kind=get_launcher_kind(),
             bytecode_optimization_levels=bytecode_levels,
             destdir=args.destdir,
         )
