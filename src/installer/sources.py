@@ -7,8 +7,8 @@ import zipfile
 from contextlib import contextmanager
 from typing import BinaryIO, Iterator, List, Tuple, cast
 
-import installer.records
-import installer.utils
+from installer.records import parse_record_file
+from installer.utils import parse_wheel_filename
 
 WheelContentElement = Tuple[Tuple[str, str, str], BinaryIO, bool]
 
@@ -109,7 +109,7 @@ class WheelFile(WheelSource):
         assert f.filename
 
         basename = os.path.basename(f.filename)
-        parsed_name = installer.utils.parse_wheel_filename(basename)
+        parsed_name = parse_wheel_filename(basename)
         super().__init__(
             version=parsed_name.version,
             distribution=parsed_name.distribution,
@@ -147,7 +147,7 @@ class WheelFile(WheelSource):
         """
         # Convert the record file into a useful mapping
         record_lines = self.read_dist_info("RECORD").splitlines()
-        records = installer.records.parse_record_file(record_lines)
+        records = parse_record_file(record_lines)
         record_mapping = {record[0]: record for record in records}
 
         for item in self._zipfile.infolist():
