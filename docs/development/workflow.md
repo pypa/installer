@@ -1,13 +1,12 @@
 # Workflow
 
-This page describes the tooling used during development of this
-project. It also serves as a reference for the various commands that
-you would use when working on this project.
+This page describes the tooling used during development of this project. It also
+serves as a reference for the various commands that you would use when working
+on this project.
 
 ## Overview
 
-This project uses the [GitHub Flow] for collaboration. The codebase
-is Python.
+This project uses the [GitHub Flow] for collaboration. The codebase is Python.
 
 - [flit] is used for automating development tasks.
 - [nox] is used for automating development tasks.
@@ -17,8 +16,7 @@ is Python.
 
 ## Repository Layout
 
-The repository layout is pretty standard for a modern pure-Python
-project.
+The repository layout is pretty standard for a modern pure-Python project.
 
 - `CODE_OF_CONDUCT.md`
 - `LICENSE`
@@ -67,15 +65,15 @@ Run the linters, as configured with [pre-commit].
 nox -s test
 ```
 
-Run the tests against all supported Python versions, if an interpreter for
-that version is available locally.
+Run the tests against all supported Python versions, if an interpreter for that
+version is available locally.
 
 ```sh
 nox -s test-3.9
 ```
 
-Run the tests against Python 3.9. It is also possible to specify other
-supported Python versions (like `3.7` or `pypy3`).
+Run the tests against Python 3.9. It is also possible to specify other supported
+Python versions (like `3.7` or `pypy3`).
 
 ### Documentation
 
@@ -83,20 +81,20 @@ supported Python versions (like `3.7` or `pypy3`).
 nox -s docs
 ```
 
-Generate the documentation for installer into the `build/docs` folder.
-This (mostly) does the same thing as `nox -s docs-live`, except it
-invokes `sphinx-build` instead of [sphinx-autobuild].
+Generate the documentation for installer into the `build/docs` folder. This
+(mostly) does the same thing as `nox -s docs-live`, except it invokes
+`sphinx-build` instead of [sphinx-autobuild].
 
 ```sh
 nox -s docs-live
 ```
 
-Serve this project's documentation locally, using [sphinx-autobuild].
-This will open the generated documentation page in your browser.
+Serve this project's documentation locally, using [sphinx-autobuild]. This will
+open the generated documentation page in your browser.
 
-The server also watches for changes made to the documentation (`docs/`),
-which will trigger a rebuild. Once the build is completed, server will
-automagically reload any open pages using livereload.
+The server also watches for changes made to the documentation (`docs/`), which
+will trigger a rebuild. Once the build is completed, server will automagically
+reload any open pages using livereload.
 
 ## Release process
 
