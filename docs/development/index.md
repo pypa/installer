@@ -11,6 +11,7 @@ serves as a resource to help you to contribute to the project.
 
 workflow
 design
+governance
 ```
 
 [Code of Conduct]
@@ -21,5 +22,8 @@ design
 
 [Design and Scope](./design)
 : Describes what this project is for, and how that informs the design decisions made.
+
+[Governance](./governance)
+: Describes what governance model this project follows, and how decisions are made.
 
 [code of conduct]: https://github.com/pypa/.github/blob/main/CODE_OF_CONDUCT.md
