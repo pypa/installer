@@ -5,6 +5,7 @@ on:
     branches: [main]
 
 concurrency:
+  # prettier-ignore
   group: >-
     ${{ github.workflow }}-
     ${{ github.ref_type }}-
