@@ -4,6 +4,13 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: >-
+    ${{ github.workflow }}-
+    ${{ github.ref_type }}-
+    ${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   tests:
     name: tests / ${{ matrix.os }} / ${{ matrix.python-version }}
