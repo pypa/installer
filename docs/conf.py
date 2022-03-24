@@ -1,10 +1,6 @@
 """A sphinx documentation configuration file.
 """
 
-import os
-import pathlib
-import sys
-
 # -- Project information ---------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
@@ -43,14 +39,6 @@ autodoc_typehints = "description"
 
 # Don't show the class signature with the class name.
 autodoc_class_signature = "separated"
-
-if "READTHEDOCS" in os.environ:
-    src_folder = pathlib.Path(__file__).resolve().parent.parent / "src"
-    sys.path.append(str(src_folder))
-
-    print("Detected running on ReadTheDocs")
-    print(f"Added {src_folder} to sys.path")
-    __import__("installer")
 
 # -- Options for intersphinx ----------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#configuration
