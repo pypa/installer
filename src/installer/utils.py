@@ -1,6 +1,7 @@
 """Utilities related to handling / interacting with wheel files."""
 
 import contextlib
+import csv
 import hashlib
 import io
 import os
@@ -192,11 +193,13 @@ def construct_record_file(
 
     :return: A stream that can be written to file. Must be closed by the caller.
     """
-    stream = io.BytesIO()
+
+    stream = io.TextIOWrapper(io.BytesIO(), encoding="utf-8", write_through=True)
+    writer = csv.writer(stream, delimiter=",", quotechar='"', lineterminator="\n")
     for scheme, record in records:
-        stream.write(record.to_line(prefix_for_scheme(scheme)) + b"\n")
+        writer.writerow(record.to_row(prefix_for_scheme(scheme)))
     stream.seek(0)
-    return stream
+    return stream.detach()
 
 
 def parse_entrypoints(text: str) -> Iterable[Tuple[str, str, str, "ScriptSection"]]:
