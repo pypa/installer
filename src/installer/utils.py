@@ -193,7 +193,6 @@ def construct_record_file(
 
     :return: A stream that can be written to file. Must be closed by the caller.
     """
-
     stream = io.TextIOWrapper(io.BytesIO(), encoding="utf-8", write_through=True)
     writer = csv.writer(stream, delimiter=",", quotechar='"', lineterminator="\n")
     for scheme, record in records:
