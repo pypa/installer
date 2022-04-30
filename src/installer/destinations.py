@@ -36,6 +36,23 @@ class WheelDestination:
     (re)writing.
     """
 
+    def clean(
+        self,
+        scheme: Scheme,
+        distribution: str,
+    ) -> None:
+        """Clean existing distribution files.
+
+        :param scheme: scheme to write the ``RECORD`` file in
+        :param distribution: distribution name (like ``urllib3``)
+
+        Example usage/behaviour::
+
+            >>> dest.clean("purelib")
+
+        """
+        raise NotImplementedError  # pragma: no cover
+
     def write_script(
         self, name: str, module: str, attr: str, section: "ScriptSection"
     ) -> RecordEntry:
@@ -143,6 +160,44 @@ class SchemeDictionaryDestination(WheelDestination):
             rel_path = file_path.relative_to(file_path.anchor)
             return os.path.join(self.destdir, rel_path)
         return file
+
+    def clean(
+        self,
+        scheme: Scheme,
+        distribution: str,
+    ) -> None:  # pragma: no cover
+        """Clean existing distribution files.
+
+        :param scheme: scheme to write the ``RECORD`` file in
+        :param distribution: distribution name (like ``urllib3``)
+
+        Example usage/behaviour::
+
+            >>> dest.clean("purelib")
+
+        """
+        try:
+            from importlib.machinery import PathFinder
+            from importlib.metadata import DistributionFinder
+        except ImportError:
+            raise NotImplementedError
+
+        scheme_path = self.scheme_dict[scheme]
+        if self.destdir is not None:
+            file_path = Path(self.scheme_dict[scheme])
+            rel_path = file_path.relative_to(file_path.anchor)
+            scheme_path = os.path.join(self.destdir, rel_path)
+
+        context = DistributionFinder.Context(
+            name=distribution,
+            path=[scheme_path],
+        )
+        paths = PathFinder.find_distributions(context=context)
+        for path in paths:
+            if not path.files:
+                continue
+            for file in path.files:
+                Path(file.locate()).unlink()
 
     def write_to_fs(
         self,

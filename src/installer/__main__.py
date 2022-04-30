@@ -36,6 +36,11 @@ def _get_main_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="don't generate bytecode for installed modules",
     )
+    parser.add_argument(
+        "--clean",
+        action="store_true",
+        help="clean existing package files from install location",
+    )
     return parser
 
 
@@ -78,7 +83,7 @@ def _main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
             bytecode_optimization_levels=bytecode_levels,
             destdir=args.destdir,
         )
-        installer.install(source, destination, {})
+        installer.install(source, destination, {}, args.clean)
 
 
 if __name__ == "__main__":  # pragma: no cover

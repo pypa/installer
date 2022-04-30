@@ -1,3 +1,7 @@
+import sys
+
+import pytest
+
 from installer.__main__ import _get_scheme_dict as get_scheme_dict
 from installer.__main__ import _main as main
 
@@ -21,6 +25,14 @@ def test_main(fancy_wheel, tmp_path):
         "__init__",
         "__main__",
     }
+
+    if sys.version_info >= (3, 8):
+        main([str(fancy_wheel), "-d", str(destdir), "--clean"], "python -m installer")
+    else:
+        with pytest.raises(NotImplementedError):
+            main(
+                [str(fancy_wheel), "-d", str(destdir), "--clean"], "python -m installer"
+            )
 
 
 def test_main_no_pyc(fancy_wheel, tmp_path):
