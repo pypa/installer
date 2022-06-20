@@ -136,10 +136,10 @@ class TestRecordEntry:
     def test_string_representation(self, scheme, elements, data, passes_validation):
         record = RecordEntry.from_elements(*elements)
 
-        expected_string_value = ",".join(
+        expected_row = tuple(
             [(str(elem) if elem is not None else "") for elem in elements]
         )
-        assert record.to_line() == expected_string_value.encode()
+        assert record.to_row() == expected_row
 
     @pytest.mark.parametrize(
         ("scheme", "elements", "data", "passes_validation"), SAMPLE_RECORDS
@@ -149,10 +149,13 @@ class TestRecordEntry:
     ):
         record = RecordEntry.from_elements(*elements)
 
-        expected_string_value = "prefix/" + ",".join(
-            [(str(elem) if elem is not None else "") for elem in elements]
+        expected_row = tuple(
+            [
+                (str(elem) if elem is not None else "")
+                for elem in ("prefix/" + elements[0], elements[1], elements[2])
+            ]
         )
-        assert record.to_line("prefix/") == expected_string_value.encode()
+        assert record.to_row("prefix/") == expected_row
 
     def test_equality(self):
         record = RecordEntry.from_elements(
@@ -255,3 +258,18 @@ class TestParseRecordFile:
             list(parse_record_file(record_lines))
 
         assert "Row Index 3" in str(exc_info.value)
+
+    def test_parse_record_entry_with_comma(self):
+        record_lines = [
+            '"file1,file2.txt",sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI,3144',
+            "distribution-1.0.dist-info/RECORD,,",
+        ]
+        records = list(parse_record_file(record_lines))
+        assert records == [
+            (
+                "file1,file2.txt",
+                "sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT\\_pNh2yI",
+                "3144",
+            ),
+            ("distribution-1.0.dist-info/RECORD", "", ""),
+        ]

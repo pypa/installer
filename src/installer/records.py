@@ -103,11 +103,11 @@ class RecordEntry:
         self.hash_ = hash_
         self.size = size
 
-    def to_line(self, path_prefix: Optional[str] = None) -> bytes:
-        """Convert this into a line that can be written in a RECORD file.
+    def to_row(self, path_prefix: Optional[str] = None) -> Tuple[str, str, str]:
+        """Convert this into a 3-element tuple that can be written in a RECORD file.
 
         :param path_prefix: A prefix to attach to the path -- must end in `/`
-        :return: A binary-encoded line, that doesn't contain a newline
+        :return: a (path, hash, size) row
         """
         if path_prefix is not None:
             assert path_prefix.endswith("/")
@@ -119,13 +119,11 @@ class RecordEntry:
         if os.sep == "\\":
             path = path.replace("\\", "/")  # pragma: no cover
 
-        entry = ",".join(
-            [
-                (str(elem) if elem is not None else "")
-                for elem in [path, self.hash_, self.size]
-            ]
+        return (
+            path,
+            str(self.hash_ or ""),
+            str(self.size) if self.size is not None else "",
         )
-        return entry.encode("utf-8")
 
     def __repr__(self) -> str:
         return "RecordEntry(path={!r}, hash_={!r}, size={!r})".format(
