@@ -123,7 +123,7 @@ def install(
                 scheme=root_scheme,
                 path=path,
                 stream=other_stream,
-                is_executable=is_executable,
+                is_executable=False,
             )
         written_records.append((root_scheme, record))
 

@@ -25,7 +25,6 @@ def mock_destination():
     # A hacky approach to making sure we got the right objects going in.
     def custom_write_file(scheme, path, stream, is_executable):
         assert isinstance(stream, BytesIO)
-        assert is_executable is False
         return (path, scheme, 0)
 
     def custom_write_script(name, module, attr, section):
@@ -834,3 +833,73 @@ class TestInstall:
             )
 
         assert "fancy-1.0.0.data/invalid/fancy/invalid.py" in str(ctx.value)
+
+    def test_ensure_non_executable_for_additional_metadata(self, mock_destination):
+        # Create a fake wheel
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    # put me in purelib
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                    Summary: A fancy package
+                    Author: Agendaless Consulting
+                    Author-email: nobody@example.com
+                    License: MIT
+                    Keywords: fancy amazing
+                    Platform: UNKNOWN
+                    Classifier: Intended Audience :: Developers
+                """,
+            },
+        )
+        all_contents = list(source.get_contents())
+        source.get_contents = lambda: (
+            (*contents, True) for (*contents, _) in all_contents
+        )
+        install(
+            source=source,
+            destination=mock_destination,
+            additional_metadata={
+                "fun_file.txt": b"this should be in dist-info!",
+            },
+        )
+
+        mock_destination.assert_has_calls(
+            [
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy/__init__.py",
+                    stream=mock.ANY,
+                    is_executable=True,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/METADATA",
+                    stream=mock.ANY,
+                    is_executable=True,
+                ),
+                mock.call.write_file(
+                    scheme="purelib",
+                    path="fancy-1.0.0.dist-info/fun_file.txt",
+                    stream=mock.ANY,
+                    is_executable=False,
+                ),
+            ],
+            any_order=True,
+        )
