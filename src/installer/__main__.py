@@ -24,6 +24,13 @@ def _get_main_parser() -> argparse.ArgumentParser:
         help="destination directory (prefix to prepend to each file)",
     )
     parser.add_argument(
+        "--prefix",
+        "-p",
+        metavar="path",
+        type=str,
+        help="override prefix to install packages to",
+    )
+    parser.add_argument(
         "--compile-bytecode",
         action="append",
         metavar="level",
@@ -39,12 +46,18 @@ def _get_main_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _get_scheme_dict(distribution_name: str) -> Dict[str, str]:
+def _get_scheme_dict(
+    distribution_name: str, prefix: Optional[str] = None
+) -> Dict[str, str]:
     """Calculate the scheme dictionary for the current Python environment."""
-    scheme_dict = sysconfig.get_paths()
+    vars = {}
+    if prefix is None:
+        installed_base = sysconfig.get_config_var("base")
+        assert installed_base
+    else:
+        vars["base"] = vars["platbase"] = installed_base = prefix
 
-    installed_base = sysconfig.get_config_var("base")
-    assert installed_base
+    scheme_dict = sysconfig.get_paths(vars=vars)
 
     # calculate 'headers' path, not currently in sysconfig - see
     # https://bugs.python.org/issue44445. This is based on what distutils does.
@@ -72,7 +85,7 @@ def _main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
 
     with WheelFile.open(args.wheel) as source:
         destination = SchemeDictionaryDestination(
-            scheme_dict=_get_scheme_dict(source.distribution),
+            scheme_dict=_get_scheme_dict(source.distribution, prefix=args.prefix),
             interpreter=sys.executable,
             script_kind=get_launcher_kind(),
             bytecode_optimization_levels=bytecode_levels,
