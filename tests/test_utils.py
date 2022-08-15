@@ -16,6 +16,7 @@ from installer.utils import (
     construct_record_file,
     copyfileobj_with_hashing,
     fix_shebang,
+    canonicalize_name,
     parse_entrypoints,
     parse_metadata_file,
     parse_wheel_filename,
@@ -39,6 +40,27 @@ class TestParseMetadata:
         assert result.get("Name") == "package"
         assert result.get("version") == "1.0.0"
         assert result.get_all("MULTI-USE-FIELD") == ["1", "2", "3"]
+
+
+class TestCanonicalizeDistributionName:
+    @pytest.mark.parametrize(
+        "string, expected",
+        [
+            # Noop
+            (
+                "package-1",
+                "package-1",
+            ),
+            # PEP 508 canonicalization
+            (
+                "ABC..12",
+                "abc-12",
+            ),
+        ],
+    )
+    def test_valid_cases(self, string, expected):
+        got = canonicalize_name(string)
+        assert expected == got, (expected, got)
 
 
 class TestParseWheelFilename:
