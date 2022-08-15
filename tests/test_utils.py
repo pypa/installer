@@ -93,6 +93,11 @@ class TestParseWheelFilename:
                 "tensorflow-2.3.0-cp38-cp38-win_amd64.whl",
                 WheelFilename("tensorflow", "2.3.0", None, "cp38-cp38-win_amd64"),
             ),
+            # Non-canonicalized real wheel names
+            (
+                "Quart-0.18.0-py3-none-any.whl",
+                WheelFilename("quart", "0.18.0", None, "py3-none-any"),
+            ),
         ],
     )
     def test_valid_cases(self, string, expected):

@@ -109,7 +109,9 @@ def parse_wheel_filename(filename: str) -> WheelFilename:
     wheel_info = _WHEEL_FILENAME_REGEX.match(filename)
     if not wheel_info:
         raise ValueError(f"Not a valid wheel filename: {filename}")
-    return WheelFilename(*wheel_info.groups())
+    parsed = wheel_info.groups()
+    normalized_name = normalize_distribution_name(parsed[0])
+    return WheelFilename(normalized_name, *parsed[1:])
 
 
 def copyfileobj_with_hashing(
