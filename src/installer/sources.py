@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from typing import BinaryIO, ClassVar, Iterator, List, Tuple, Type, cast
 
 from installer.records import RecordEntry, parse_record_file
-from installer.utils import parse_wheel_filename
+from installer.utils import canonicalize_name, parse_wheel_filename
 
 WheelContentElement = Tuple[Tuple[str, str, str], BinaryIO, bool]
 
@@ -155,10 +155,21 @@ class WheelFile(WheelSource):
             dist_infos = [
                 name for name in top_level_directories if name.endswith(".dist-info")
             ]
+
             assert (
                 len(dist_infos) == 1
             ), "Wheel doesn't contain exactly one .dist-info directory"
-            self._dist_info_dir = dist_infos[0]
+            dist_info_dir = dist_infos[0]
+
+            # NAME-VER.dist-info
+            di_dname = dist_info_dir.rsplit("-", 2)[0]
+            norm_di_dname = canonicalize_name(di_dname)
+            norm_file_dname = canonicalize_name(self.distribution)
+            assert (
+                norm_di_dname == norm_file_dname
+            ), "Wheel .dist-info directory doesn't match wheel filename"
+
+            self._dist_info_dir = dist_info_dir
         return self._dist_info_dir
 
     @property

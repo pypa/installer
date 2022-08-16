@@ -104,6 +104,14 @@ class TestWheelFile:
         with WheelFile.open(denorm) as source:
             assert source.dist_info_filenames
 
+    def test_requires_dist_info_name_match(self, fancy_wheel):
+        misnamed = fancy_wheel.rename(
+            fancy_wheel.parent / "misnamed-1.0.0-py3-none-any.whl"
+        )
+        with pytest.raises(AssertionError):
+            with WheelFile.open(misnamed) as source:
+                source.dist_info_filenames
+
 
 def replace_file_in_zip(path: str, filename: str, content: "bytes | None") -> None:
     """Helper function for replacing a file in the zip.
