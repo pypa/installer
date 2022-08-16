@@ -146,6 +146,22 @@ class WheelFile(WheelSource):
             yield cls(f)
 
     @property
+    def dist_info_dir(self) -> str:
+        """Name of the dist-info directory."""
+        if not hasattr(self, "_dist_info_dir"):
+            top_level_directories = {
+                path.split("/", 1)[0] for path in self._zipfile.namelist()
+            }
+            dist_infos = [
+                name for name in top_level_directories if name.endswith(".dist-info")
+            ]
+            assert (
+                len(dist_infos) == 1
+            ), "Wheel doesn't contain exactly one .dist-info directory"
+            self._dist_info_dir = dist_infos[0]
+        return self._dist_info_dir
+
+    @property
     def dist_info_filenames(self) -> List[str]:
         """Get names of all files in the dist-info directory."""
         base = self.dist_info_dir
