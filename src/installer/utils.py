@@ -1,5 +1,6 @@
 """Utilities related to handling / interacting with wheel files."""
 
+import base64
 import contextlib
 import csv
 import hashlib
@@ -130,7 +131,7 @@ def copyfileobj_with_hashing(
         dest.write(buf)
         size += len(buf)
 
-    return hasher.hexdigest(), size
+    return base64.urlsafe_b64encode(hasher.digest()).decode("ascii").rstrip("="), size
 
 
 def get_launcher_kind() -> "LauncherKind":  # pragma: no cover

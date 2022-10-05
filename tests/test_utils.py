@@ -1,6 +1,7 @@
 """Tests for installer.utils
 """
 
+import base64
 import hashlib
 import textwrap
 from email.message import Message
@@ -96,7 +97,7 @@ class TestParseWheelFilename:
 class TestCopyFileObjWithHashing:
     def test_basic_functionality(self):
         data = b"input data is this"
-        hash_ = hashlib.sha256(data).hexdigest()
+        hash_ = base64.urlsafe_b64encode(hashlib.sha256(data).digest()).decode("ascii").rstrip("=")
         size = len(data)
 
         with BytesIO(data) as source:
