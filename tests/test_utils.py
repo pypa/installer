@@ -97,7 +97,11 @@ class TestParseWheelFilename:
 class TestCopyFileObjWithHashing:
     def test_basic_functionality(self):
         data = b"input data is this"
-        hash_ = base64.urlsafe_b64encode(hashlib.sha256(data).digest()).decode("ascii").rstrip("=")
+        hash_ = (
+            base64.urlsafe_b64encode(hashlib.sha256(data).digest())
+            .decode("ascii")
+            .rstrip("=")
+        )
         size = len(data)
 
         with BytesIO(data) as source:
