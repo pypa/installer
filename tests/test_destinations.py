@@ -163,11 +163,11 @@ class TestSchemeDictionaryDestination:
             data = f.read()
 
         assert data == (
-            b"../data/my_data1.bin,sha256=355d00f8ce0e3eea93b078de0fa5ad87ff94aaba40000772a6572eb2d159f2ce,9\n"
-            b"../data/my_data2.bin,sha256=94fed5f2858baa0c9709b74048d88f76c5288333d466186dffb17c4f96c2dde4,9\n"
-            b'"../data/my_data3,my_data4.bin",sha256=d7c92baeebb582bd35c7e58cffd0a14804a81efd267d1015ebe0766ddf6cc69a,9\n'
-            b"../scripts/my_script,sha256=33ad1f5af51230990fb70d9aa54be3596c0e72744f715cbfccee3ee25a47d3ca,9\n"
-            b"../scripts/my_script2,sha256=93dffdf7b9136d36109bb11714b7255592f59b637df2b53dd105f8e9778cbe36,22\n"
-            b"../scripts/my_entrypoint,sha256=fe9ffd9f099e21ea0c05f4346a486bd4a6ca9f795a0f2760d09edccb416ce892,216\n"
+            b"../data/my_data1.bin,sha256=NV0A-M4OPuqTsHjeD6Wth_-UqrpAAAdyplcustFZ8s4,9\n"
+            b"../data/my_data2.bin,sha256=lP7V8oWLqgyXCbdASNiPdsUogzPUZhht_7F8T5bC3eQ,9\n"
+            b'"../data/my_data3,my_data4.bin",sha256=18krruu1gr01x-WM_9ChSASoHv0mfRAV6-B2bd9sxpo,9\n'
+            b"../scripts/my_script,sha256=M60fWvUSMJkPtw2apUvjWWwOcnRPcVy_zO4-4lpH08o,9\n"
+            b"../scripts/my_script2,sha256=k9_997kTbTYQm7EXFLclVZL1m2N98rU90QX46XeMvjY,22\n"
+            b"../scripts/my_entrypoint,sha256=_p_9nwmeIeoMBfQ0akhr1KbKn3laDydg0J7cy0Fs6JI,216\n"
             b"RECORD,,\n"
         )
