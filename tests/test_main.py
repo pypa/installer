@@ -17,6 +17,19 @@ def test_get_scheme_dict_prefix():
         ), f"{key} does not start with /foo: {d[key]}"
 
 
+def test_get_scheme_dict_prefix_scheme():
+    d = get_scheme_dict(distribution_name="foo", prefix="/foo", scheme="posix_prefix")
+    for key in ("purelib", "platlib", "headers", "scripts", "data"):
+        assert d[key].startswith(
+            f"{os.sep}foo"
+        ), f"{key} does not start with /foo: {d[key]}"
+
+
+def test_get_scheme_dict_scheme():
+    d = get_scheme_dict(distribution_name="foo", scheme="posix_prefix")
+    assert set(d.keys()) >= {"purelib", "platlib", "headers", "scripts", "data"}
+
+
 def test_main(fancy_wheel, tmp_path):
     destdir = tmp_path / "dest"
 

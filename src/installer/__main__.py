@@ -31,6 +31,13 @@ def _get_main_parser() -> argparse.ArgumentParser:
         help="override prefix to install packages to",
     )
     parser.add_argument(
+        "--scheme",
+        "-s",
+        metavar="scheme",
+        type=str,
+        help="override the default installation scheme",
+    )
+    parser.add_argument(
         "--compile-bytecode",
         action="append",
         metavar="level",
@@ -47,7 +54,7 @@ def _get_main_parser() -> argparse.ArgumentParser:
 
 
 def _get_scheme_dict(
-    distribution_name: str, prefix: Optional[str] = None
+    distribution_name: str, prefix: Optional[str] = None, scheme: Optional[str] = None
 ) -> Dict[str, str]:
     """Calculate the scheme dictionary for the current Python environment."""
     vars = {}
@@ -57,15 +64,28 @@ def _get_scheme_dict(
     else:
         vars["base"] = vars["platbase"] = installed_base = prefix
 
-    scheme_dict = sysconfig.get_paths(vars=vars)
+    if scheme:
+        scheme_dict = sysconfig.get_paths(scheme=scheme, vars=vars)
 
-    # calculate 'headers' path, not currently in sysconfig - see
-    # https://bugs.python.org/issue44445. This is based on what distutils does.
-    # TODO: figure out original vs normalised distribution names
-    scheme_dict["headers"] = os.path.join(
-        sysconfig.get_path("include", vars={"installed_base": installed_base}),
-        distribution_name,
-    )
+        # calculate 'headers' path, not currently in sysconfig - see
+        # https://bugs.python.org/issue44445. This is based on what distutils does.
+        # TODO: figure out original vs normalised distribution names
+        scheme_dict["headers"] = os.path.join(
+            sysconfig.get_path(
+                "include", scheme=scheme, vars={"installed_base": installed_base}
+            ),
+            distribution_name,
+        )
+    else:
+        scheme_dict = sysconfig.get_paths(vars=vars)
+
+        # calculate 'headers' path, not currently in sysconfig - see
+        # https://bugs.python.org/issue44445. This is based on what distutils does.
+        # TODO: figure out original vs normalised distribution names
+        scheme_dict["headers"] = os.path.join(
+            sysconfig.get_path("include", vars={"installed_base": installed_base}),
+            distribution_name,
+        )
 
     return scheme_dict
 
@@ -85,7 +105,9 @@ def _main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
 
     with WheelFile.open(args.wheel) as source:
         destination = SchemeDictionaryDestination(
-            scheme_dict=_get_scheme_dict(source.distribution, prefix=args.prefix),
+            scheme_dict=_get_scheme_dict(
+                source.distribution, prefix=args.prefix, scheme=args.scheme
+            ),
             interpreter=sys.executable,
             script_kind=get_launcher_kind(),
             bytecode_optimization_levels=bytecode_levels,
