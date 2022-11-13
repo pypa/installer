@@ -13,7 +13,18 @@ from installer.utils import parse_wheel_filename
 WheelContentElement = Tuple[Tuple[str, str, str], BinaryIO, bool]
 
 
-__all__ = ["WheelSource", "WheelFile"]
+__all__ = ["WheelSource", "WheelFile", "WheelValidationError"]
+
+
+class WheelValidationError(Exception):
+    """Raised when a wheel fails validation."""
+
+    def __init__(self, issues: List[str]) -> None:  # noqa: D107
+        super().__init__(", ".join(issues))
+        self.issues = issues
+
+    def __repr__(self) -> str:
+        return f"WheelValidationError(issues={self.issues!r})"
 
 
 class WheelSource:
@@ -62,6 +73,14 @@ class WheelSource:
             ...
 
         :param filename: name of the file
+        """
+        raise NotImplementedError
+
+    def validate_record(self) -> None:
+        """Validate ``RECORD`` of the wheel.
+
+        A ``ValidationError`` will be raised if any file in the wheel
+        is not both mentioned and hashed.
         """
         raise NotImplementedError
 
@@ -137,6 +156,44 @@ class WheelFile(WheelSource):
         """Get contents, from ``filename`` in the dist-info directory."""
         path = posixpath.join(self.dist_info_dir, filename)
         return self._zipfile.read(path).decode("utf-8")
+
+    def validate_record(self) -> None:
+        """Validate ``RECORD`` of the wheel."""
+        try:
+            record_lines = self.read_dist_info("RECORD").splitlines()
+            records = parse_record_file(record_lines)
+        except Exception as exc:
+            raise WheelValidationError(
+                [f"Unable to retrieve `RECORD` from {self._zipfile.filename}: {exc!r}"]
+            ) from exc
+
+        record_mapping = {record[0]: record for record in records}
+        issues: List[str] = []
+
+        for item in self._zipfile.infolist():
+            if item.filename[-1:] == "/":  # looks like a directory
+                continue
+
+            record = record_mapping.pop(item.filename, None)
+
+            if self.dist_info_dir == posixpath.commonprefix(
+                [self.dist_info_dir, item.filename]
+            ) and item.filename.split("/")[-1] not in ("RECORD.p7s", "RECORD.jwt"):
+                # both are for digital signatures, and not mentioned in RECORD
+                continue
+
+            if record is None:
+                issues.append(
+                    f"In {self._zipfile.filename}, {item.filename} is not mentioned in RECORD"
+                )
+            elif not record[1] and item.filename != f"{self.dist_info_dir}/RECORD":
+                # Empty hash, skip unless it's RECORD
+                issues.append(
+                    f"In {self._zipfile.filename}, hash of {item.filename} is not included in RECORD"
+                )
+
+        if issues:
+            raise WheelValidationError(issues)
 
     def get_contents(self) -> Iterator[WheelContentElement]:
         """Sequential access to all contents of the wheel (including dist-info files).
