@@ -20,7 +20,7 @@ class WheelValidationError(Exception):
     """Raised when a wheel fails validation."""
 
     def __init__(self, issues: List[str]) -> None:  # noqa: D107
-        super().__init__(", ".join(issues))
+        super().__init__(repr(issues))
         self.issues = issues
 
     def __repr__(self) -> str:

@@ -65,6 +65,10 @@ class FakeWheelSource(WheelSource):
     def read_dist_info(self, filename):
         return self.dist_info_files[filename]
 
+    def validate_record(self) -> None:
+        # Skip validation since the logic is different.
+        return
+
     def get_contents(self):
         # Sort for deterministic behaviour for Python versions that do not preserve
         # insertion order for dictionaries.
