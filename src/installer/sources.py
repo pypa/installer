@@ -211,11 +211,8 @@ class WheelFile(WheelSource):
             if item.filename[-1:] == "/":  # looks like a directory
                 continue
 
-            record = record_mapping.pop(item.filename, None)
-            assert record is not None, "In {}, {} is not mentioned in RECORD".format(
-                self._zipfile.filename,
-                item.filename,
-            )  # should not happen for valid wheels
+            # Pop record with empty default, because validation is handled by `validate_record`
+            record = record_mapping.pop(item.filename, (item.filename, "", ""))
 
             # Borrowed from:
             # https://github.com/pypa/pip/blob/0f21fb92/src/pip/_internal/utils/unpacking.py#L96-L100
