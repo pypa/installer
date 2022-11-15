@@ -1,5 +1,7 @@
 import textwrap
 import zipfile
+from base64 import urlsafe_b64encode
+from hashlib import sha256
 
 import pytest
 
@@ -51,25 +53,21 @@ def fancy_wheel(tmp_path):
             Platform: UNKNOWN
             Classifier: Intended Audience :: Developers
         """,
-        # The RECORD file is indirectly validated by the WheelFile, since it only
-        # provides the items that are a part of the wheel.
-        "fancy-1.0.0.dist-info/RECORD": b"""\
-            fancy/__init__.py,sha256=qZ2qq7xVBAiUFQVv-QBHhdtCUF5p1NsWwSOiD7qdHN0,36
-            fancy/__main__.py,sha256=Wd4SyWJOIMsHf_5-0oN6aNFwen8ehJnRo-erk2_K-eY,61
-            fancy-1.0.0.data/data/fancy/data.py,sha256=nuFRUNQF5vP7FWE-v5ysyrrfpIaAvfzSiGOgfPpLOeI,17
-            fancy-1.0.0.dist-info/top_level.txt,sha256=SW-yrrF_c8KlserorMw54inhLjZ3_YIuLz7fYT4f8ao,6
-            fancy-1.0.0.dist-info/entry_points.txt,sha256=AxJl21_zgoNWjCfvSkC9u_rWSzGyCtCzhl84n979jCc,75
-            fancy-1.0.0.dist-info/WHEEL,sha256=1DrXMF1THfnBjsdS5sZn-e7BKcmUn7jnMbShGeZomgc,84
-            fancy-1.0.0.dist-info/METADATA,sha256=hRhZavK_Y6WqKurFFAABDnoVMjZFBH0NJRjwLOutnJI,236
-            fancy-1.0.0.dist-info/RECORD,,
-        """,
     }
+
+    record_name = "fancy-1.0.0.dist-info/RECORD"
+    record_lines = []
 
     with zipfile.ZipFile(path, "w") as archive:
         for name, indented_content in files.items():
-            archive.writestr(
-                name,
-                textwrap.dedent(indented_content.decode("utf-8")).encode("utf-8"),
-            )
+            data = textwrap.dedent(indented_content.decode("utf-8")).encode("utf-8")
+            archive.writestr(name, data)
+            if name[-1:] != "/":  # Only files go into RECORD
+                digest = sha256(data).digest()
+                value = urlsafe_b64encode(digest).decode("ascii").rstrip("=")
+                record_lines.append(f"{name},sha256={value},{len(data)}")
+
+        record_lines.append(f"{record_name},,")
+        archive.writestr(record_name, "\n".join(record_lines).encode("utf-8"))
 
     return path
