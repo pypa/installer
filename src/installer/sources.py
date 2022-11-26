@@ -79,8 +79,10 @@ class WheelSource:
     def validate_record(self) -> None:
         """Validate ``RECORD`` of the wheel.
 
+        This method should be called before :py:func:`install <installer.install>`
+        if validation is required.
         A ``ValidationError`` will be raised if any file in the wheel
-        is not both mentioned and hashed.
+        is not both mentioned and properly hashed.
         """
         raise NotImplementedError
 
@@ -187,7 +189,7 @@ class WheelFile(WheelSource):
                     f"In {self._zipfile.filename}, {item.filename} is not mentioned in RECORD"
                 )
             elif not record[1] and item.filename != f"{self.dist_info_dir}/RECORD":
-                # Empty hash, skip unless it's RECORD
+                # Empty hash, report unless it's RECORD
                 issues.append(
                     f"In {self._zipfile.filename}, hash of {item.filename} is not included in RECORD"
                 )
