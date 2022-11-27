@@ -5,26 +5,15 @@ import posixpath
 import stat
 import zipfile
 from contextlib import contextmanager
-from typing import BinaryIO, Iterator, List, Tuple, cast
+from typing import BinaryIO, ClassVar, Iterator, List, Tuple, Type, cast
 
-from installer.records import parse_record_file
+from installer.records import RecordEntry, parse_record_file
 from installer.utils import parse_wheel_filename
 
 WheelContentElement = Tuple[Tuple[str, str, str], BinaryIO, bool]
 
 
-__all__ = ["WheelSource", "WheelFile", "WheelValidationError"]
-
-
-class WheelValidationError(Exception):
-    """Raised when a wheel fails validation."""
-
-    def __init__(self, issues: List[str]) -> None:  # noqa: D107
-        super().__init__(repr(issues))
-        self.issues = issues
-
-    def __repr__(self) -> str:
-        return f"WheelValidationError(issues={self.issues!r})"
+__all__ = ["WheelSource", "WheelFile"]
 
 
 class WheelSource:
@@ -32,6 +21,8 @@ class WheelSource:
 
     This is an abstract class, whose methods have to be implemented by subclasses.
     """
+
+    validation_error: ClassVar[Type[Exception]] = ValueError
 
     def __init__(self, distribution: str, version: str) -> None:
         """Initialize a WheelSource object.
@@ -81,8 +72,6 @@ class WheelSource:
 
         This method should be called before :py:func:`install <installer.install>`
         if validation is required.
-        A ``ValidationError`` will be raised if any file in the wheel
-        is not both mentioned and properly hashed.
         """
         raise NotImplementedError
 
@@ -112,6 +101,17 @@ class WheelSource:
         raise NotImplementedError
 
 
+class _WheelFileValidationError(ValueError):
+    """Raised when a wheel file fails validation."""
+
+    def __init__(self, issues: List[str]) -> None:  # noqa: D107
+        super().__init__(repr(issues))
+        self.issues = issues
+
+    def __repr__(self) -> str:
+        return f"WheelFileValidationError(issues={self.issues!r})"
+
+
 class WheelFile(WheelSource):
     """Implements `WheelSource`, for an existing file from the filesystem.
 
@@ -120,6 +120,8 @@ class WheelFile(WheelSource):
         >>> with WheelFile.open("sampleproject-2.0.0-py3-none-any.whl") as source:
         ...     installer.install(source, destination)
     """
+
+    validation_error = _WheelFileValidationError
 
     def __init__(self, f: zipfile.ZipFile) -> None:
         """Initialize a WheelFile object.
@@ -159,13 +161,23 @@ class WheelFile(WheelSource):
         path = posixpath.join(self.dist_info_dir, filename)
         return self._zipfile.read(path).decode("utf-8")
 
-    def validate_record(self) -> None:
-        """Validate ``RECORD`` of the wheel."""
+    def validate_record(self, validate_file: bool = True) -> None:
+        """Validate ``RECORD`` of the wheel.
+
+        This method should be called before :py:func:`install <installer.install>`
+        if validation is required.
+
+        File names will always be validated against ``RECORD``.
+        If ``validate_file`` is true, every file in the archive will be validated
+        against corresponding entry in ``RECORD``.
+
+        :param validate_file: Whether to validate content integrity.
+        """
         try:
             record_lines = self.read_dist_info("RECORD").splitlines()
             records = parse_record_file(record_lines)
         except Exception as exc:
-            raise WheelValidationError(
+            raise _WheelFileValidationError(
                 [f"Unable to retrieve `RECORD` from {self._zipfile.filename}: {exc!r}"]
             ) from exc
 
@@ -176,26 +188,38 @@ class WheelFile(WheelSource):
             if item.filename[-1:] == "/":  # looks like a directory
                 continue
 
-            record = record_mapping.pop(item.filename, None)
+            record_args = record_mapping.pop(item.filename, None)
 
             if self.dist_info_dir == posixpath.commonprefix(
                 [self.dist_info_dir, item.filename]
-            ) and item.filename.split("/")[-1] not in ("RECORD.p7s", "RECORD.jwt"):
+            ) and item.filename.split("/")[-1] in ("RECORD.p7s", "RECORD.jws"):
                 # both are for digital signatures, and not mentioned in RECORD
                 continue
 
-            if record is None:
+            if record_args is None:
                 issues.append(
                     f"In {self._zipfile.filename}, {item.filename} is not mentioned in RECORD"
                 )
-            elif not record[1] and item.filename != f"{self.dist_info_dir}/RECORD":
-                # Empty hash, report unless it's RECORD
-                issues.append(
-                    f"In {self._zipfile.filename}, hash of {item.filename} is not included in RECORD"
-                )
+                continue
+
+            if item.filename == f"{self.dist_info_dir}/RECORD":
+                # Skip record file
+                continue
+            if validate_file:
+                record = RecordEntry.from_elements(*record_args)
+                data = self._zipfile.read(item)
+                if record.hash_ is None or record.size is None:
+                    # Report empty hash / size
+                    issues.append(
+                        f"In {self._zipfile.filename}, hash / size of {item.filename} is not included in RECORD"
+                    )
+                elif not record.validate(data):
+                    issues.append(
+                        f"In {self._zipfile.filename}, hash / size of {item.filename} didn't match RECORD"
+                    )
 
         if issues:
-            raise WheelValidationError(issues)
+            raise _WheelFileValidationError(issues)
 
     def get_contents(self) -> Iterator[WheelContentElement]:
         """Sequential access to all contents of the wheel (including dist-info files).

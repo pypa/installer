@@ -1,7 +1,5 @@
 import textwrap
 import zipfile
-from base64 import urlsafe_b64encode
-from hashlib import sha256
 
 import pytest
 

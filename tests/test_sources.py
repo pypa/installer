@@ -1,10 +1,13 @@
+import json
 import posixpath
 import zipfile
+from base64 import urlsafe_b64encode
+from hashlib import sha256
 
 import pytest
 
 from installer.records import parse_record_file
-from installer.sources import WheelFile, WheelSource, WheelValidationError
+from installer.sources import WheelFile, WheelSource
 
 
 class TestWheelSource:
@@ -126,7 +129,9 @@ def test_rejects_no_record_on_validate(fancy_wheel):
         content=None,
     )
     with WheelFile.open(fancy_wheel) as source:
-        with pytest.raises(WheelValidationError, match="Unable to retrieve `RECORD`"):
+        with pytest.raises(
+            WheelFile.validation_error, match="Unable to retrieve `RECORD`"
+        ):
             source.validate_record()
 
 
@@ -143,16 +148,15 @@ def test_rejects_record_missing_file_on_validate(fancy_wheel):
         content=new_record_file_contents,
     )
     with WheelFile.open(fancy_wheel) as source:
-        with pytest.raises(WheelValidationError, match="not mentioned in RECORD"):
+        with pytest.raises(WheelFile.validation_error, match="not mentioned in RECORD"):
             source.validate_record()
 
 
-def test_validation_error_record_missing_hash(fancy_wheel):
+def test_rejects_record_missing_hash(fancy_wheel):
     with zipfile.ZipFile(fancy_wheel) as archive:
         with archive.open("fancy-1.0.0.dist-info/RECORD") as f:
             record_file_contents = f.read()
 
-    # Remove the first two entries from the RECORD file
     new_record_file_contents = b"\n".join(
         line.split(b",")[0] + b",,"  # file name with empty size and hash
         for line in record_file_contents.split(b"\n")
@@ -164,6 +168,66 @@ def test_validation_error_record_missing_hash(fancy_wheel):
     )
     with WheelFile.open(fancy_wheel) as source:
         with pytest.raises(
-            WheelValidationError, match="hash of (.+) is not included in RECORD"
+            WheelFile.validation_error,
+            match="hash / size of (.+) is not included in RECORD",
+        ):
+            source.validate_record()
+
+
+def test_accept_record_missing_hash_on_skip_validation(fancy_wheel):
+    with zipfile.ZipFile(fancy_wheel) as archive:
+        with archive.open("fancy-1.0.0.dist-info/RECORD") as f:
+            record_file_contents = f.read()
+
+    new_record_file_contents = b"\n".join(
+        line.split(b",")[0] + b",,"  # file name with empty size and hash
+        for line in record_file_contents.split(b"\n")
+    )
+    replace_file_in_zip(
+        fancy_wheel,
+        filename="fancy-1.0.0.dist-info/RECORD",
+        content=new_record_file_contents,
+    )
+    with WheelFile.open(fancy_wheel) as source:
+        source.validate_record(validate_file=False)
+
+
+def test_accept_wheel_with_signed_file(fancy_wheel):
+    with zipfile.ZipFile(fancy_wheel) as archive:
+        with archive.open("fancy-1.0.0.dist-info/RECORD") as f:
+            record_file_contents = f.read()
+            hash_b64_nopad = (
+                urlsafe_b64encode(sha256(record_file_contents).digest())
+                .decode("utf-8")
+                .rstrip("=")
+            )
+            jws_content = json.dumps({"hash": f"sha256={hash_b64_nopad}"})
+    with zipfile.ZipFile(fancy_wheel, "a") as archive:
+        archive.writestr("fancy-1.0.0.dist-info/RECORD.jws", jws_content)
+    with WheelFile.open(fancy_wheel) as source:
+        source.validate_record()
+
+
+def test_rejects_record_validation_failed(fancy_wheel):
+    with zipfile.ZipFile(fancy_wheel) as archive:
+        with archive.open("fancy-1.0.0.dist-info/RECORD") as f:
+            record_file_contents = f.read()
+
+    new_record_file_contents = b"\n".join(
+        line.split(b",")[0]  # Original filename
+        + b",sha256=pREiHcl39jRySUXMCOrwmSsnOay8FB7fOJP5mZQ3D3A,"
+        + line.split(b",")[2]  # Original size
+        for line in record_file_contents.split(b"\n")
+        if line  # ignore trail endline
+    )
+    replace_file_in_zip(
+        fancy_wheel,
+        filename="fancy-1.0.0.dist-info/RECORD",
+        content=new_record_file_contents,
+    )
+    with WheelFile.open(fancy_wheel) as source:
+        with pytest.raises(
+            WheelFile.validation_error,
+            match="hash / size of (.+) didn't match RECORD",
         ):
             source.validate_record()
