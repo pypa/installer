@@ -96,55 +96,74 @@ class TestWheelFile:
         assert sorted(got_records) == sorted(expected_records)
         assert got_files == files
 
-    def modify_wheel_record(self, fancy_wheel, manipulation_func):
-        """Helper function for modifying RECORD in the wheel file.
 
-        Exists because ZipFile doesn't support remove.
-        """
-        files = {}
-        # Read everything except RECORD and add it back immediately
-        with zipfile.ZipFile(fancy_wheel) as archive:
-            for file in archive.namelist():
-                # Call manipulation function so that we can add RECORD back.
-                if file.endswith("RECORD"):
-                    manipulation_func(files, file, archive.read(file))
-                    continue
+def replace_file_in_zip(path: str, filename: str, content: "bytes | None") -> None:
+    """Helper function for replacing a file in the zip.
 
+    Exists because ZipFile doesn't support remove.
+    """
+    files = {}
+    # Copy everything except `filename`, and replace it with `content`.
+    with zipfile.ZipFile(path) as archive:
+        for file in archive.namelist():
+            if file == filename:
+                if content is None:
+                    continue  # Remove the file
+                files[file] = content
+            else:
                 files[file] = archive.read(file)
-        # Replace original archive
-        with zipfile.ZipFile(fancy_wheel, mode="w") as archive:
-            for name, content in files.items():
-                archive.writestr(name, content)
+    # Replace original archive
+    with zipfile.ZipFile(path, mode="w") as archive:
+        for name, content in files.items():
+            archive.writestr(name, content)
 
-    def test_validation_error_no_record(self, fancy_wheel):
-        # Replace the wheel without adding RECORD
-        self.modify_wheel_record(fancy_wheel, lambda *_: None)
-        with WheelFile.open(fancy_wheel) as w:
-            with pytest.raises(
-                WheelValidationError, match="Unable to retrieve `RECORD`"
-            ):
-                w.validate_record()
 
-    def test_validation_error_record_missing_file(self, fancy_wheel):
-        def modifier(file_dict, file_name, data):
-            # Throw away first two entries
-            file_dict[file_name] = b"\n".join(data.split(b"\n")[2:])
+def test_rejects_no_record_on_validate(fancy_wheel):
+    # Remove RECORD
+    replace_file_in_zip(
+        fancy_wheel,
+        filename="fancy-1.0.0.dist-info/RECORD",
+        content=None,
+    )
+    with WheelFile.open(fancy_wheel) as source:
+        with pytest.raises(WheelValidationError, match="Unable to retrieve `RECORD`"):
+            source.validate_record()
 
-        self.modify_wheel_record(fancy_wheel, modifier)
-        with WheelFile.open(fancy_wheel) as w:
-            with pytest.raises(WheelValidationError, match="not mentioned in RECORD"):
-                w.validate_record()
 
-    def test_validation_error_record_missing_hash(self, fancy_wheel):
-        def modifier(file_dict, file_name, data):
-            # Extract filename and write back without hash or size
-            file_dict[file_name] = b"\n".join(
-                line.split(b",")[0] + b",," for line in data.split(b"\n")[2:]
-            )
+def test_rejects_record_missing_file_on_validate(fancy_wheel):
+    with zipfile.ZipFile(fancy_wheel) as archive:
+        with archive.open("fancy-1.0.0.dist-info/RECORD") as f:
+            record_file_contents = f.read()
 
-        self.modify_wheel_record(fancy_wheel, modifier)
-        with WheelFile.open(fancy_wheel) as w:
-            with pytest.raises(
-                WheelValidationError, match="hash of (.+) is not included in RECORD"
-            ):
-                w.validate_record()
+    # Remove the first two entries from the RECORD file
+    new_record_file_contents = b"\n".join(record_file_contents.split(b"\n")[2:])
+    replace_file_in_zip(
+        fancy_wheel,
+        filename="fancy-1.0.0.dist-info/RECORD",
+        content=new_record_file_contents,
+    )
+    with WheelFile.open(fancy_wheel) as source:
+        with pytest.raises(WheelValidationError, match="not mentioned in RECORD"):
+            source.validate_record()
+
+
+def test_validation_error_record_missing_hash(fancy_wheel):
+    with zipfile.ZipFile(fancy_wheel) as archive:
+        with archive.open("fancy-1.0.0.dist-info/RECORD") as f:
+            record_file_contents = f.read()
+
+    # Remove the first two entries from the RECORD file
+    new_record_file_contents = b"\n".join(
+        line.split(b",")[0] + b",,"  # file name with empty size and hash
+        for line in record_file_contents.split(b"\n")
+    )
+    replace_file_in_zip(
+        fancy_wheel,
+        filename="fancy-1.0.0.dist-info/RECORD",
+        content=new_record_file_contents,
+    )
+    with WheelFile.open(fancy_wheel) as source:
+        with pytest.raises(
+            WheelValidationError, match="hash of (.+) is not included in RECORD"
+        ):
+            source.validate_record()
