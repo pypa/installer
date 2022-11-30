@@ -213,5 +213,8 @@ def parse_record_file(rows: Iterable[str]) -> Iterator[Tuple[str, str, str]]:
             )
             raise InvalidRecordEntry(elements=elements, issues=[message])
 
+        # Convert Windows paths to use / for consistency
+        elements[0] = elements[0].replace("\\", "/")
+
         value = cast(Tuple[str, str, str], tuple(elements))
         yield value

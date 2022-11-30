@@ -273,3 +273,12 @@ class TestParseRecordFile:
             ),
             ("distribution-1.0.dist-info/RECORD", "", ""),
         ]
+
+    def test_parse_record_entry_with_backslash_path(self):
+        record_lines = [
+            "distribution-1.0.dist-info\\RECORD,,",
+        ]
+        records = list(parse_record_file(record_lines))
+        assert records == [
+            ("distribution-1.0.dist-info/RECORD", "", ""),
+        ]
