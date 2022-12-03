@@ -20,7 +20,7 @@ def _install_this_project_with_flit(session, *, extras=None, editable=False):
     session.run("flit", "install", "--deps=production", *args, silent=True)
 
 
-@nox.session(python="3.8")
+@nox.session(python="3.11")
 def lint(session):
     session.install("pre-commit")
 
@@ -34,7 +34,7 @@ def lint(session):
     session.run("pre-commit", "run", "--all-files", *args)
 
 
-@nox.session(python=["3.7", "3.8", "3.9", "3.10", "pypy3"])
+@nox.session(python=["3.7", "3.8", "3.9", "3.10", "3.11", "pypy3"])
 def test(session):
     _install_this_project_with_flit(session, editable=True)
     session.install("-r", "tests/requirements.txt")
@@ -54,7 +54,7 @@ def test(session):
     )
 
 
-@nox.session(python=["3.7", "3.8", "3.9", "3.10", "pypy3"])
+@nox.session(python=["3.7", "3.8", "3.9", "3.10", "3.11", "pypy3"])
 def doctest(session):
     session.install(".")
     session.install("-r", "docs/requirements.txt")
@@ -62,7 +62,7 @@ def doctest(session):
     session.run("sphinx-build", "-b", "doctest", "docs/", "build/doctest")
 
 
-@nox.session(python="3.8", name="update-launchers")
+@nox.session(python="3.11", name="update-launchers")
 def update_launchers(session):
     session.install("httpx")
     session.run("python", "tools/update_launchers.py")
@@ -71,7 +71,7 @@ def update_launchers(session):
 #
 # Documentation
 #
-@nox.session(python="3.8")
+@nox.session(python="3.11")
 def docs(session):
     _install_this_project_with_flit(session)
     session.install("-r", "docs/requirements.txt")
@@ -80,7 +80,7 @@ def docs(session):
     session.run("sphinx-build", "-W", "-b", "html", "docs/", "build/docs")
 
 
-@nox.session(name="docs-live", python="3.8")
+@nox.session(name="docs-live", python="3.11")
 def docs_live(session):
     _install_this_project_with_flit(session, editable=True)
     session.install("-r", "docs/requirements.txt")
