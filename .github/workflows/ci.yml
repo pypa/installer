@@ -27,10 +27,10 @@ jobs:
             python-version: pypy-3.7
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Get Python to test against
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -42,7 +42,7 @@ jobs:
         id: pip-cache-dir
         run: echo "::set-output name=dir::$(pip cache dir)"
       - name: pip cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ${{ steps.pip-cache-dir.outputs.dir }}
           key: pip-v1-${{ runner.os }}-${{ steps.date.outputs.date }}
