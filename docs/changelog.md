@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.6.0 (Dec 7, 2022)
+
+- Add support for Python 3.11 (#154)
+- Encode hashes in `RECORD` files correctly (#141)
+- Add `py.typed` marker file (#138)
+- Implement `--prefix` option (#103)
+- Fix the unbound `is_executable` (#115)
+- Construct `RECORD` file using `csv.writer` (#118)
+- Move away from `import installer.xyz` style imports (#110)
+- Improve existing documentation content (typos, formatting) (#109)
+
 ## v0.5.1 (Mar 11, 2022)
 
 - Change all names in `installer.__main__` to be underscore prefixed.
