@@ -51,16 +51,14 @@ def fancy_wheel(tmp_path):
             Platform: UNKNOWN
             Classifier: Intended Audience :: Developers
         """,
-        # The RECORD file is indirectly validated by the WheelFile, since it only
-        # provides the items that are a part of the wheel.
         "fancy-1.0.0.dist-info/RECORD": b"""\
-            fancy/__init__.py,,
-            fancy/__main__.py,,
-            fancy-1.0.0.data/data/fancy/data.py,,
-            fancy-1.0.0.dist-info/top_level.txt,,
-            fancy-1.0.0.dist-info/entry_points.txt,,
-            fancy-1.0.0.dist-info/WHEEL,,
-            fancy-1.0.0.dist-info/METADATA,,
+            fancy/__init__.py,sha256=qZ2qq7xVBAiUFQVv-QBHhdtCUF5p1NsWwSOiD7qdHN0,36
+            fancy/__main__.py,sha256=Wd4SyWJOIMsHf_5-0oN6aNFwen8ehJnRo-erk2_K-eY,61
+            fancy-1.0.0.data/data/fancy/data.py,sha256=nuFRUNQF5vP7FWE-v5ysyrrfpIaAvfzSiGOgfPpLOeI,17
+            fancy-1.0.0.dist-info/top_level.txt,sha256=SW-yrrF_c8KlserorMw54inhLjZ3_YIuLz7fYT4f8ao,6
+            fancy-1.0.0.dist-info/entry_points.txt,sha256=AxJl21_zgoNWjCfvSkC9u_rWSzGyCtCzhl84n979jCc,75
+            fancy-1.0.0.dist-info/WHEEL,sha256=1DrXMF1THfnBjsdS5sZn-e7BKcmUn7jnMbShGeZomgc,84
+            fancy-1.0.0.dist-info/METADATA,sha256=hRhZavK_Y6WqKurFFAABDnoVMjZFBH0NJRjwLOutnJI,236
             fancy-1.0.0.dist-info/RECORD,,
         """,
     }
