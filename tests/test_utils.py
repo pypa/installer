@@ -13,10 +13,10 @@ from test_records import SAMPLE_RECORDS
 from installer.records import RecordEntry
 from installer.utils import (
     WheelFilename,
+    canonicalize_name,
     construct_record_file,
     copyfileobj_with_hashing,
     fix_shebang,
-    canonicalize_name,
     parse_entrypoints,
     parse_metadata_file,
     parse_wheel_filename,
