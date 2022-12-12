@@ -101,6 +101,8 @@ class TestWheelFile:
 
     def test_finds_dist_info(self, fancy_wheel):
         denorm = fancy_wheel.rename(fancy_wheel.parent / "Fancy-1.0.0-py3-none-any.whl")
+        # Python 3.7: rename doesn't return the new name:
+        denorm = fancy_wheel.parent / "Fancy-1.0.0-py3-none-any.whl"
         with WheelFile.open(denorm) as source:
             assert source.dist_info_filenames
 
@@ -108,6 +110,8 @@ class TestWheelFile:
         misnamed = fancy_wheel.rename(
             fancy_wheel.parent / "misnamed-1.0.0-py3-none-any.whl"
         )
+        # Python 3.7: rename doesn't return the new name:
+        misnamed = fancy_wheel.parent / "misnamed-1.0.0-py3-none-any.whl"
         with pytest.raises(AssertionError):
             with WheelFile.open(misnamed) as source:
                 source.dist_info_filenames
