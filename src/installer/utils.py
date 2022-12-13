@@ -94,6 +94,14 @@ def parse_metadata_file(contents: str) -> Message:
     return feed_parser.close()
 
 
+def canonicalize_name(name: str) -> str:
+    """Canonicalize a project name according to PEP-503.
+
+    :param name: The project name to canonicalize
+    """
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
 def parse_wheel_filename(filename: str) -> WheelFilename:
     """Parse a wheel filename, into it's various components.
 

@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from typing import BinaryIO, Iterator, List, Tuple, cast
 
 from installer.records import parse_record_file
-from installer.utils import parse_wheel_filename
+from installer.utils import canonicalize_name, parse_wheel_filename
 
 WheelContentElement = Tuple[Tuple[str, str, str], BinaryIO, bool]
 
@@ -121,6 +121,33 @@ class WheelFile(WheelSource):
         """Create a wheelfile from a given path."""
         with zipfile.ZipFile(path) as f:
             yield cls(f)
+
+    @property
+    def dist_info_dir(self) -> str:
+        """Name of the dist-info directory."""
+        if not hasattr(self, "_dist_info_dir"):
+            top_level_directories = {
+                path.split("/", 1)[0] for path in self._zipfile.namelist()
+            }
+            dist_infos = [
+                name for name in top_level_directories if name.endswith(".dist-info")
+            ]
+
+            assert (
+                len(dist_infos) == 1
+            ), "Wheel doesn't contain exactly one .dist-info directory"
+            dist_info_dir = dist_infos[0]
+
+            # NAME-VER.dist-info
+            di_dname = dist_info_dir.rsplit("-", 2)[0]
+            norm_di_dname = canonicalize_name(di_dname)
+            norm_file_dname = canonicalize_name(self.distribution)
+            assert (
+                norm_di_dname == norm_file_dname
+            ), "Wheel .dist-info directory doesn't match wheel filename"
+
+            self._dist_info_dir = dist_info_dir
+        return self._dist_info_dir
 
     @property
     def dist_info_filenames(self) -> List[str]:
