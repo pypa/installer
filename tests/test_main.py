@@ -1,5 +1,7 @@
 import os
 
+import pytest
+
 from installer.__main__ import _get_scheme_dict as get_scheme_dict
 from installer.__main__ import _main as main
 
@@ -67,3 +69,26 @@ def test_main_no_pyc(fancy_wheel, tmp_path):
 
     installed_pyc_files = destdir.rglob("*.pyc")
     assert set(installed_pyc_files) == set()
+
+
+@pytest.mark.parametrize(
+    "validation_part",
+    ["all", "entries", "none"],
+)
+def test_main_validate_record_all_pass(fancy_wheel, tmp_path, validation_part):
+    destdir = tmp_path / "dest"
+
+    main(
+        [str(fancy_wheel), "-d", str(destdir), "--validate-record", validation_part],
+        "python -m installer",
+    )
+
+    installed_py_files = destdir.rglob("*.py")
+
+    assert {f.stem for f in installed_py_files} == {"__init__", "__main__", "data"}
+
+    installed_pyc_files = destdir.rglob("*.pyc")
+    assert {f.name.split(".")[0] for f in installed_pyc_files} == {
+        "__init__",
+        "__main__",
+    }

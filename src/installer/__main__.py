@@ -43,6 +43,14 @@ def _get_main_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="don't generate bytecode for installed modules",
     )
+    parser.add_argument(
+        "--validate-record",
+        metavar="part",
+        default="none",
+        type=str,
+        choices=["all", "entries", "none"],
+        help="validate the wheel against certain part of its record (default=none)",
+    )
     return parser
 
 
@@ -84,6 +92,8 @@ def _main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
         bytecode_levels = [0, 1]
 
     with WheelFile.open(args.wheel) as source:
+        if args.validate_record != "none":
+            source.validate_record(args.validate_record == "all")
         destination = SchemeDictionaryDestination(
             scheme_dict=_get_scheme_dict(source.distribution, prefix=args.prefix),
             interpreter=sys.executable,
