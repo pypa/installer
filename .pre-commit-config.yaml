@@ -42,7 +42,7 @@ repos:
       - id: flake8
 
   - repo: https://github.com/PyCQA/pydocstyle.git
-    rev: "6.1.1"
+    rev: "6.2.3"
     hooks:
       - id: pydocstyle
         files: src/.*\.py$
