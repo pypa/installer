@@ -12,6 +12,7 @@ from collections import namedtuple
 from configparser import ConfigParser
 from email.message import Message
 from email.parser import FeedParser
+from email.policy import compat32
 from typing import (
     TYPE_CHECKING,
     BinaryIO,
@@ -89,7 +90,7 @@ def parse_metadata_file(contents: str) -> Message:
 
     :param contents: The entire contents of the file
     """
-    feed_parser = FeedParser()
+    feed_parser = FeedParser(policy=compat32)
     feed_parser.feed(contents)
     return feed_parser.close()
 
