@@ -37,6 +37,27 @@ class TestWheelSource:
             source.validate_record()
 
 
+def replace_file_in_zip(path: str, filename: str, content: "str | None") -> None:
+    """Helper function for replacing a file in the zip.
+
+    Exists because ZipFile doesn't support remove.
+    """
+    files = {}
+    # Copy everything except `filename`, and replace it with `content`.
+    with zipfile.ZipFile(path) as archive:
+        for file in archive.namelist():
+            if file == filename:
+                if content is None:
+                    continue  # Remove the file
+                files[file] = content.encode()
+            else:
+                files[file] = archive.read(file)
+    # Replace original archive
+    with zipfile.ZipFile(path, mode="w") as archive:
+        for name, content in files.items():
+            archive.writestr(name, content)
+
+
 class TestWheelFile:
     def test_rejects_not_okay_name(self, tmp_path):
         # Create an empty zipfile
@@ -116,32 +137,9 @@ class TestWheelFile:
             with WheelFile.open(misnamed) as source:
                 source.dist_info_filenames
 
-
-class TestRecordValidation:
-    @staticmethod
-    def replace_file_in_zip(path: str, filename: str, content: "str | None") -> None:
-        """Helper function for replacing a file in the zip.
-
-        Exists because ZipFile doesn't support remove.
-        """
-        files = {}
-        # Copy everything except `filename`, and replace it with `content`.
-        with zipfile.ZipFile(path) as archive:
-            for file in archive.namelist():
-                if file == filename:
-                    if content is None:
-                        continue  # Remove the file
-                    files[file] = content.encode()
-                else:
-                    files[file] = archive.read(file)
-        # Replace original archive
-        with zipfile.ZipFile(path, mode="w") as archive:
-            for name, content in files.items():
-                archive.writestr(name, content)
-
     def test_rejects_no_record_on_validate(self, fancy_wheel):
         # Remove RECORD
-        self.replace_file_in_zip(
+        replace_file_in_zip(
             fancy_wheel,
             filename="fancy-1.0.0.dist-info/RECORD",
             content=None,
@@ -156,7 +154,7 @@ class TestRecordValidation:
         with WheelFile.open(fancy_wheel) as source:
             record_file_contents = source.read_dist_info("RECORD")
 
-        self.replace_file_in_zip(
+        replace_file_in_zip(
             fancy_wheel,
             filename="fancy-1.0.0.dist-info/RECORD",
             content="\n".join(
@@ -176,7 +174,7 @@ class TestRecordValidation:
 
         # Remove the first two entries from the RECORD file
         new_record_file_contents = "\n".join(record_file_contents.split("\n")[2:])
-        self.replace_file_in_zip(
+        replace_file_in_zip(
             fancy_wheel,
             filename="fancy-1.0.0.dist-info/RECORD",
             content=new_record_file_contents,
@@ -195,7 +193,7 @@ class TestRecordValidation:
             line.split(",")[0] + ",,"  # file name with empty size and hash
             for line in record_file_contents.split("\n")
         )
-        self.replace_file_in_zip(
+        replace_file_in_zip(
             fancy_wheel,
             filename="fancy-1.0.0.dist-info/RECORD",
             content=new_record_file_contents,
@@ -238,7 +236,7 @@ class TestRecordValidation:
         jws_hash_nopad = (
             urlsafe_b64encode(sha256(jws_content).digest()).decode("utf-8").rstrip("=")
         )
-        self.replace_file_in_zip(
+        replace_file_in_zip(
             fancy_wheel,
             filename="fancy-1.0.0.dist-info/RECORD",
             content=record_file_contents.rstrip("\n")
@@ -265,7 +263,7 @@ class TestRecordValidation:
                 size = str(len(record_file_contents))
             new_record_file_lines.append(",".join((filename, hash_, size)))
 
-        self.replace_file_in_zip(
+        replace_file_in_zip(
             fancy_wheel,
             filename="fancy-1.0.0.dist-info/RECORD",
             content="\n".join(new_record_file_lines),
@@ -290,7 +288,7 @@ class TestRecordValidation:
                 hash_ = "sha256=pREiHcl39jRySUXMCOrwmSsnOay8FB7fOJP5mZQ3D3A"
             new_record_file_lines.append(",".join((filename, hash_, size)))
 
-        self.replace_file_in_zip(
+        replace_file_in_zip(
             fancy_wheel,
             filename="fancy-1.0.0.dist-info/RECORD",
             content="\n".join(new_record_file_lines),
