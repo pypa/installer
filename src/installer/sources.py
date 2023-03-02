@@ -7,6 +7,7 @@ import zipfile
 from contextlib import contextmanager
 from typing import BinaryIO, ClassVar, Iterator, List, Optional, Tuple, Type, cast
 
+from installer.exceptions import InstallerError
 from installer.records import RecordEntry, parse_record_file
 from installer.utils import canonicalize_name, parse_wheel_filename
 
@@ -101,10 +102,10 @@ class WheelSource:
         raise NotImplementedError
 
 
-class _WheelFileValidationError(ValueError):
+class _WheelFileValidationError(ValueError, InstallerError):
     """Raised when a wheel file fails validation."""
 
-    def __init__(self, issues: List[str]) -> None:  # noqa: D107
+    def __init__(self, issues: List[str]) -> None:
         super().__init__(repr(issues))
         self.issues = issues
 
