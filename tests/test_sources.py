@@ -152,7 +152,7 @@ class TestRecordValidation:
             ):
                 source.validate_record(validate_contents=False)
 
-    def test_record_invalid_record_entry(self, fancy_wheel):
+    def test_rejects_invalid_record_entry(self, fancy_wheel):
         with WheelFile.open(fancy_wheel) as source:
             record_file_contents = source.read_dist_info("RECORD")
 
@@ -251,7 +251,7 @@ class TestRecordValidation:
             ):
                 source.validate_record(validate_contents=False)
 
-    def test_record_contain_self_hash(self, fancy_wheel):
+    def test_rejects_record_contain_self_hash(self, fancy_wheel):
         with WheelFile.open(fancy_wheel) as source:
             record_file_contents = source.read_dist_info("RECORD")
 
