@@ -5,7 +5,7 @@ import posixpath
 import stat
 import zipfile
 from contextlib import contextmanager
-from typing import BinaryIO, ClassVar, Iterator, List, Tuple, Type, cast
+from typing import BinaryIO, ClassVar, Iterator, List, Optional, Tuple, Type, cast
 
 from installer.records import RecordEntry, parse_record_file
 from installer.utils import canonicalize_name, parse_wheel_filename
@@ -137,6 +137,7 @@ class WheelFile(WheelSource):
             version=parsed_name.version,
             distribution=parsed_name.distribution,
         )
+        self._dist_info_dir: Optional[str] = None
 
     @classmethod
     @contextmanager
@@ -148,29 +149,31 @@ class WheelFile(WheelSource):
     @property
     def dist_info_dir(self) -> str:
         """Name of the dist-info directory."""
-        if not hasattr(self, "_dist_info_dir"):
-            top_level_directories = {
-                path.split("/", 1)[0] for path in self._zipfile.namelist()
-            }
-            dist_infos = [
-                name for name in top_level_directories if name.endswith(".dist-info")
-            ]
+        if self._dist_info_dir is not None:
+            return self._dist_info_dir
 
-            assert (
-                len(dist_infos) == 1
-            ), "Wheel doesn't contain exactly one .dist-info directory"
-            dist_info_dir = dist_infos[0]
+        top_level_directories = {
+            path.split("/", 1)[0] for path in self._zipfile.namelist()
+        }
+        dist_infos = [
+            name for name in top_level_directories if name.endswith(".dist-info")
+        ]
 
-            # NAME-VER.dist-info
-            di_dname = dist_info_dir.rsplit("-", 2)[0]
-            norm_di_dname = canonicalize_name(di_dname)
-            norm_file_dname = canonicalize_name(self.distribution)
-            assert (
-                norm_di_dname == norm_file_dname
-            ), "Wheel .dist-info directory doesn't match wheel filename"
+        assert (
+            len(dist_infos) == 1
+        ), "Wheel doesn't contain exactly one .dist-info directory"
+        dist_info_dir = dist_infos[0]
 
-            self._dist_info_dir = dist_info_dir
-        return self._dist_info_dir
+        # NAME-VER.dist-info
+        di_dname = dist_info_dir.rsplit("-", 2)[0]
+        norm_di_dname = canonicalize_name(di_dname)
+        norm_file_dname = canonicalize_name(self.distribution)
+        assert (
+            norm_di_dname == norm_file_dname
+        ), "Wheel .dist-info directory doesn't match wheel filename"
+
+        self._dist_info_dir = dist_info_dir
+        return dist_info_dir
 
     @property
     def dist_info_filenames(self) -> List[str]:
