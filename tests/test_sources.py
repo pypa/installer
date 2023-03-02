@@ -37,6 +37,27 @@ class TestWheelSource:
             source.validate_record()
 
 
+def replace_file_in_zip(path: str, filename: str, content: "str | None") -> None:
+    """Helper function for replacing a file in the zip.
+
+    Exists because ZipFile doesn't support remove.
+    """
+    files = {}
+    # Copy everything except `filename`, and replace it with `content`.
+    with zipfile.ZipFile(path) as archive:
+        for file in archive.namelist():
+            if file == filename:
+                if content is None:
+                    continue  # Remove the file
+                files[file] = content.encode()
+            else:
+                files[file] = archive.read(file)
+    # Replace original archive
+    with zipfile.ZipFile(path, mode="w") as archive:
+        for name, content in files.items():
+            archive.writestr(name, content)
+
+
 class TestWheelFile:
     def test_rejects_not_okay_name(self, tmp_path):
         # Create an empty zipfile
@@ -116,135 +137,165 @@ class TestWheelFile:
             with WheelFile.open(misnamed) as source:
                 source.dist_info_filenames
 
+    def test_rejects_no_record_on_validate(self, fancy_wheel):
+        # Remove RECORD
+        replace_file_in_zip(
+            fancy_wheel,
+            filename="fancy-1.0.0.dist-info/RECORD",
+            content=None,
+        )
+        with WheelFile.open(fancy_wheel) as source:
+            with pytest.raises(
+                WheelFile.validation_error, match="Unable to retrieve `RECORD`"
+            ):
+                source.validate_record(validate_contents=False)
 
-def replace_file_in_zip(path: str, filename: str, content: "bytes | None") -> None:
-    """Helper function for replacing a file in the zip.
+    def test_rejects_invalid_record_entry(self, fancy_wheel):
+        with WheelFile.open(fancy_wheel) as source:
+            record_file_contents = source.read_dist_info("RECORD")
 
-    Exists because ZipFile doesn't support remove.
-    """
-    files = {}
-    # Copy everything except `filename`, and replace it with `content`.
-    with zipfile.ZipFile(path) as archive:
-        for file in archive.namelist():
-            if file == filename:
-                if content is None:
-                    continue  # Remove the file
-                files[file] = content
-            else:
-                files[file] = archive.read(file)
-    # Replace original archive
-    with zipfile.ZipFile(path, mode="w") as archive:
-        for name, content in files.items():
-            archive.writestr(name, content)
+        replace_file_in_zip(
+            fancy_wheel,
+            filename="fancy-1.0.0.dist-info/RECORD",
+            content="\n".join(
+                line.replace("sha256=", "") for line in record_file_contents
+            ),
+        )
+        with WheelFile.open(fancy_wheel) as source:
+            with pytest.raises(
+                WheelFile.validation_error,
+                match="Unable to retrieve `RECORD`",
+            ):
+                source.validate_record()
 
+    def test_rejects_record_missing_file_on_validate(self, fancy_wheel):
+        with WheelFile.open(fancy_wheel) as source:
+            record_file_contents = source.read_dist_info("RECORD")
 
-def test_rejects_no_record_on_validate(fancy_wheel):
-    # Remove RECORD
-    replace_file_in_zip(
-        fancy_wheel,
-        filename="fancy-1.0.0.dist-info/RECORD",
-        content=None,
-    )
-    with WheelFile.open(fancy_wheel) as source:
-        with pytest.raises(
-            WheelFile.validation_error, match="Unable to retrieve `RECORD`"
-        ):
+        # Remove the first two entries from the RECORD file
+        new_record_file_contents = "\n".join(record_file_contents.split("\n")[2:])
+        replace_file_in_zip(
+            fancy_wheel,
+            filename="fancy-1.0.0.dist-info/RECORD",
+            content=new_record_file_contents,
+        )
+        with WheelFile.open(fancy_wheel) as source:
+            with pytest.raises(
+                WheelFile.validation_error, match="not mentioned in RECORD"
+            ):
+                source.validate_record(validate_contents=False)
+
+    def test_rejects_record_missing_hash(self, fancy_wheel):
+        with WheelFile.open(fancy_wheel) as source:
+            record_file_contents = source.read_dist_info("RECORD")
+
+        new_record_file_contents = "\n".join(
+            line.split(",")[0] + ",,"  # file name with empty size and hash
+            for line in record_file_contents.split("\n")
+        )
+        replace_file_in_zip(
+            fancy_wheel,
+            filename="fancy-1.0.0.dist-info/RECORD",
+            content=new_record_file_contents,
+        )
+        with WheelFile.open(fancy_wheel) as source:
+            with pytest.raises(
+                WheelFile.validation_error,
+                match="hash / size of (.+) is not included in RECORD",
+            ):
+                source.validate_record(validate_contents=False)
+
+    def test_accept_wheel_with_signature_file(self, fancy_wheel):
+        with WheelFile.open(fancy_wheel) as source:
+            record_file_contents = source.read_dist_info("RECORD")
+        hash_b64_nopad = (
+            urlsafe_b64encode(sha256(record_file_contents.encode()).digest())
+            .decode("utf-8")
+            .rstrip("=")
+        )
+        jws_content = json.dumps({"hash": f"sha256={hash_b64_nopad}"})
+        with zipfile.ZipFile(fancy_wheel, "a") as archive:
+            archive.writestr("fancy-1.0.0.dist-info/RECORD.jws", jws_content)
+        with WheelFile.open(fancy_wheel) as source:
             source.validate_record()
 
+    def test_reject_signature_file_in_record(self, fancy_wheel):
+        with WheelFile.open(fancy_wheel) as source:
+            record_file_contents = source.read_dist_info("RECORD")
+        record_hash_nopad = (
+            urlsafe_b64encode(sha256(record_file_contents.encode()).digest())
+            .decode("utf-8")
+            .rstrip("=")
+        )
+        jws_content = json.dumps({"hash": f"sha256={record_hash_nopad}"})
+        with zipfile.ZipFile(fancy_wheel, "a") as archive:
+            archive.writestr("fancy-1.0.0.dist-info/RECORD.jws", jws_content)
 
-def test_rejects_record_missing_file_on_validate(fancy_wheel):
-    with zipfile.ZipFile(fancy_wheel) as archive:
-        with archive.open("fancy-1.0.0.dist-info/RECORD") as f:
-            record_file_contents = f.read()
+        # Add signature file to RECORD
+        jws_content = jws_content.encode()
+        jws_hash_nopad = (
+            urlsafe_b64encode(sha256(jws_content).digest()).decode("utf-8").rstrip("=")
+        )
+        replace_file_in_zip(
+            fancy_wheel,
+            filename="fancy-1.0.0.dist-info/RECORD",
+            content=record_file_contents.rstrip("\n")
+            + f"\nfancy-1.0.0.dist-info/RECORD.jws,sha256={jws_hash_nopad},{len(jws_content)}\n",
+        )
+        with WheelFile.open(fancy_wheel) as source:
+            with pytest.raises(
+                WheelFile.validation_error,
+                match="digital signature file (.+) is incorrectly contained in RECORD.",
+            ):
+                source.validate_record(validate_contents=False)
 
-    # Remove the first two entries from the RECORD file
-    new_record_file_contents = b"\n".join(record_file_contents.split(b"\n")[2:])
-    replace_file_in_zip(
-        fancy_wheel,
-        filename="fancy-1.0.0.dist-info/RECORD",
-        content=new_record_file_contents,
-    )
-    with WheelFile.open(fancy_wheel) as source:
-        with pytest.raises(WheelFile.validation_error, match="not mentioned in RECORD"):
-            source.validate_record()
+    def test_rejects_record_contain_self_hash(self, fancy_wheel):
+        with WheelFile.open(fancy_wheel) as source:
+            record_file_contents = source.read_dist_info("RECORD")
 
+        new_record_file_lines = []
+        for line in record_file_contents.split("\n"):
+            if not line:
+                continue
+            filename, hash_, size = line.split(",")
+            if filename.split("/")[-1] == "RECORD":
+                hash_ = "sha256=pREiHcl39jRySUXMCOrwmSsnOay8FB7fOJP5mZQ3D3A"
+                size = str(len(record_file_contents))
+            new_record_file_lines.append(",".join((filename, hash_, size)))
 
-def test_rejects_record_missing_hash(fancy_wheel):
-    with zipfile.ZipFile(fancy_wheel) as archive:
-        with archive.open("fancy-1.0.0.dist-info/RECORD") as f:
-            record_file_contents = f.read()
+        replace_file_in_zip(
+            fancy_wheel,
+            filename="fancy-1.0.0.dist-info/RECORD",
+            content="\n".join(new_record_file_lines),
+        )
+        with WheelFile.open(fancy_wheel) as source:
+            with pytest.raises(
+                WheelFile.validation_error,
+                match="RECORD file incorrectly contains hash / size.",
+            ):
+                source.validate_record(validate_contents=False)
 
-    new_record_file_contents = b"\n".join(
-        line.split(b",")[0] + b",,"  # file name with empty size and hash
-        for line in record_file_contents.split(b"\n")
-    )
-    replace_file_in_zip(
-        fancy_wheel,
-        filename="fancy-1.0.0.dist-info/RECORD",
-        content=new_record_file_contents,
-    )
-    with WheelFile.open(fancy_wheel) as source:
-        with pytest.raises(
-            WheelFile.validation_error,
-            match="hash / size of (.+) is not included in RECORD",
-        ):
-            source.validate_record()
+    def test_rejects_record_validation_failed(self, fancy_wheel):
+        with WheelFile.open(fancy_wheel) as source:
+            record_file_contents = source.read_dist_info("RECORD")
 
+        new_record_file_lines = []
+        for line in record_file_contents.split("\n"):
+            if not line:
+                continue
+            filename, hash_, size = line.split(",")
+            if filename.split("/")[-1] != "RECORD":
+                hash_ = "sha256=pREiHcl39jRySUXMCOrwmSsnOay8FB7fOJP5mZQ3D3A"
+            new_record_file_lines.append(",".join((filename, hash_, size)))
 
-def test_accept_record_missing_hash_on_skip_validation(fancy_wheel):
-    with zipfile.ZipFile(fancy_wheel) as archive:
-        with archive.open("fancy-1.0.0.dist-info/RECORD") as f:
-            record_file_contents = f.read()
-
-    new_record_file_contents = b"\n".join(
-        line.split(b",")[0] + b",,"  # file name with empty size and hash
-        for line in record_file_contents.split(b"\n")
-    )
-    replace_file_in_zip(
-        fancy_wheel,
-        filename="fancy-1.0.0.dist-info/RECORD",
-        content=new_record_file_contents,
-    )
-    with WheelFile.open(fancy_wheel) as source:
-        source.validate_record(validate_file=False)
-
-
-def test_accept_wheel_with_signed_file(fancy_wheel):
-    with zipfile.ZipFile(fancy_wheel) as archive:
-        with archive.open("fancy-1.0.0.dist-info/RECORD") as f:
-            record_file_contents = f.read()
-            hash_b64_nopad = (
-                urlsafe_b64encode(sha256(record_file_contents).digest())
-                .decode("utf-8")
-                .rstrip("=")
-            )
-            jws_content = json.dumps({"hash": f"sha256={hash_b64_nopad}"})
-    with zipfile.ZipFile(fancy_wheel, "a") as archive:
-        archive.writestr("fancy-1.0.0.dist-info/RECORD.jws", jws_content)
-    with WheelFile.open(fancy_wheel) as source:
-        source.validate_record()
-
-
-def test_rejects_record_validation_failed(fancy_wheel):
-    with zipfile.ZipFile(fancy_wheel) as archive:
-        with archive.open("fancy-1.0.0.dist-info/RECORD") as f:
-            record_file_contents = f.read()
-
-    new_record_file_contents = b"\n".join(
-        line.split(b",")[0]  # Original filename
-        + b",sha256=pREiHcl39jRySUXMCOrwmSsnOay8FB7fOJP5mZQ3D3A,"
-        + line.split(b",")[2]  # Original size
-        for line in record_file_contents.split(b"\n")
-        if line  # ignore trail endline
-    )
-    replace_file_in_zip(
-        fancy_wheel,
-        filename="fancy-1.0.0.dist-info/RECORD",
-        content=new_record_file_contents,
-    )
-    with WheelFile.open(fancy_wheel) as source:
-        with pytest.raises(
-            WheelFile.validation_error,
-            match="hash / size of (.+) didn't match RECORD",
-        ):
-            source.validate_record()
+        replace_file_in_zip(
+            fancy_wheel,
+            filename="fancy-1.0.0.dist-info/RECORD",
+            content="\n".join(new_record_file_lines),
+        )
+        with WheelFile.open(fancy_wheel) as source:
+            with pytest.raises(
+                WheelFile.validation_error,
+                match="hash / size of (.+) didn't match RECORD",
+            ):
+                source.validate_record()
