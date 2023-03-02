@@ -188,27 +188,29 @@ class WheelFile(WheelSource):
         path = posixpath.join(self.dist_info_dir, filename)
         return self._zipfile.read(path).decode("utf-8")
 
-    def validate_record(self, validate_file: bool = True) -> None:
+    def validate_record(self, *, validate_contents: bool = True) -> None:
         """Validate ``RECORD`` of the wheel.
 
         This method should be called before :py:func:`install <installer.install>`
         if validation is required.
 
         File names will always be validated against ``RECORD``.
-        If ``validate_file`` is true, every file in the archive will be validated
-        against corresponding entry in ``RECORD``.
 
-        :param validate_file: Whether to validate content integrity.
+        If ``validate_contents`` is true, sizes and hashes of files
+        will also be validated against ``RECORD``.
+
+        :param validate_contents: Whether to validate content integrity.
         """
         try:
             record_lines = self.read_dist_info("RECORD").splitlines()
-            records = parse_record_file(record_lines)
+            record_mapping = {
+                record[0]: record for record in parse_record_file(record_lines)
+            }
         except Exception as exc:
             raise _WheelFileValidationError(
                 [f"Unable to retrieve `RECORD` from {self._zipfile.filename}: {exc!r}"]
             ) from exc
 
-        record_mapping = {record[0]: record for record in records}
         issues: List[str] = []
 
         for item in self._zipfile.infolist():
@@ -221,6 +223,11 @@ class WheelFile(WheelSource):
                 [self.dist_info_dir, item.filename]
             ) and item.filename.split("/")[-1] in ("RECORD.p7s", "RECORD.jws"):
                 # both are for digital signatures, and not mentioned in RECORD
+                if record_args is not None:
+                    # Incorrectly contained
+                    issues.append(
+                        f"In {self._zipfile.filename}, digital signature file {item.filename} is incorrectly contained in RECORD."
+                    )
                 continue
 
             if record_args is None:
@@ -229,18 +236,24 @@ class WheelFile(WheelSource):
                 )
                 continue
 
+            record = RecordEntry.from_elements(*record_args)
+
             if item.filename == f"{self.dist_info_dir}/RECORD":
-                # Skip record file
-                continue
-            if validate_file:
-                record = RecordEntry.from_elements(*record_args)
-                data = self._zipfile.read(item)
-                if record.hash_ is None or record.size is None:
-                    # Report empty hash / size
+                # Assert that RECORD doesn't have size and hash.
+                if record.hash_ is not None or record.size is not None:
+                    # Incorrectly contained hash / size
                     issues.append(
-                        f"In {self._zipfile.filename}, hash / size of {item.filename} is not included in RECORD"
+                        f"In {self._zipfile.filename}, RECORD file incorrectly contains hash / size."
                     )
-                elif not record.validate(data):
+                continue
+            if record.hash_ is None or record.size is None:
+                # Report empty hash / size
+                issues.append(
+                    f"In {self._zipfile.filename}, hash / size of {item.filename} is not included in RECORD"
+                )
+            if validate_contents:
+                data = self._zipfile.read(item)
+                if not record.validate(data):
                     issues.append(
                         f"In {self._zipfile.filename}, hash / size of {item.filename} didn't match RECORD"
                     )
