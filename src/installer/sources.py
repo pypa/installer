@@ -113,6 +113,21 @@ class _WheelFileValidationError(ValueError, InstallerError):
         return f"WheelFileValidationError(issues={self.issues!r})"
 
 
+class _WheelFileBadDistInfo(ValueError, InstallerError):
+    """Raised when a wheel file has issues around `.dist-info`."""
+
+    def __init__(self, *, reason: str, filename: Optional[str], dist_info: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
+        self.filename = filename
+        self.dist_info = dist_info
+
+    def __str__(self) -> str:
+        return (
+            f"{self.reason} (filename={self.filename!r}, dist_info={self.dist_info!r})"
+        )
+
+
 class WheelFile(WheelSource):
     """Implements `WheelSource`, for an existing file from the filesystem.
 
@@ -160,18 +175,26 @@ class WheelFile(WheelSource):
             name for name in top_level_directories if name.endswith(".dist-info")
         ]
 
-        assert (
-            len(dist_infos) == 1
-        ), "Wheel doesn't contain exactly one .dist-info directory"
-        dist_info_dir = dist_infos[0]
+        try:
+            (dist_info_dir,) = dist_infos
+        except ValueError:
+            raise _WheelFileBadDistInfo(
+                reason="Wheel doesn't contain exactly one .dist-info directory",
+                filename=self._zipfile.filename,
+                dist_info=str(dist_infos),
+            ) from None
 
         # NAME-VER.dist-info
         di_dname = dist_info_dir.rsplit("-", 2)[0]
         norm_di_dname = canonicalize_name(di_dname)
         norm_file_dname = canonicalize_name(self.distribution)
-        assert (
-            norm_di_dname == norm_file_dname
-        ), "Wheel .dist-info directory doesn't match wheel filename"
+
+        if norm_di_dname != norm_file_dname:
+            raise _WheelFileBadDistInfo(
+                reason="Wheel .dist-info directory doesn't match wheel filename",
+                filename=self._zipfile.filename,
+                dist_info=dist_info_dir,
+            )
 
         self._dist_info_dir = dist_info_dir
         return dist_info_dir
