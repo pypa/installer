@@ -5,8 +5,9 @@ import posixpath
 import stat
 import zipfile
 from contextlib import contextmanager
-from typing import BinaryIO, ClassVar, Iterator, List, Tuple, Type, cast
+from typing import BinaryIO, ClassVar, Iterator, List, Optional, Tuple, Type, cast
 
+from installer.exceptions import InstallerError
 from installer.records import RecordEntry, parse_record_file
 from installer.utils import canonicalize_name, parse_wheel_filename
 
@@ -101,15 +102,30 @@ class WheelSource:
         raise NotImplementedError
 
 
-class _WheelFileValidationError(ValueError):
+class _WheelFileValidationError(ValueError, InstallerError):
     """Raised when a wheel file fails validation."""
 
-    def __init__(self, issues: List[str]) -> None:  # noqa: D107
+    def __init__(self, issues: List[str]) -> None:
         super().__init__(repr(issues))
         self.issues = issues
 
     def __repr__(self) -> str:
         return f"WheelFileValidationError(issues={self.issues!r})"
+
+
+class _WheelFileBadDistInfo(ValueError, InstallerError):
+    """Raised when a wheel file has issues around `.dist-info`."""
+
+    def __init__(self, *, reason: str, filename: Optional[str], dist_info: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
+        self.filename = filename
+        self.dist_info = dist_info
+
+    def __str__(self) -> str:
+        return (
+            f"{self.reason} (filename={self.filename!r}, dist_info={self.dist_info!r})"
+        )
 
 
 class WheelFile(WheelSource):
@@ -137,6 +153,7 @@ class WheelFile(WheelSource):
             version=parsed_name.version,
             distribution=parsed_name.distribution,
         )
+        self._dist_info_dir: Optional[str] = None
 
     @classmethod
     @contextmanager
@@ -148,29 +165,39 @@ class WheelFile(WheelSource):
     @property
     def dist_info_dir(self) -> str:
         """Name of the dist-info directory."""
-        if not hasattr(self, "_dist_info_dir"):
-            top_level_directories = {
-                path.split("/", 1)[0] for path in self._zipfile.namelist()
-            }
-            dist_infos = [
-                name for name in top_level_directories if name.endswith(".dist-info")
-            ]
+        if self._dist_info_dir is not None:
+            return self._dist_info_dir
 
-            assert (
-                len(dist_infos) == 1
-            ), "Wheel doesn't contain exactly one .dist-info directory"
-            dist_info_dir = dist_infos[0]
+        top_level_directories = {
+            path.split("/", 1)[0] for path in self._zipfile.namelist()
+        }
+        dist_infos = [
+            name for name in top_level_directories if name.endswith(".dist-info")
+        ]
 
-            # NAME-VER.dist-info
-            di_dname = dist_info_dir.rsplit("-", 2)[0]
-            norm_di_dname = canonicalize_name(di_dname)
-            norm_file_dname = canonicalize_name(self.distribution)
-            assert (
-                norm_di_dname == norm_file_dname
-            ), "Wheel .dist-info directory doesn't match wheel filename"
+        try:
+            (dist_info_dir,) = dist_infos
+        except ValueError:
+            raise _WheelFileBadDistInfo(
+                reason="Wheel doesn't contain exactly one .dist-info directory",
+                filename=self._zipfile.filename,
+                dist_info=str(sorted(dist_infos)),
+            ) from None
 
-            self._dist_info_dir = dist_info_dir
-        return self._dist_info_dir
+        # NAME-VER.dist-info
+        di_dname = dist_info_dir.rsplit("-", 2)[0]
+        norm_di_dname = canonicalize_name(di_dname)
+        norm_file_dname = canonicalize_name(self.distribution)
+
+        if norm_di_dname != norm_file_dname:
+            raise _WheelFileBadDistInfo(
+                reason="Wheel .dist-info directory doesn't match wheel filename",
+                filename=self._zipfile.filename,
+                dist_info=dist_info_dir,
+            )
+
+        self._dist_info_dir = dist_info_dir
+        return dist_info_dir
 
     @property
     def dist_info_filenames(self) -> List[str]:

@@ -6,6 +6,7 @@ from hashlib import sha256
 
 import pytest
 
+from installer.exceptions import InstallerError
 from installer.records import parse_record_file
 from installer.sources import WheelFile, WheelSource
 
@@ -133,9 +134,34 @@ class TestWheelFile:
         )
         # Python 3.7: rename doesn't return the new name:
         misnamed = fancy_wheel.parent / "misnamed-1.0.0-py3-none-any.whl"
-        with pytest.raises(AssertionError):
+        with pytest.raises(InstallerError) as ctx:
             with WheelFile.open(misnamed) as source:
                 source.dist_info_filenames
+
+        error = ctx.value
+        print(error)
+        assert error.filename == str(misnamed)
+        assert error.dist_info == "fancy-1.0.0.dist-info"
+        assert "" in error.reason
+        assert error.dist_info in str(error)
+
+    def test_enforces_single_dist_info(self, fancy_wheel):
+        with zipfile.ZipFile(fancy_wheel, "a") as archive:
+            archive.writestr(
+                "name-1.0.0.dist-info/random.txt",
+                b"This is a random file.",
+            )
+
+        with pytest.raises(InstallerError) as ctx:
+            with WheelFile.open(fancy_wheel) as source:
+                source.dist_info_filenames
+
+        error = ctx.value
+        print(error)
+        assert error.filename == str(fancy_wheel)
+        assert error.dist_info == str(["fancy-1.0.0.dist-info", "name-1.0.0.dist-info"])
+        assert "exactly one .dist-info" in error.reason
+        assert error.dist_info in str(error)
 
     def test_rejects_no_record_on_validate(self, fancy_wheel):
         # Remove RECORD
