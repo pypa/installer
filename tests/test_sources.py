@@ -159,7 +159,7 @@ class TestWheelFile:
         error = ctx.value
         print(error)
         assert error.filename == str(fancy_wheel)
-        assert error.dist_info == str(["name-1.0.0.dist-info", "fancy-1.0.0.dist-info"])
+        assert error.dist_info == str(["fancy-1.0.0.dist-info", "name-1.0.0.dist-info"])
         assert "exactly one .dist-info" in error.reason
         assert error.dist_info in str(error)
 

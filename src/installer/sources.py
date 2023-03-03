@@ -181,7 +181,7 @@ class WheelFile(WheelSource):
             raise _WheelFileBadDistInfo(
                 reason="Wheel doesn't contain exactly one .dist-info directory",
                 filename=self._zipfile.filename,
-                dist_info=str(dist_infos),
+                dist_info=str(sorted(dist_infos)),
             ) from None
 
         # NAME-VER.dist-info
