@@ -150,6 +150,7 @@ class SchemeDictionaryDestination(WheelDestination):
         path: str,
         stream: BinaryIO,
         is_executable: bool,
+        ignore_existing: bool = False,
     ) -> RecordEntry:
         """Write contents of ``stream`` to the correct location on the filesystem.
 
@@ -162,7 +163,7 @@ class SchemeDictionaryDestination(WheelDestination):
         - Hashes the written content, to determine the entry in the ``RECORD`` file.
         """
         target_path = self._path_with_destdir(scheme, path)
-        if os.path.exists(target_path):
+        if not ignore_existing and os.path.exists(target_path):
             message = f"File already exists: {target_path}"
             raise FileExistsError(message)
 
@@ -201,7 +202,7 @@ class SchemeDictionaryDestination(WheelDestination):
         if scheme == "scripts":
             with fix_shebang(stream, self.interpreter) as stream_with_different_shebang:
                 return self.write_to_fs(
-                    scheme, path_, stream_with_different_shebang, is_executable
+                    scheme, path_, stream_with_different_shebang, is_executable, True
                 )
 
         return self.write_to_fs(scheme, path_, stream, is_executable)
