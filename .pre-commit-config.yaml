@@ -12,13 +12,13 @@ repos:
         files: \.py$
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.0.1"
+    rev: "v1.1.1"
     hooks:
       - id: mypy
         exclude: docs/.*|tests/.*|noxfile.py
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.0.0-alpha.4"
+    rev: "v3.0.0-alpha.6"
     hooks:
       - id: prettier
         args: [--prose-wrap, always]
