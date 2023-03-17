@@ -15,6 +15,8 @@ repos:
     rev: "v1.3.0"
     hooks:
       - id: mypy
+        additional_dependencies:
+          - httpx
         exclude: docs/.*|tests/.*|noxfile.py
 
   - repo: https://github.com/pre-commit/mirrors-prettier

@@ -19,3 +19,13 @@ dynamic = [
 
 [project.urls]
 "GitHub" = "https://github.com/pypa/installer"
+
+[tool.mypy]
+files = "src,tools"
+show_error_codes = true
+strict = true
+enable_error_code = [
+    "ignore-without-code",
+    "redundant-expr",
+    "truthy-bool",
+]

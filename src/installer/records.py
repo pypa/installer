@@ -17,12 +17,14 @@ __all__ = [
 class InvalidRecordEntry(Exception):
     """Raised when a RecordEntry is not valid, due to improper element values or count."""
 
-    def __init__(self, elements, issues):  # noqa: D107
+    def __init__(
+        self, elements: Iterable[str], issues: Iterable[str]
+    ) -> None:  # noqa: D107
         super().__init__(", ".join(issues))
         self.issues = issues
         self.elements = elements
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "InvalidRecordEntry(elements={!r}, issues={!r})".format(
             self.elements, self.issues
         )
@@ -49,7 +51,7 @@ class Hash:
     def __repr__(self) -> str:
         return f"Hash(name={self.name!r}, value={self.value!r})"
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Hash):
             return NotImplemented
         return self.value == other.value and self.name == other.name
@@ -130,7 +132,7 @@ class RecordEntry:
             self.path, self.hash_, self.size
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, RecordEntry):
             return NotImplemented
         return (
