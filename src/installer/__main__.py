@@ -93,7 +93,7 @@ def _main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
 
     with WheelFile.open(args.wheel) as source:
         if args.validate_record != "none":
-            source.validate_record(args.validate_record == "all")
+            source.validate_record(validate_contents=args.validate_record == "all")
         destination = SchemeDictionaryDestination(
             scheme_dict=_get_scheme_dict(source.distribution, prefix=args.prefix),
             interpreter=sys.executable,
