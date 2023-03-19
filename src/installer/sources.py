@@ -23,7 +23,13 @@ class WheelSource:
     This is an abstract class, whose methods have to be implemented by subclasses.
     """
 
-    validation_error: ClassVar[Type[Exception]] = ValueError
+    validation_error: ClassVar[Type[Exception]] = ValueError  #: :meta hide-value:
+    """
+    .. versionadded:: 0.7.0
+
+    Exception to be raised by :py:meth:`validate_record` when validation fails.
+    This is expected to be a subclass of :py:class:`ValueError`.
+    """
 
     def __init__(self, distribution: str, version: str) -> None:
         """Initialize a WheelSource object.
@@ -70,6 +76,8 @@ class WheelSource:
 
     def validate_record(self) -> None:
         """Validate ``RECORD`` of the wheel.
+
+        .. versionadded:: 0.7.0
 
         This method should be called before :py:func:`install <installer.install>`
         if validation is required.
