@@ -3,11 +3,10 @@
 ## v0.7.0 (Mar 17, 2023)
 
 - Improve handling of non-normalized `.dist-info` folders (#168)
-- Refactor `validate_record` (#167)
 - Explicitly use `policy=compat32` (#163)
 - Normalize `RECORD` file paths when parsing (#152)
 - Search wheels for `.dist-info` directories (#137)
-- Separate validation of `RECORD` (#147)
+- Separate validation of `RECORD` (#147, #167)
 
 ## v0.6.0 (Dec 7, 2022)
 
