@@ -192,13 +192,15 @@ class RecordEntry:
         if not path:
             issues.append("`path` cannot be empty")
 
+        hash_value: Optional[Hash] = None
         if hash_:
             try:
-                hash_value: Optional[Hash] = Hash.parse(hash_)
+                hash_value = Hash.parse(hash_)
+                if hash_value.name not in hashlib.algorithms_available:
+                    issues.append(f"invalid hash algorithm '{hash_value.name}'")
+                    hash_value = None
             except ValueError:
                 issues.append("`hash` does not follow the required format")
-        else:
-            hash_value = None
 
         if size:
             try:
