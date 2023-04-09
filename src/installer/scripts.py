@@ -1,6 +1,7 @@
 """Generate executable scripts, on various platforms."""
 
 import io
+import os
 import shlex
 import zipfile
 from importlib.resources import read_binary
@@ -120,6 +121,17 @@ class Script:
             raise InvalidScript(error)
         return read_binary(_scripts, name)
 
+    def _get_alternate_executable(self, executable: str, kind: "LauncherKind") -> str:
+        """Get an alternate executable for the launcher.
+
+        On Windows, when the script section is gui-script, pythonw.exe should be used.
+        """
+        if self.section == "gui" and kind != "posix":
+            dn, fn = os.path.split(executable)
+            fn = fn.replace("python", "pythonw")
+            executable = os.path.join(dn, fn)
+        return executable
+
     def generate(self, executable: str, kind: "LauncherKind") -> Tuple[str, bytes]:
         """Generate a launcher for this script.
 
@@ -133,6 +145,7 @@ class Script:
         :return: The name and contents of the launcher file.
         """
         launcher = self._get_launcher_data(kind)
+        executable = self._get_alternate_executable(executable, kind)
         shebang = _build_shebang(executable, forlauncher=bool(launcher))
         code = _SCRIPT_TEMPLATE.format(
             module=self.module,
