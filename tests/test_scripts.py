@@ -3,6 +3,7 @@ import os
 import zipfile
 
 import pytest
+
 from installer import _scripts
 from installer.scripts import InvalidScript, Script
 
