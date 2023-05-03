@@ -285,7 +285,10 @@ class WheelFile(WheelSource):
                         f"In {self._zipfile.filename}, entry in RECORD file for "
                         f"{item.filename} is invalid: {issue}"
                     )
-                continue
+
+                # coverage on Windows and python < 3.10 claims that the next line is not
+                # reached, pragma to deal with this false positive.
+                continue  # pragma: no cover
 
             if item.filename == f"{self.dist_info_dir}/RECORD":
                 # Assert that RECORD doesn't have size and hash.
