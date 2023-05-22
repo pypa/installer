@@ -1,10 +1,10 @@
 """Provides an object-oriented model for handling :pep:`376` RECORD files."""
 
-import base64
 import csv
-import hashlib
 import os
-from typing import Iterable, Iterator, Optional, Tuple, cast
+from typing import BinaryIO, Iterable, Iterator, Optional, Tuple, cast
+
+from installer.utils import compute_hash_and_size
 
 __all__ = [
     "Hash",
@@ -54,15 +54,13 @@ class Hash:
             return NotImplemented
         return self.value == other.value and self.name == other.name
 
-    def validate(self, data: bytes) -> bool:
-        """Validate that ``data`` matches this instance.
+    def validate(self, digest: str) -> bool:
+        """Validate that ``digest`` matches this instance.
 
-        :param data: Contents of the file.
-        :return: Whether ``data`` matches the hashed value.
+        :param digest: Digest of the file.
+        :return: Whether ``digest`` matches the hashed value.
         """
-        digest = hashlib.new(self.name, data).digest()
-        value = base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
-        return self.value == value
+        return self.value == digest
 
     @classmethod
     def parse(cls, h: str) -> "Hash":
@@ -139,17 +137,19 @@ class RecordEntry:
             and self.size == other.size
         )
 
-    def validate(self, data: bytes) -> bool:
+    def validate(self, data: BinaryIO, size: int) -> bool:
         """Validate that ``data`` matches this instance.
 
         :param data: Contents of the file corresponding to this instance.
-        :return: whether ``data`` matches hash and size.
+        :param size: The size of the file corresponding to this instance.
+        :return: whether ``data`` matches hash and ``size`` matches size.
         """
-        if self.size is not None and len(data) != self.size:
+        if self.size is not None and size != self.size:
             return False
 
         if self.hash_:
-            return self.hash_.validate(data)
+            digest, size = compute_hash_and_size(data, self.hash_.name)
+            return self.hash_.validate(digest)
 
         return True
 

@@ -26,9 +26,8 @@ from typing import (
     cast,
 )
 
-from installer.records import RecordEntry
-
 if TYPE_CHECKING:
+    from installer.records import RecordEntry
     from installer.scripts import LauncherKind, ScriptSection
 
 Scheme = NewType("Scheme", str)
@@ -143,6 +142,31 @@ def copyfileobj_with_hashing(
     return base64.urlsafe_b64encode(hasher.digest()).decode("ascii").rstrip("="), size
 
 
+def compute_hash_and_size(
+    source: BinaryIO,
+    hash_algorithm: str,
+) -> Tuple[str, int]:
+    """Compute a buffer's hash and size.
+
+    Adapted from copyfileobj_with_hashing.
+
+    :param source: buffer holding the source data
+    :param hash_algorithm: hashing algorithm
+
+    :return: hash digest and size of the content
+    """
+    hasher = hashlib.new(hash_algorithm)
+    size = 0
+    while True:
+        buf = source.read(_COPY_BUFSIZE)
+        if not buf:
+            break
+        hasher.update(buf)
+        size += len(buf)
+
+    return base64.urlsafe_b64encode(hasher.digest()).decode("ascii").rstrip("="), size
+
+
 def get_launcher_kind() -> "LauncherKind":  # pragma: no cover
     """Get the launcher kind for the current machine."""
     if os.name != "nt":
@@ -191,7 +215,7 @@ def fix_shebang(stream: BinaryIO, interpreter: str) -> Iterator[BinaryIO]:
 
 
 def construct_record_file(
-    records: Iterable[Tuple[Scheme, RecordEntry]],
+    records: Iterable[Tuple[Scheme, "RecordEntry"]],
     prefix_for_scheme: Callable[[Scheme], Optional[str]] = lambda _: None,
 ) -> BinaryIO:
     """Construct a RECORD file.

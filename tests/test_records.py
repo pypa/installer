@@ -1,3 +1,5 @@
+import io
+
 import pytest
 
 from installer.records import Hash, InvalidRecordEntry, RecordEntry, parse_record_file
@@ -128,7 +130,7 @@ class TestRecordEntry:
     )
     def test_validation(self, scheme, elements, data, passes_validation):
         record = RecordEntry.from_elements(*elements)
-        assert record.validate(data) == passes_validation
+        assert record.validate(io.BytesIO(data), len(data)) == passes_validation
 
     @pytest.mark.parametrize(
         ("scheme", "elements", "data", "passes_validation"), SAMPLE_RECORDS
