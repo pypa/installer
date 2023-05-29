@@ -222,7 +222,7 @@ def parse_entrypoints(text: str) -> Iterable[Tuple[str, str, str, "ScriptSection
     """
     # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115  # noqa
     config = ConfigParser(delimiters="=")
-    config.optionxform = str  # type: ignore
+    config.optionxform = str  # type: ignore[assignment, method-assign]
     config.read_string(text)
 
     for section in config.sections():

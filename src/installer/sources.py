@@ -42,12 +42,12 @@ class WheelSource:
         self.version = version
 
     @property
-    def dist_info_dir(self):
+    def dist_info_dir(self) -> str:
         """Name of the dist-info directory."""
         return f"{self.distribution}-{self.version}.dist-info"
 
     @property
-    def data_dir(self):
+    def data_dir(self) -> str:
         """Name of the data directory."""
         return f"{self.distribution}-{self.version}.data"
 

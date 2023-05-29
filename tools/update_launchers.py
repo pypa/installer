@@ -23,7 +23,7 @@ LAUNCHERS = [
 ]
 
 
-async def _download(client: httpx.AsyncClient, name):
+async def _download(client: httpx.AsyncClient, name: str) -> None:
     url = DOWNLOAD_URL.format(name)
     print(f"  Fetching {url}")
     resp = await client.get(url)
@@ -31,13 +31,13 @@ async def _download(client: httpx.AsyncClient, name):
     VENDOR_DIR.joinpath(name).write_bytes(data)
 
 
-async def main():
+async def main() -> None:
     print(f"Downloading into {VENDOR_DIR} ...")
     async with httpx.AsyncClient() as client:
         await asyncio.gather(*(_download(client, name) for name in LAUNCHERS))
 
 
-def _patch_windows_38():
+def _patch_windows_38() -> None:
     # https://github.com/encode/httpx/issues/914
     if sys.version_info >= (3, 8) and sys.platform.startswith("win"):
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
