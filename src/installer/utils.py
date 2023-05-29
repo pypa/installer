@@ -127,7 +127,7 @@ def copyfileobj_with_hashing(
     :param dest: destination buffer
     :param hash_algorithm: hashing algorithm
 
-    :return: size, hash digest of the contents
+    :return: hash digest of the contents, size of the contents
     """
     hasher = hashlib.new(hash_algorithm)
     size = 0
