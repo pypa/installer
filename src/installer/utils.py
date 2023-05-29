@@ -26,9 +26,8 @@ from typing import (
     cast,
 )
 
-from installer.records import RecordEntry
-
 if TYPE_CHECKING:
+    from installer.records import RecordEntry
     from installer.scripts import LauncherKind, ScriptSection
 
 Scheme = NewType("Scheme", str)
@@ -191,7 +190,7 @@ def fix_shebang(stream: BinaryIO, interpreter: str) -> Iterator[BinaryIO]:
 
 
 def construct_record_file(
-    records: Iterable[Tuple[Scheme, RecordEntry]],
+    records: Iterable[Tuple[Scheme, "RecordEntry"]],
     prefix_for_scheme: Callable[[Scheme], Optional[str]] = lambda _: None,
 ) -> BinaryIO:
     """Construct a RECORD file.
