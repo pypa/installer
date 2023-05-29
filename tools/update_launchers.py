@@ -4,7 +4,7 @@ import sys
 
 import httpx
 
-DOWNLOAD_URL = "https://bitbucket.org/vinay.sajip/simple_launcher/downloads/{}"
+DOWNLOAD_URL = "https://api.bitbucket.org/2.0/repositories/vinay.sajip/simple_launcher/downloads/{}"
 VENDOR_DIR = (
     pathlib.Path(__file__)
     .parent.parent.joinpath("src", "installer", "_scripts")
@@ -21,19 +21,22 @@ LAUNCHERS = [
     "w_arm.exe",
     "w64-arm.exe",
 ]
+LONGEST_NAME_LENGTH = max(len(name) for name in LAUNCHERS)
 
 
 async def _download(client: httpx.AsyncClient, name: str) -> None:
     url = DOWNLOAD_URL.format(name)
-    print(f"  Fetching {url}")
+    print("GET", url)
     resp = await client.get(url)
+    resp.raise_for_status()
     data = await resp.aread()
     VENDOR_DIR.joinpath(name).write_bytes(data)
+    print("  Downloaded", name.ljust(LONGEST_NAME_LENGTH), len(data), "bytes")
 
 
 async def main() -> None:
-    print(f"Downloading into {VENDOR_DIR} ...")
-    async with httpx.AsyncClient() as client:
+    print("Destination", VENDOR_DIR)
+    async with httpx.AsyncClient(follow_redirects=True) as client:
         await asyncio.gather(*(_download(client, name) for name in LAUNCHERS))
 
 
