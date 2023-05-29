@@ -8,18 +8,6 @@ nox.options.sessions = ["lint", "test", "doctest"]
 nox.options.reuse_existing_virtualenvs = True
 
 
-def _install_this_project_with_flit(session, *, extras=None, editable=False):
-    session.install("flit")
-    args = []
-    if extras:
-        args.append("--extras")
-        args.append(",".join(extras))
-    if editable:
-        args.append("--pth-file" if os.name == "nt" else "--symlink")
-
-    session.run("flit", "install", "--deps=production", *args, silent=True)
-
-
 @nox.session(python="3.11")
 def lint(session):
     session.install("pre-commit")
@@ -36,7 +24,7 @@ def lint(session):
 
 @nox.session(python=["3.7", "3.8", "3.9", "3.10", "3.11", "pypy3"])
 def test(session):
-    _install_this_project_with_flit(session, editable=True)
+    session.install(".")
     session.install("-r", "tests/requirements.txt")
 
     htmlcov_output = os.path.join(session.virtualenv.location, "htmlcov")
@@ -73,7 +61,7 @@ def update_launchers(session):
 #
 @nox.session(python="3.11")
 def docs(session):
-    _install_this_project_with_flit(session)
+    session.install(".")
     session.install("-r", "docs/requirements.txt")
 
     # Generate documentation into `build/docs`
@@ -82,7 +70,7 @@ def docs(session):
 
 @nox.session(name="docs-live", python="3.11")
 def docs_live(session):
-    _install_this_project_with_flit(session, editable=True)
+    session.install("-e", ".")
     session.install("-r", "docs/requirements.txt")
     session.install("sphinx-autobuild")
 
