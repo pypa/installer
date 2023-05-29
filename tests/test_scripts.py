@@ -55,7 +55,10 @@ def test_script_generate_launcher(section, kind):
 
     assert name == "foo.exe"
     assert data.startswith(launcher_data)
-    assert b"#!C:\\path to my\\python.exe\n" in data
+    if section == "gui":
+        assert b"#!C:\\path to my\\pythonw.exe\n" in data
+    else:
+        assert b"#!C:\\path to my\\python.exe\n" in data
     assert b"\nfrom foo.bar import baz\n" in code
     assert b"baz.qux()" in code
 
