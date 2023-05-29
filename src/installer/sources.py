@@ -287,11 +287,11 @@ class WheelFile(WheelSource):
                     f"In {self._zipfile.filename}, hash / size of {item.filename} is not included in RECORD"
                 )
             if validate_contents:
-                data = self._zipfile.read(item)
-                if not record.validate(data):
-                    issues.append(
-                        f"In {self._zipfile.filename}, hash / size of {item.filename} didn't match RECORD"
-                    )
+                with self._zipfile.open(item, "r") as stream:
+                    if not record.validate_stream(cast(BinaryIO, stream)):
+                        issues.append(
+                            f"In {self._zipfile.filename}, hash / size of {item.filename} didn't match RECORD"
+                        )
 
         if issues:
             raise _WheelFileValidationError(issues)
