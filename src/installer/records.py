@@ -146,6 +146,10 @@ class RecordEntry:
     def validate(self, data: bytes) -> bool:
         """Validate that ``data`` matches this instance.
 
+        .. attention::
+            .. deprecated:: 0.8.0
+                Use :py:meth:`validate_stream` instead, with ``BytesIO(data)``.
+
         :param data: Contents of the file corresponding to this instance.
         :return: whether ``data`` matches hash and size.
         """
