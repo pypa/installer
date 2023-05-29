@@ -142,6 +142,22 @@ def copyfileobj_with_hashing(
     return base64.urlsafe_b64encode(hasher.digest()).decode("ascii").rstrip("="), size
 
 
+def get_stream_length(source: BinaryIO) -> int:
+    """Read a buffer while computing the content's size.
+
+    :param source: buffer holding the source data
+    :return: size of the contents
+    """
+    size = 0
+    while True:
+        buf = source.read(_COPY_BUFSIZE)
+        if not buf:
+            break
+        size += len(buf)
+
+    return size
+
+
 def get_launcher_kind() -> "LauncherKind":  # pragma: no cover
     """Get the launcher kind for the current machine."""
     if os.name != "nt":

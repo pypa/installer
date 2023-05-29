@@ -16,6 +16,7 @@ from installer.utils import (
     construct_record_file,
     copyfileobj_with_hashing,
     fix_shebang,
+    get_stream_length,
     parse_entrypoints,
     parse_metadata_file,
     parse_wheel_filename,
@@ -132,6 +133,17 @@ class TestCopyFileObjWithHashing:
 
         assert result == (hash_, size)
         assert written_data == data
+
+
+class TestGetStreamLength:
+    def test_basic_functionality(self):
+        data = b"input data is this"
+        size = len(data)
+
+        with BytesIO(data) as source:
+            result = get_stream_length(source)
+
+        assert result == size
 
 
 class TestScript:

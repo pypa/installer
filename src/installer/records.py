@@ -4,7 +4,9 @@ import base64
 import csv
 import hashlib
 import os
-from typing import Iterable, Iterator, Optional, Tuple, cast
+from typing import BinaryIO, Iterable, Iterator, Optional, Tuple, cast
+
+from installer.utils import copyfileobj_with_hashing, get_stream_length
 
 __all__ = [
     "Hash",
@@ -152,6 +154,33 @@ class RecordEntry:
 
         if self.hash_:
             return self.hash_.validate(data)
+
+        return True
+
+    def validate_stream(self, stream: BinaryIO) -> bool:
+        """Validate that data read from stream matches this instance.
+
+        :param stream: Representing the contents of the file.
+        :return: Whether data read from stream matches hash and size.
+        """
+        if self.hash_ is not None:
+            with open(os.devnull, "wb") as new_target:
+                hash_, size = copyfileobj_with_hashing(
+                    stream, cast("BinaryIO", new_target), self.hash_.name
+                )
+
+            if self.size is not None and size != self.size:
+                return False
+            if self.hash_.value != hash_:
+                return False
+            return True
+
+        elif self.size is not None:
+            assert self.hash_ is None
+            size = get_stream_length(stream)
+            if size != self.size:
+                return False
+            return True
 
         return True
 
