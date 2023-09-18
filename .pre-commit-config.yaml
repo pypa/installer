@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: "23.3.0"
+    rev: "23.9.1"
     hooks:
       - id: black
         language_version: python3.8
@@ -12,7 +12,7 @@ repos:
         files: \.py$
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.4.1"
+    rev: "v1.5.1"
     hooks:
       - id: mypy
         additional_dependencies:
@@ -20,7 +20,7 @@ repos:
         exclude: docs/.*|tests/.*|noxfile.py
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.0.0-alpha.9-for-vscode"
+    rev: "v3.0.3"
     hooks:
       - id: prettier
         args: [--prose-wrap, always]
@@ -39,7 +39,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/PyCQA/flake8
-    rev: "6.0.0"
+    rev: "6.1.0"
     hooks:
       - id: flake8
 
@@ -50,6 +50,6 @@ repos:
         files: src/.*\.py$
 
   - repo: https://github.com/asottile/blacken-docs
-    rev: "1.14.0"
+    rev: "1.16.0"
     hooks:
       - id: blacken-docs
