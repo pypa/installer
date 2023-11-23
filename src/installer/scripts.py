@@ -3,9 +3,19 @@
 import io
 import os
 import shlex
+import sys
 import zipfile
-from importlib.resources import read_binary
-from typing import TYPE_CHECKING, Mapping, Optional, Tuple
+from types import ModuleType
+from typing import TYPE_CHECKING, Mapping, Optional, Tuple, Union
+
+if sys.version_info >= (3, 9):  # pragma: no cover
+    from importlib.resources import files
+
+    def read_binary(package: Union[str, ModuleType], file_path: str) -> bytes:
+        return (files(package) / file_path).read_bytes()
+
+else:  # pragma: no cover
+    from importlib.resources import read_binary
 
 from installer import _scripts
 

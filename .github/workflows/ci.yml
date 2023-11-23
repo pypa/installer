@@ -20,19 +20,26 @@ jobs:
     strategy:
       matrix:
         os: [Windows, Ubuntu, MacOS]
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
         include:
           # Only run PyPy jobs, on Ubuntu.
           - os: Ubuntu
             python-version: pypy-3.7
+          - os: Ubuntu
+            python-version: pypy-3.8
+          - os: Ubuntu
+            python-version: pypy-3.9
+          - os: Ubuntu
+            python-version: pypy-3.10
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Get Python to test against
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
 
       # Setup pip's cache
       - name: Save date (for cache)
@@ -53,10 +60,12 @@ jobs:
       # prettier-ignore
       - run: >
           nox
-          -s test-${{ matrix.python-version }}
-          doctest-${{ matrix.python-version }}
+          -s test
+          doctest
           --error-on-missing-interpreters
-        if: matrix.python-version != 'pypy-3.7'
+        env:
+          NOXFORCEPYTHON: ${{ matrix.python-version }}
+        if: ${{ !contains(matrix.python-version, 'pypy') }}
 
       - run: nox --error-on-missing-interpreters -s test-pypy3 doctest-pypy3
-        if: matrix.python-version == 'pypy-3.7'
+        if: ${{ contains(matrix.python-version, 'pypy') }}

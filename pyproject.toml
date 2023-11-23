@@ -1,22 +1,30 @@
 [build-system]
-requires = ["flit_core >=3.2.0,<4"]
 build-backend = "flit_core.buildapi"
+requires = [
+  "flit_core<4,>=3.2",
+]
 
 [project]
 name = "installer"
+readme = "README.md"
 authors = [
     { name = "Pradyun Gedam", email = "pradyunsg@gmail.com" },
 ]
-readme = "README.md"
-classifiers = [
-    "License :: OSI Approved :: MIT License",
-]
 requires-python = ">=3.7"
-dynamic = [
-    "version",
-    "description",
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
 ]
-
+dynamic = [
+  "description",
+  "version",
+]
 [project.urls]
 "GitHub" = "https://github.com/pypa/installer"
 
