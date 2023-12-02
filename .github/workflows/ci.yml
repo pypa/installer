@@ -20,14 +20,14 @@ jobs:
     strategy:
       matrix:
         os: [Windows, Ubuntu, MacOS]
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         include:
           # Only run PyPy jobs, on Ubuntu.
           - os: Ubuntu
-            python-version: pypy-3.7
+            python-version: pypy3.10
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Get Python to test against
       - uses: actions/setup-python@v4
@@ -56,7 +56,7 @@ jobs:
           -s test-${{ matrix.python-version }}
           doctest-${{ matrix.python-version }}
           --error-on-missing-interpreters
-        if: matrix.python-version != 'pypy-3.7'
+        if: matrix.python-version != 'pypy3.10'
 
       - run: nox --error-on-missing-interpreters -s test-pypy3 doctest-pypy3
-        if: matrix.python-version == 'pypy-3.7'
+        if: matrix.python-version == 'pypy3.10'

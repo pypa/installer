@@ -32,7 +32,7 @@ The repository layout is pretty standard for a modern pure-Python project.
 
 ## Initial Setup
 
-To work on this project, you need to have git 2.17+ and Python 3.7+.
+To work on this project, you need to have git 2.17+ and Python 3.8+.
 
 - Clone this project using git:
 
@@ -73,7 +73,7 @@ nox -s test-3.9
 ```
 
 Run the tests against Python 3.9. It is also possible to specify other supported
-Python versions (like `3.7` or `pypy3`).
+Python versions (like `3.12` or `pypy3`).
 
 ### Documentation
 

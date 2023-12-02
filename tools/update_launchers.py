@@ -37,12 +37,12 @@ async def main() -> None:
         await asyncio.gather(*(_download(client, name) for name in LAUNCHERS))
 
 
-def _patch_windows_38() -> None:
+def _patch_windows() -> None:
     # https://github.com/encode/httpx/issues/914
-    if sys.version_info >= (3, 8) and sys.platform.startswith("win"):
+    if sys.platform.startswith("win"):
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 if __name__ == "__main__":
-    _patch_windows_38()
+    _patch_windows()
     asyncio.run(main())
