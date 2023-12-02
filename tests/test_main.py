@@ -38,7 +38,10 @@ def test_main(fancy_wheel, tmp_path):
 def test_main_multiple_wheels(fancy_wheel, another_fancy_wheel, tmp_path):
     destdir = tmp_path / "dest"
 
-    main([str(fancy_wheel), str(another_fancy_wheel), "-d", str(destdir)], "python -m installer")
+    main(
+        [str(fancy_wheel), str(another_fancy_wheel), "-d", str(destdir)],
+        "python -m installer",
+    )
 
     for wheel_name in ("fancy", "another_fancy"):
         installed_py_files = destdir.rglob(f"**/{wheel_name}/**/*.py")
