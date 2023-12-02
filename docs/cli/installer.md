@@ -1,6 +1,6 @@
 # `python -m installer`
 
-This interface allows you to install a specific wheel into a Python interpreter.
+This interface allows you to install one or more wheels into a Python interpreter.
 
 ```{argparse}
 :module: installer.__main__
