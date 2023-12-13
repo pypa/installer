@@ -37,7 +37,7 @@ To work on this project, you need to have git 2.17+ and Python 3.7+.
 - Clone this project using git:
 
   ```sh
-  git clone https://github.com/pradyunsg/installer.git
+  git clone https://github.com/pypa/installer.git
   cd installer
   ```
 
