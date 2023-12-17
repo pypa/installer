@@ -38,7 +38,7 @@ cli/*
 development/index
 changelog
 license
-GitHub <https://github.com/pradyunsg/installer>
+GitHub <https://github.com/pypa/installer>
 PyPI <https://pypi.org/project/installer>
 ```
 
