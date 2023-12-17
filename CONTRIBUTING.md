@@ -24,7 +24,7 @@ While working on implementing the feature, please go ahead and file a pull
 request. Filing a pull request early allows for getting feedback as early as
 possible.
 
-[issue tracker]: https://github.com/pradyunsg/installer/issues
+[issue tracker]: https://github.com/pypa/installer/issues
 
 ## Pull Requests
 
