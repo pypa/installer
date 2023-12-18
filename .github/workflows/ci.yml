@@ -25,18 +25,12 @@ jobs:
           # Only run PyPy jobs, on Ubuntu.
           - os: Ubuntu
             python-version: pypy-3.7
-          - os: Ubuntu
-            python-version: pypy-3.8
-          - os: Ubuntu
-            python-version: pypy-3.9
-          - os: Ubuntu
-            python-version: pypy-3.10
 
     steps:
       - uses: actions/checkout@v4
 
       # Get Python to test against
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
@@ -60,12 +54,10 @@ jobs:
       # prettier-ignore
       - run: >
           nox
-          -s test
-          doctest
+          -s test-${{ matrix.python-version }}
+          doctest-${{ matrix.python-version }}
           --error-on-missing-interpreters
-        env:
-          NOXFORCEPYTHON: ${{ matrix.python-version }}
-        if: ${{ !contains(matrix.python-version, 'pypy') }}
+        if: matrix.python-version != 'pypy-3.7'
 
       - run: nox --error-on-missing-interpreters -s test-pypy3 doctest-pypy3
-        if: ${{ contains(matrix.python-version, 'pypy') }}
+        if: matrix.python-version == 'pypy-3.7'
