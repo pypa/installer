@@ -53,8 +53,3 @@ repos:
     rev: "1.16.0"
     hooks:
       - id: blacken-docs
-
-  - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "1.5.1"
-    hooks:
-      - id: pyproject-fmt
