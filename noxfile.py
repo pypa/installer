@@ -22,7 +22,7 @@ def lint(session):
     session.run("pre-commit", "run", "--all-files", *args)
 
 
-@nox.session(python=["3.8", "3.9", "3.10", "3.11", "3.12", "pypy3"])
+@nox.session(python=["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "pypy3"])
 def test(session):
     session.install(".")
     session.install("-r", "tests/requirements.txt")
@@ -42,7 +42,7 @@ def test(session):
     )
 
 
-@nox.session(python=["3.8", "3.9", "3.10", "3.11", "3.12", "pypy3"])
+@nox.session(python=["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "pypy3"])
 def doctest(session):
     session.install(".")
     session.install("-r", "docs/requirements.txt")

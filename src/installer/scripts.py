@@ -3,9 +3,19 @@
 import io
 import os
 import shlex
+import sys
 import zipfile
-from importlib.resources import read_binary
-from typing import TYPE_CHECKING, Mapping, Optional, Tuple
+from types import ModuleType
+from typing import TYPE_CHECKING, Mapping, Optional, Tuple, Union
+
+if sys.version_info >= (3, 9):  # pragma: no cover
+    from importlib.resources import files
+
+    def read_binary(package: Union[str, ModuleType], file_path: str) -> bytes:
+        return (files(package) / file_path).read_bytes()
+
+else:  # pragma: no cover
+    from importlib.resources import read_binary
 
 from installer import _scripts
 
@@ -69,7 +79,7 @@ def _build_shebang(executable: str, forlauncher: bool) -> bytes:
     # and platform-dependent, so we use a clever hack to generate a script to
     # run in ``/bin/sh`` that should work on all reasonably modern platforms.
     # Read the following message to understand how the hack works:
-    # https://github.com/pradyunsg/installer/pull/4#issuecomment-623668717
+    # https://github.com/pypa/installer/pull/4#issuecomment-623668717
 
     quoted = shlex.quote(executable).encode("utf-8")
     # I don't understand a lick what this is trying to do.

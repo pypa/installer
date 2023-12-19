@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         os: [Windows, Ubuntu, MacOS]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
         include:
           # Only run PyPy jobs, on Ubuntu.
           - os: Ubuntu
@@ -31,9 +31,10 @@ jobs:
       - uses: actions/checkout@v4
 
       # Get Python to test against
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
           cache: pip
 
       - run: pip install nox
