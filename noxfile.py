@@ -8,7 +8,7 @@ nox.options.sessions = ["lint", "test", "doctest"]
 nox.options.reuse_existing_virtualenvs = True
 
 
-@nox.session(python="3.11")
+@nox.session(python="3.12")
 def lint(session):
     session.install("pre-commit")
 
@@ -22,7 +22,7 @@ def lint(session):
     session.run("pre-commit", "run", "--all-files", *args)
 
 
-@nox.session(python=["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "pypy3"])
+@nox.session(python=["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "pypy3"])
 def test(session):
     session.install(".")
     session.install("-r", "tests/requirements.txt")
@@ -42,7 +42,7 @@ def test(session):
     )
 
 
-@nox.session(python=["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "pypy3"])
+@nox.session(python=["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "pypy3"])
 def doctest(session):
     session.install(".")
     session.install("-r", "docs/requirements.txt")
@@ -50,7 +50,7 @@ def doctest(session):
     session.run("sphinx-build", "-b", "doctest", "docs/", "build/doctest")
 
 
-@nox.session(python="3.11", name="update-launchers")
+@nox.session(python="3.12", name="update-launchers")
 def update_launchers(session):
     session.install("httpx")
     session.run("python", "tools/update_launchers.py")
@@ -59,7 +59,7 @@ def update_launchers(session):
 #
 # Documentation
 #
-@nox.session(python="3.11")
+@nox.session(python="3.12")
 def docs(session):
     session.install(".")
     session.install("-r", "docs/requirements.txt")
@@ -68,7 +68,7 @@ def docs(session):
     session.run("sphinx-build", "-W", "-b", "html", "docs/", "build/docs")
 
 
-@nox.session(name="docs-live", python="3.11")
+@nox.session(name="docs-live", python="3.12")
 def docs_live(session):
     session.install("-e", ".")
     session.install("-r", "docs/requirements.txt")
