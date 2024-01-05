@@ -126,7 +126,7 @@ class Script:
         key = (self.section, kind)
         try:
             name = _ALLOWED_LAUNCHERS[key]
-        except KeyError as exc:
+        except KeyError:
             error = f"{key!r} not in {sorted(_ALLOWED_LAUNCHERS)!r}"
             raise InvalidScript(error) from None
         return read_binary(_scripts, name)
