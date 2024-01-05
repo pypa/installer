@@ -34,5 +34,5 @@ explicitly provided to make it possible for custom `WheelDestination`
 implementations to be more powerful and flexible.
 
 Most of these tasks can either be delegated to utilities provided in this
-library (eg: script generation), or to the Python standard libary (eg:
+library (eg: script generation), or to the Python standard library (eg:
 generating `.pyc` files).
