@@ -126,9 +126,9 @@ class Script:
         key = (self.section, kind)
         try:
             name = _ALLOWED_LAUNCHERS[key]
-        except KeyError:
+        except KeyError as exc:
             error = f"{key!r} not in {sorted(_ALLOWED_LAUNCHERS)!r}"
-            raise InvalidScript(error)
+            raise InvalidScript(error) from exc
         return read_binary(_scripts, name)
 
     def _get_alternate_executable(self, executable: str, kind: "LauncherKind") -> str:
