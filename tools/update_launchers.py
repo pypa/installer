@@ -29,7 +29,7 @@ LAUNCHERS = [
 async def _get_distlib_page(client: httpx.AsyncClient) -> dict[str, Any]:
     resp = await client.get(
         DISTLIB_URL,
-        headers={'ACCEPT': 'application/vnd.pypi.simple.v1+json'},
+        headers={"ACCEPT": "application/vnd.pypi.simple.v1+json"},
         follow_redirects=True,
     )
     return resp.json()
