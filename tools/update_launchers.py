@@ -30,13 +30,13 @@ async def _get_distlib_page(client: httpx.AsyncClient) -> dict[str, Any]:
     resp = await client.get(
         DISTLIB_URL,
         headers={'ACCEPT': 'application/vnd.pypi.simple.v1+json'},
-        follow_redirects=True
+        follow_redirects=True,
     )
     return resp.json()
 
 
 def _get_link_from_response(json_response: dict[str, Any]) -> tuple[str, str]:
-    version = max((tuple(version_str.split(".") for version_str in json_response["versions"])))
+    version = max(version_str.split(".") for version_str in json_response["versions"])
     filename = f'distlib-{".".join(version)}.tar.gz'
     for file_info in json_response["files"]:
         if file_info["filename"] == filename:
@@ -53,13 +53,13 @@ async def _download_distlib(client: httpx.AsyncClient) -> bytes:
 
 
 def _get_launcher_path(names: list[str], launcher) -> str:
-    if paths := list(name for name in names if launcher in name):
+    if paths := [name for name in names if launcher in name]:
         return paths[0]
 
 
 def _unpack_launchers_to_dir(distlib_tar: bytes) -> None:
     print("Unpacking launchers")
-    with (tarfile.open(fileobj=io.BytesIO(distlib_tar)) as file):
+    with tarfile.open(fileobj=io.BytesIO(distlib_tar)) as file:
         for launcher_name in LAUNCHERS:
             path = _get_launcher_path(file.getnames(), launcher_name)
             if path and (launcher := file.extractfile(path)):
