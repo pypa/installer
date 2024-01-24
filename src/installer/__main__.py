@@ -15,7 +15,7 @@ from installer.utils import get_launcher_kind
 def _get_main_parser() -> argparse.ArgumentParser:
     """Construct the main parser."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("wheel", type=str, help="wheel file to install")
+    parser.add_argument("wheel", type=str, nargs="+", help="wheel file to install")
     parser.add_argument(
         "--destdir",
         "-d",
@@ -91,17 +91,18 @@ def _main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
     elif not bytecode_levels:
         bytecode_levels = [0, 1]
 
-    with WheelFile.open(args.wheel) as source:
-        if args.validate_record != "none":
-            source.validate_record(validate_contents=args.validate_record == "all")
-        destination = SchemeDictionaryDestination(
-            scheme_dict=_get_scheme_dict(source.distribution, prefix=args.prefix),
-            interpreter=sys.executable,
-            script_kind=get_launcher_kind(),
-            bytecode_optimization_levels=bytecode_levels,
-            destdir=args.destdir,
-        )
-        installer.install(source, destination, {})
+    for wheel in args.wheel:
+        with WheelFile.open(wheel) as source:
+            if args.validate_record != "none":
+                source.validate_record(validate_contents=args.validate_record == "all")
+            destination = SchemeDictionaryDestination(
+                scheme_dict=_get_scheme_dict(source.distribution, prefix=args.prefix),
+                interpreter=sys.executable,
+                script_kind=get_launcher_kind(),
+                bytecode_optimization_levels=bytecode_levels,
+                destdir=args.destdir,
+            )
+            installer.install(source, destination, {})
 
 
 if __name__ == "__main__":  # pragma: no cover
