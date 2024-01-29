@@ -1,5 +1,6 @@
 """Development automation
 """
+
 import os
 
 import nox
