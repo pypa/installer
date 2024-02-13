@@ -111,6 +111,7 @@ class SchemeDictionaryDestination(WheelDestination):
         hash_algorithm: str = "sha256",
         bytecode_optimization_levels: Collection[int] = (),
         destdir: Optional[str] = None,
+        force: bool = False,
     ) -> None:
         """Construct a ``SchemeDictionaryDestination`` object.
 
@@ -127,6 +128,7 @@ class SchemeDictionaryDestination(WheelDestination):
         :param destdir: A staging directory in which to write all files. This
             is expected to be the filesystem root at runtime, so embedded paths
             will be written as though this was the root.
+        :param force: silently overwrite existing files.
         """
         self.scheme_dict = scheme_dict
         self.interpreter = interpreter
@@ -134,6 +136,7 @@ class SchemeDictionaryDestination(WheelDestination):
         self.hash_algorithm = hash_algorithm
         self.bytecode_optimization_levels = bytecode_optimization_levels
         self.destdir = destdir
+        self.force = force
 
     def _path_with_destdir(self, scheme: Scheme, path: str) -> str:
         file = os.path.join(self.scheme_dict[scheme], path)
@@ -161,7 +164,7 @@ class SchemeDictionaryDestination(WheelDestination):
         - Hashes the written content, to determine the entry in the ``RECORD`` file.
         """
         target_path = self._path_with_destdir(scheme, path)
-        if os.path.exists(target_path):
+        if not self.force and os.path.exists(target_path):
             message = f"File already exists: {target_path}"
             raise FileExistsError(message)
 

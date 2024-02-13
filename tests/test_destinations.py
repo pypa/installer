@@ -43,6 +43,18 @@ class TestSchemeDictionaryDestination:
             scheme_dict[scheme] = str(full_path)
         return SchemeDictionaryDestination(scheme_dict, "/my/python", "posix")
 
+    @pytest.fixture()
+    def destination_force(self, tmp_path):
+        scheme_dict = {}
+        for scheme in SCHEME_NAMES:
+            full_path = tmp_path / scheme
+            if not full_path.exists():
+                full_path.mkdir()
+            scheme_dict[scheme] = str(full_path)
+        return SchemeDictionaryDestination(
+            scheme_dict, "/my/python", "posix", force=True
+        )
+
     @pytest.mark.parametrize(
         ("scheme", "path", "data", "expected"),
         [
@@ -85,6 +97,14 @@ class TestSchemeDictionaryDestination:
         destination.write_file("data", "my_data.bin", io.BytesIO(b"my data"), False)
         with pytest.raises(FileExistsError):
             destination.write_file("data", "my_data.bin", io.BytesIO(b"my data"), False)
+
+    def test_write_record_duplicate_with_force(self, destination_force):
+        destination_force.write_file(
+            "data", "my_data.bin", io.BytesIO(b"my data"), False
+        )
+        destination_force.write_file(
+            "data", "my_data.bin", io.BytesIO(b"my data"), False
+        )
 
     def test_write_script(self, destination):
         script_args = ("my_entrypoint", "my_module", "my_function", "console")
