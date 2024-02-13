@@ -51,6 +51,11 @@ def _get_main_parser() -> argparse.ArgumentParser:
         choices=["all", "entries", "none"],
         help="validate the wheel against certain part of its record (default=none)",
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="silently overwrite existing files",
+    )
     return parser
 
 
@@ -101,6 +106,7 @@ def _main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
                 script_kind=get_launcher_kind(),
                 bytecode_optimization_levels=bytecode_levels,
                 destdir=args.destdir,
+                force=args.force,
             )
             installer.install(source, destination, {})
 
