@@ -44,7 +44,7 @@ class TestSchemeDictionaryDestination:
         return SchemeDictionaryDestination(scheme_dict, "/my/python", "posix")
 
     @pytest.fixture()
-    def destination_force(self, tmp_path):
+    def destination_overwrite_existing(self, tmp_path):
         scheme_dict = {}
         for scheme in SCHEME_NAMES:
             full_path = tmp_path / scheme
@@ -52,7 +52,7 @@ class TestSchemeDictionaryDestination:
                 full_path.mkdir()
             scheme_dict[scheme] = str(full_path)
         return SchemeDictionaryDestination(
-            scheme_dict, "/my/python", "posix", force=True
+            scheme_dict, "/my/python", "posix", overwrite_existing=True
         )
 
     @pytest.mark.parametrize(
@@ -98,11 +98,13 @@ class TestSchemeDictionaryDestination:
         with pytest.raises(FileExistsError):
             destination.write_file("data", "my_data.bin", io.BytesIO(b"my data"), False)
 
-    def test_write_record_duplicate_with_force(self, destination_force):
-        destination_force.write_file(
+    def test_write_record_duplicate_with_overwrite_existing(
+        self, destination_overwrite_existing
+    ):
+        destination_overwrite_existing.write_file(
             "data", "my_data.bin", io.BytesIO(b"my data"), False
         )
-        destination_force.write_file(
+        destination_overwrite_existing.write_file(
             "data", "my_data.bin", io.BytesIO(b"my data"), False
         )
 
