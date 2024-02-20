@@ -138,7 +138,7 @@ class SchemeDictionaryDestination(WheelDestination):
 
     def _path_with_destdir(self, scheme: Scheme, path: str) -> str:
         file = os.path.join(self.scheme_dict[scheme], path)
-        if self.destdir is not None:
+        if self.destdir:
             file_path = Path(file)
             rel_path = file_path.relative_to(file_path.anchor)
             return os.path.join(self.destdir, rel_path)
