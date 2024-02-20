@@ -1,8 +1,8 @@
 """Handles all file writing and post-installation processing."""
 
-import compileall
 import io
 import os
+import sys
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
@@ -238,18 +238,41 @@ class SchemeDictionaryDestination(WheelDestination):
 
             return entry
 
-    def _compile_bytecode(self, scheme: Scheme, record: RecordEntry) -> None:
+    def _get_target_and_embed_dir(
+        self, scheme: Scheme, record: RecordEntry
+    ) -> Tuple[str, str]:
         """Compile bytecode for a single .py file."""
-        if scheme not in ("purelib", "platlib"):
-            return
-
         target_path = self._path_with_destdir(scheme, record.path)
         dir_path_to_embed = os.path.dirname(  # Without destdir
             os.path.join(self.scheme_dict[scheme], record.path)
         )
-        for level in self.bytecode_optimization_levels:
-            compileall.compile_file(
-                target_path, optimize=level, quiet=1, ddir=dir_path_to_embed
+        return (target_path, dir_path_to_embed)
+
+    def _perform_compilation(
+        self, target_and_embed_dirs: Iterable[Tuple[str, str]]
+    ) -> None:
+        """Perform actual compilation work."""
+        import installer._compile_worker
+
+        if self.interpreter == sys.executable:
+            installer._compile_worker.compile_files(
+                self.bytecode_optimization_levels, target_and_embed_dirs
+            )
+
+        else:
+            import inspect
+            import json
+            import subprocess
+
+            source_code = inspect.getsource(installer._compile_worker)
+            input_params = {
+                "optimization_levels": self.bytecode_optimization_levels,
+                "target_and_embed_dirs": target_and_embed_dirs,
+            }
+            subprocess.run(
+                [self.interpreter, "-c", source_code],
+                check=True,
+                input=json.dumps(input_params, ensure_ascii=True).encode(),
             )
 
     def finalize_installation(
@@ -280,5 +303,9 @@ class SchemeDictionaryDestination(WheelDestination):
                 scheme, record_file_path, record_stream, is_executable=False
             )
 
-        for scheme, record in record_list:
-            self._compile_bytecode(scheme, record)
+        target_and_embed_dirs = [
+            self._get_target_and_embed_dir(scheme, record)
+            for scheme, record in record_list
+            if scheme in ("purelib", "platlib")
+        ]
+        self._perform_compilation(target_and_embed_dirs)
