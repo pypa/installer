@@ -27,9 +27,7 @@ class InvalidRecordEntry(Exception):
         self.elements = elements
 
     def __repr__(self) -> str:
-        return "InvalidRecordEntry(elements={!r}, issues={!r})".format(
-            self.elements, self.issues
-        )
+        return f"InvalidRecordEntry(elements={self.elements!r}, issues={self.issues!r})"
 
 
 class Hash:
@@ -130,8 +128,8 @@ class RecordEntry:
         )
 
     def __repr__(self) -> str:
-        return "RecordEntry(path={!r}, hash_={!r}, size={!r})".format(
-            self.path, self.hash_, self.size
+        return (
+            f"RecordEntry(path={self.path!r}, hash_={self.hash_!r}, size={self.size!r})"
         )
 
     def __eq__(self, other: object) -> bool:
@@ -243,9 +241,7 @@ def parse_record_file(rows: Iterable[str]) -> Iterator[Tuple[str, str, str]]:
     reader = csv.reader(rows, delimiter=",", quotechar='"', lineterminator="\n")
     for row_index, elements in enumerate(reader):
         if len(elements) != 3:
-            message = "Row Index {}: expected 3 elements, got {}".format(
-                row_index, len(elements)
-            )
+            message = f"Row Index {row_index}: expected 3 elements, got {len(elements)}"
             raise InvalidRecordEntry(elements=elements, issues=[message])
 
         # Convert Windows paths to use / for consistency
