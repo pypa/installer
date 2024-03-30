@@ -114,11 +114,7 @@ class Script:
         self.section = section
 
     def __repr__(self) -> str:
-        return "Script(name={!r}, module={!r}, attr={!r}".format(
-            self.name,
-            self.module,
-            self.attr,
-        )
+        return f"Script(name={self.name!r}, module={self.module!r}, attr={self.attr!r}"
 
     def _get_launcher_data(self, kind: "LauncherKind") -> Optional[bytes]:
         if kind == "posix":
