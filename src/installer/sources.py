@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from typing import BinaryIO, ClassVar, Iterator, List, Optional, Tuple, Type, cast
 
 from installer.exceptions import InstallerError
-from installer.records import RecordEntry, parse_record_file
+from installer.records import InvalidRecordEntry, RecordEntry, parse_record_file
 from installer.utils import canonicalize_name, parse_wheel_filename
 
 WheelContentElement = Tuple[Tuple[str, str, str], BinaryIO, bool]
@@ -271,7 +271,18 @@ class WheelFile(WheelSource):
                 )
                 continue
 
-            record = RecordEntry.from_elements(*record_args)
+            try:
+                record = RecordEntry.from_elements(*record_args)
+            except InvalidRecordEntry as e:
+                for issue in e.issues:
+                    issues.append(
+                        f"In {self._zipfile.filename}, entry in RECORD file for "
+                        f"{item.filename} is invalid: {issue}"
+                    )
+
+                # coverage on Windows and python < 3.10 claims that the next line is not
+                # reached, pragma to deal with this false positive.
+                continue  # pragma: no cover
 
             if item.filename == f"{self.dist_info_dir}/RECORD":
                 # Assert that RECORD doesn't have size and hash.
