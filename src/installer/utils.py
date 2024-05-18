@@ -67,7 +67,7 @@ WheelFilename = namedtuple(
     "WheelFilename", ["distribution", "version", "build_tag", "tag"]
 )
 
-# Adapted from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L90  # noqa
+# Adapted from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L90
 _ENTRYPOINT_REGEX = re.compile(
     r"""
     (?P<module>[\w.]+)\s*
@@ -235,7 +235,7 @@ def parse_entrypoints(text: str) -> Iterable[Tuple[str, str, str, "ScriptSection
     :return:
         name of the script, module to use, attribute to call, kind of script (cli / gui)
     """
-    # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115  # noqa
+    # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115
     config = ConfigParser(delimiters="=")
     config.optionxform = str  # type: ignore[assignment, method-assign]
     config.read_string(text)
