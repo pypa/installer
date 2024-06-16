@@ -168,6 +168,6 @@ class TestSchemeDictionaryDestination:
             b'"../data/my_data3,my_data4.bin",sha256=18krruu1gr01x-WM_9ChSASoHv0mfRAV6-B2bd9sxpo,9\n'
             b"../scripts/my_script,sha256=M60fWvUSMJkPtw2apUvjWWwOcnRPcVy_zO4-4lpH08o,9\n"
             b"../scripts/my_script2,sha256=k9_997kTbTYQm7EXFLclVZL1m2N98rU90QX46XeMvjY,22\n"
-            b"../scripts/my_entrypoint,sha256=_p_9nwmeIeoMBfQ0akhr1KbKn3laDydg0J7cy0Fs6JI,216\n"
+            b"../scripts/my_entrypoint,sha256=su8hBSaE9N5Rd8xEAlQy0669JQIU0eVHy3Usg75eMjI,192\n"
             b"RECORD,,\n"
         )
