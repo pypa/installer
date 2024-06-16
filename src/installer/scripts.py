@@ -41,7 +41,6 @@ _ALLOWED_LAUNCHERS: Mapping[Tuple["ScriptSection", "LauncherKind"], str] = {
 }
 
 _SCRIPT_TEMPLATE = """\
-# -*- coding: utf-8 -*-
 import re
 import sys
 from {module} import {import_name}
