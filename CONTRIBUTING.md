@@ -17,8 +17,8 @@ check if there is an existing issue already filed for the same, in the project's
 GitHub [issue tracker]. If not, please file a new issue.
 
 If you want to help out by fixing bugs, choose an open issue in the [issue
-tracker] to work on and claim it by posting a comment saying "I would like to
-work on this.". Feel free to ask any doubts in the issue thread.
+tracker] to work on and claim it by posting a comment saying "I would like to work
+on this.". Feel free to ask any doubts in the issue thread.
 
 While working on implementing the feature, please go ahead and file a pull
 request. Filing a pull request early allows for getting feedback as early as
