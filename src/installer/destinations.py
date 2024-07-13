@@ -1,6 +1,5 @@
 """Handles all file writing and post-installation processing."""
 
-import compileall
 import io
 import os
 from pathlib import Path
@@ -242,6 +241,8 @@ class SchemeDictionaryDestination(WheelDestination):
         """Compile bytecode for a single .py file."""
         if scheme not in ("purelib", "platlib"):
             return
+
+        import compileall
 
         target_path = self._path_with_destdir(scheme, record.path)
         dir_path_to_embed = os.path.dirname(  # Without destdir
