@@ -1,7 +1,7 @@
 [build-system]
 build-backend = "flit_core.buildapi"
 requires = [
-    "flit_core<4,>=3.2",
+    "flit-core<4,>=3.2",
 ]
 
 [project]
@@ -24,8 +24,7 @@ dynamic = [
     "description",
     "version",
 ]
-[project.urls]
-"GitHub" = "https://github.com/pypa/installer"
+urls."GitHub" = "https://github.com/pypa/installer"
 
 [tool.mypy]
 files = "src,tools"
