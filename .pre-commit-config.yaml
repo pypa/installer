@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: "24.4.2"
+    rev: "24.8.0"
     hooks:
       - id: black
         language_version: python3.8
@@ -12,7 +12,7 @@ repos:
         files: \.py$
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.10.0"
+    rev: "v1.11.1"
     hooks:
       - id: mypy
         additional_dependencies:
@@ -39,7 +39,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/PyCQA/flake8
-    rev: "7.0.0"
+    rev: "7.1.1"
     hooks:
       - id: flake8
 
@@ -50,12 +50,12 @@ repos:
         files: src/.*\.py$
 
   - repo: https://github.com/asottile/blacken-docs
-    rev: "1.16.0"
+    rev: "1.18.0"
     hooks:
       - id: blacken-docs
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "1.8.0"
+    rev: "2.2.1"
     hooks:
       - id: pyproject-fmt
         args: [--indent, "4"]
