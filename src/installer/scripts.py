@@ -87,7 +87,7 @@ def _build_shebang(executable: str, forlauncher: bool) -> bytes:
     return b"#!/bin/sh\n'''exec' " + quoted + b' "$0" "$@"\n' + b"' '''"
 
 
-class InvalidScript(ValueError):
+class InvalidScript(ValueError):  # noqa: N818
     """Raised if the user provides incorrect script section or kind."""
 
 
@@ -129,7 +129,7 @@ class Script:
         if self.section == "gui" and kind != "posix":
             dn, fn = os.path.split(executable)
             fn = fn.replace("python", "pythonw")
-            executable = os.path.join(dn, fn)
+            executable = os.path.join(dn, fn)  # noqa: PTH118
         return executable
 
     def generate(self, executable: str, kind: "LauncherKind") -> Tuple[str, bytes]:

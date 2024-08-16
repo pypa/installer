@@ -13,6 +13,7 @@ from configparser import ConfigParser
 from email.message import Message
 from email.parser import FeedParser
 from email.policy import compat32
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     BinaryIO,
@@ -22,7 +23,6 @@ from typing import (
     NewType,
     Optional,
     Tuple,
-    Union,
     cast,
 )
 
@@ -67,7 +67,7 @@ WheelFilename = namedtuple(
     "WheelFilename", ["distribution", "version", "build_tag", "tag"]
 )
 
-# Adapted from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L90  # noqa
+# Adapted from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L90
 _ENTRYPOINT_REGEX = re.compile(
     r"""
     (?P<module>[\w.]+)\s*
@@ -235,7 +235,7 @@ def parse_entrypoints(text: str) -> Iterable[Tuple[str, str, str, "ScriptSection
     :return:
         name of the script, module to use, attribute to call, kind of script (cli / gui)
     """
-    # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115  # noqa
+    # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115
     config = ConfigParser(delimiters="=")
     config.optionxform = str  # type: ignore[assignment, method-assign]
     config.read_string(text)
@@ -271,6 +271,6 @@ def _current_umask() -> int:
 
 # Borrowed from:
 # https://github.com/pypa/pip/blob/0f21fb92/src/pip/_internal/utils/unpacking.py#L93
-def make_file_executable(path: Union[str, "os.PathLike[str]"]) -> None:
+def make_file_executable(path: Path) -> None:
     """Make the file at the provided path executable."""
-    os.chmod(path, (0o777 & ~_current_umask() | 0o111))
+    path.chmod(0o777 & ~_current_umask() | 0o111)
