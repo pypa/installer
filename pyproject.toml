@@ -27,6 +27,40 @@ dynamic = [
 [project.urls]
 "GitHub" = "https://github.com/pypa/installer"
 
+[tool.ruff]
+fix = true
+src = ["src"]
+extend-exclude = [
+    "noxfile.py",
+    "docs/*"
+]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "W",
+    "I",
+    "D",
+]
+ignore = [
+    "D105", "D203", "D213", "E501"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D"]
+"tools/*" = ["D"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if TYPE_CHECKING:",
+]
+
 [tool.mypy]
 files = "src,tools"
 strict = true
@@ -34,11 +68,4 @@ enable_error_code = [
     "ignore-without-code",
     "redundant-expr",
     "truthy-bool",
-]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if TYPE_CHECKING:",
 ]

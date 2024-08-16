@@ -1,16 +1,4 @@
 repos:
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: "24.4.2"
-    hooks:
-      - id: black
-        language_version: python3.8
-
-  - repo: https://github.com/PyCQA/isort
-    rev: "5.13.2"
-    hooks:
-      - id: isort
-        files: \.py$
-
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: "v1.10.0"
     hooks:
@@ -18,12 +6,6 @@ repos:
         additional_dependencies:
           - httpx
         exclude: docs/.*|tests/.*|noxfile.py
-
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v4.0.0-alpha.8"
-    hooks:
-      - id: prettier
-        args: [--prose-wrap, always]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v4.6.0"
@@ -38,19 +20,8 @@ repos:
       - id: forbid-new-submodules
       - id: trailing-whitespace
 
-  - repo: https://github.com/PyCQA/flake8
-    rev: "7.0.0"
-    hooks:
-      - id: flake8
-
-  - repo: https://github.com/PyCQA/pydocstyle.git
-    rev: "6.3.0"
-    hooks:
-      - id: pydocstyle
-        files: src/.*\.py$
-
-  - repo: https://github.com/asottile/blacken-docs
-    rev: "1.16.0"
+  - repo: https://github.com/adamchainz/blacken-docs
+    rev: "1.18.0"
     hooks:
       - id: blacken-docs
 
@@ -59,3 +30,9 @@ repos:
     hooks:
       - id: pyproject-fmt
         args: [--indent, "4"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.0
+    hooks:
+      - id: ruff
+      - id: ruff-format

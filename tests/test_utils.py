@@ -1,5 +1,4 @@
-"""Tests for installer.utils
-"""
+"""Tests for installer.utils"""
 
 import base64
 import hashlib

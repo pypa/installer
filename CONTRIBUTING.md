@@ -52,8 +52,7 @@ development.
 
 This codebase uses the following tools for enforcing a code convention:
 
-- [black] for code formatting
-- [isort] for import sorting
+- [ruff] for code formatting and linting
 - [mypy] for static type checking
 - [pre-commit] for managing all the linters
 
@@ -63,8 +62,7 @@ To run all the linters:
 $ nox -s lint
 ```
 
-[black]: https://github.com/psf/black
-[isort]: https://github.com/timothycrosley/isort
+[ruff]: https://github.com/astral-sh/ruff
 [mypy]: https://github.com/python/mypy
 [pre-commit]: https://pre-commit.com/
 
