@@ -27,31 +27,29 @@ dynamic = [
 urls."GitHub" = "https://github.com/pypa/installer"
 
 [tool.ruff]
-fix = true
-src = ["src"]
+src = [ "src" ]
 extend-exclude = [
+    "docs/*",
     "noxfile.py",
-    "docs/*"
 ]
 
-[tool.ruff.lint]
-select = [
+fix = true
+lint.select = [
+    "D",
     "E",
     "F",
-    "W",
     "I",
-    "D",
+    "W",
 ]
-ignore = [
-    "D105", "D203", "D213", "E501"
+lint.ignore = [
+    "D105",
+    "D203",
+    "D213",
+    "E501",
 ]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/*" = ["D"]
-"tools/*" = ["D"]
-
-[tool.ruff.lint.isort]
-known-first-party = ["src"]
+lint.per-file-ignores."tests/*" = [ "D" ]
+lint.per-file-ignores."tools/*" = [ "D" ]
+lint.isort.known-first-party = [ "src" ]
 
 [tool.coverage.report]
 exclude_lines = [
