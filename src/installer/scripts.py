@@ -5,6 +5,7 @@ import os
 import shlex
 import sys
 import zipfile
+from dataclasses import dataclass, field
 from types import ModuleType
 from typing import TYPE_CHECKING, Mapping, Optional, Tuple, Union
 
@@ -90,31 +91,24 @@ class InvalidScript(ValueError):
     """Raised if the user provides incorrect script section or kind."""
 
 
+@dataclass
 class Script:
     """Describes a script based on an entry point declaration."""
 
-    __slots__ = ("name", "module", "attr", "section")
+    name: str
+    """Name of the script."""
 
-    def __init__(
-        self, name: str, module: str, attr: str, section: "ScriptSection"
-    ) -> None:
-        """Construct a Script object.
+    module: str
+    """Module path, to load the entry point from."""
 
-        :param name: name of the script
-        :param module: module path, to load the entry point from
-        :param attr: final attribute access, for the entry point
-        :param section: Denotes the "entry point section" where this was specified.
-            Valid values are ``"gui"`` and ``"console"``.
-        :type section: str
+    attr: str
+    """Final attribute access, for the entry point."""
 
-        """
-        self.name = name
-        self.module = module
-        self.attr = attr
-        self.section = section
-
-    def __repr__(self) -> str:
-        return f"Script(name={self.name!r}, module={self.module!r}, attr={self.attr!r}"
+    section: "ScriptSection" = field(repr=False)
+    """
+    Denotes the "entry point section" where this was specified. Valid values
+    are ``"gui"`` and ``"console"``.
+    """
 
     def _get_launcher_data(self, kind: "LauncherKind") -> Optional[bytes]:
         if kind == "posix":

@@ -2,6 +2,7 @@
 
 import io
 import os
+from dataclasses import dataclass
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
@@ -100,43 +101,42 @@ class WheelDestination:
         raise NotImplementedError
 
 
+@dataclass
 class SchemeDictionaryDestination(WheelDestination):
     """Destination, based on a mapping of {scheme: file-system-path}."""
 
-    def __init__(
-        self,
-        scheme_dict: Dict[str, str],
-        interpreter: str,
-        script_kind: "LauncherKind",
-        hash_algorithm: str = "sha256",
-        bytecode_optimization_levels: Collection[int] = (),
-        destdir: Optional[str] = None,
-        overwrite_existing: bool = False,
-    ) -> None:
-        """Construct a ``SchemeDictionaryDestination`` object.
+    scheme_dict: Dict[str, str]
+    """A mapping of {scheme: file-system-path}"""
 
-        :param scheme_dict: a mapping of {scheme: file-system-path}
-        :param interpreter: the interpreter to use for generating scripts
-        :param script_kind: the "kind" of launcher script to use
-        :param hash_algorithm: the hashing algorithm to use, which is a member
-            of :any:`hashlib.algorithms_available` (ideally from
-            :any:`hashlib.algorithms_guaranteed`).
-        :param bytecode_optimization_levels: Compile cached bytecode for
-            installed .py files with these optimization levels. The bytecode
-            is specific to the minor version of Python (e.g. 3.10) used to
-            generate it.
-        :param destdir: A staging directory in which to write all files. This
-            is expected to be the filesystem root at runtime, so embedded paths
-            will be written as though this was the root.
-        :param overwrite_existing: silently overwrite existing files.
-        """
-        self.scheme_dict = scheme_dict
-        self.interpreter = interpreter
-        self.script_kind = script_kind
-        self.hash_algorithm = hash_algorithm
-        self.bytecode_optimization_levels = bytecode_optimization_levels
-        self.destdir = destdir
-        self.overwrite_existing = overwrite_existing
+    interpreter: str
+    """The interpreter to use for generating scripts."""
+
+    script_kind: "LauncherKind"
+    """The "kind" of launcher script to use."""
+
+    hash_algorithm: str = "sha256"
+    """
+    The hashing algorithm to use, which is a member of
+    :any:`hashlib.algorithms_available` (ideally from
+    :any:`hashlib.algorithms_guaranteed`).
+    """
+
+    bytecode_optimization_levels: Collection[int] = ()
+    """
+    Compile cached bytecode for installed .py files with these optimization
+    levels. The bytecode is specific to the minor version of Python (e.g. 3.10)
+    used to generate it.
+    """
+
+    destdir: Optional[str] = None
+    """
+    A staging directory in which to write all files. This is expected to be the
+    filesystem root at runtime, so embedded paths will be written as though
+    this was the root.
+    """
+
+    overwrite_existing: bool = False
+    """Silently overwrite existing files."""
 
     def _path_with_destdir(self, scheme: Scheme, path: str) -> str:
         file = os.path.join(self.scheme_dict[scheme], path)
