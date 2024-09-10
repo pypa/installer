@@ -29,7 +29,6 @@ dynamic = [
 
 [tool.ruff]
 fix = true
-src = ["src"]
 extend-exclude = [
     "noxfile.py",
     "docs/*"
