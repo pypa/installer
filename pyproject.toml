@@ -29,7 +29,6 @@ dynamic = [
 
 [tool.ruff]
 fix = true
-src = ["src"]
 extend-exclude = [
     "noxfile.py",
     "docs/*"
@@ -41,10 +40,21 @@ select = [
     "F",
     "W",
     "I",
+    "ISC",
     "D",
 ]
 ignore = [
-    "D105", "D203", "D213", "E501"
+    "D105",
+    "D203",
+    "D213",
+    # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+    "W191",
+    "E111",
+    "E114",
+    "E117",
+    "ISC001",
+    "ISC002",
+    "E501",
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -64,6 +74,7 @@ exclude_lines = [
 [tool.mypy]
 files = "src,tools"
 strict = true
+warn_unreachable = true
 enable_error_code = [
     "ignore-without-code",
     "redundant-expr",
