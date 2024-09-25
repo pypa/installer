@@ -26,7 +26,7 @@ class TestWheelSource:
         source = WheelSource(distribution="distribution", version="version")
 
         with pytest.raises(NotImplementedError):
-            source.dist_info_filenames
+            _ = source.dist_info_filenames
 
         with pytest.raises(NotImplementedError):
             source.read_dist_info("METADATA")
@@ -66,9 +66,10 @@ class TestWheelFile:
         with zipfile.ZipFile(str(path), "w"):
             pass
 
-        with pytest.raises(ValueError, match="Not a valid wheel filename: .+"):
-            with WheelFile.open(str(path)):
-                pass
+        with pytest.raises(
+            ValueError, match="Not a valid wheel filename: .+"
+        ), WheelFile.open(str(path)):
+            pass
 
     def test_provides_correct_dist_info_filenames(self, fancy_wheel):
         with WheelFile.open(fancy_wheel) as source:
@@ -134,12 +135,10 @@ class TestWheelFile:
         )
         # Python 3.7: rename doesn't return the new name:
         misnamed = fancy_wheel.parent / "misnamed-1.0.0-py3-none-any.whl"
-        with pytest.raises(InstallerError) as ctx:
-            with WheelFile.open(misnamed) as source:
-                source.dist_info_filenames
+        with pytest.raises(InstallerError) as ctx, WheelFile.open(misnamed) as source:
+            _ = source.dist_info_filenames
 
         error = ctx.value
-        print(error)
         assert error.filename == str(misnamed)
         assert error.dist_info == "fancy-1.0.0.dist-info"
         assert "" in error.reason
@@ -152,12 +151,12 @@ class TestWheelFile:
                 b"This is a random file.",
             )
 
-        with pytest.raises(InstallerError) as ctx:
-            with WheelFile.open(fancy_wheel) as source:
-                source.dist_info_filenames
+        with pytest.raises(InstallerError) as ctx, WheelFile.open(
+            fancy_wheel
+        ) as source:
+            _ = source.dist_info_filenames
 
         error = ctx.value
-        print(error)
         assert error.filename == str(fancy_wheel)
         assert error.dist_info == str(["fancy-1.0.0.dist-info", "name-1.0.0.dist-info"])
         assert "exactly one .dist-info" in error.reason
@@ -170,11 +169,10 @@ class TestWheelFile:
             filename="fancy-1.0.0.dist-info/RECORD",
             content=None,
         )
-        with WheelFile.open(fancy_wheel) as source:
-            with pytest.raises(
-                WheelFile.validation_error, match="Unable to retrieve `RECORD`"
-            ):
-                source.validate_record(validate_contents=False)
+        with WheelFile.open(fancy_wheel) as source, pytest.raises(
+            WheelFile.validation_error, match="Unable to retrieve `RECORD`"
+        ):
+            source.validate_record(validate_contents=False)
 
     def test_rejects_invalid_record_entry(self, fancy_wheel):
         with WheelFile.open(fancy_wheel) as source:
@@ -187,12 +185,11 @@ class TestWheelFile:
                 line.replace("sha256=", "") for line in record_file_contents
             ),
         )
-        with WheelFile.open(fancy_wheel) as source:
-            with pytest.raises(
-                WheelFile.validation_error,
-                match="Unable to retrieve `RECORD`",
-            ):
-                source.validate_record()
+        with WheelFile.open(fancy_wheel) as source, pytest.raises(
+            WheelFile.validation_error,
+            match="Unable to retrieve `RECORD`",
+        ):
+            source.validate_record()
 
     def test_rejects_record_missing_file_on_validate(self, fancy_wheel):
         with WheelFile.open(fancy_wheel) as source:
@@ -205,11 +202,10 @@ class TestWheelFile:
             filename="fancy-1.0.0.dist-info/RECORD",
             content=new_record_file_contents,
         )
-        with WheelFile.open(fancy_wheel) as source:
-            with pytest.raises(
-                WheelFile.validation_error, match="not mentioned in RECORD"
-            ):
-                source.validate_record(validate_contents=False)
+        with WheelFile.open(fancy_wheel) as source, pytest.raises(
+            WheelFile.validation_error, match="not mentioned in RECORD"
+        ):
+            source.validate_record(validate_contents=False)
 
     def test_rejects_record_missing_hash(self, fancy_wheel):
         with WheelFile.open(fancy_wheel) as source:
@@ -224,12 +220,11 @@ class TestWheelFile:
             filename="fancy-1.0.0.dist-info/RECORD",
             content=new_record_file_contents,
         )
-        with WheelFile.open(fancy_wheel) as source:
-            with pytest.raises(
-                WheelFile.validation_error,
-                match="hash / size of (.+) is not included in RECORD",
-            ):
-                source.validate_record(validate_contents=False)
+        with WheelFile.open(fancy_wheel) as source, pytest.raises(
+            WheelFile.validation_error,
+            match="hash / size of (.+) is not included in RECORD",
+        ):
+            source.validate_record(validate_contents=False)
 
     def test_accept_wheel_with_signature_file(self, fancy_wheel):
         with WheelFile.open(fancy_wheel) as source:
@@ -268,12 +263,11 @@ class TestWheelFile:
             content=record_file_contents.rstrip("\n")
             + f"\nfancy-1.0.0.dist-info/RECORD.jws,sha256={jws_hash_nopad},{len(jws_content)}\n",
         )
-        with WheelFile.open(fancy_wheel) as source:
-            with pytest.raises(
-                WheelFile.validation_error,
-                match="digital signature file (.+) is incorrectly contained in RECORD.",
-            ):
-                source.validate_record(validate_contents=False)
+        with WheelFile.open(fancy_wheel) as source, pytest.raises(
+            WheelFile.validation_error,
+            match="digital signature file (.+) is incorrectly contained in RECORD.",
+        ):
+            source.validate_record(validate_contents=False)
 
     def test_rejects_record_contain_self_hash(self, fancy_wheel):
         with WheelFile.open(fancy_wheel) as source:
@@ -294,12 +288,11 @@ class TestWheelFile:
             filename="fancy-1.0.0.dist-info/RECORD",
             content="\n".join(new_record_file_lines),
         )
-        with WheelFile.open(fancy_wheel) as source:
-            with pytest.raises(
-                WheelFile.validation_error,
-                match="RECORD file incorrectly contains hash / size.",
-            ):
-                source.validate_record(validate_contents=False)
+        with WheelFile.open(fancy_wheel) as source, pytest.raises(
+            WheelFile.validation_error,
+            match="RECORD file incorrectly contains hash / size.",
+        ):
+            source.validate_record(validate_contents=False)
 
     def test_rejects_record_validation_failed(self, fancy_wheel):
         with WheelFile.open(fancy_wheel) as source:
@@ -319,9 +312,8 @@ class TestWheelFile:
             filename="fancy-1.0.0.dist-info/RECORD",
             content="\n".join(new_record_file_lines),
         )
-        with WheelFile.open(fancy_wheel) as source:
-            with pytest.raises(
-                WheelFile.validation_error,
-                match="hash / size of (.+) didn't match RECORD",
-            ):
-                source.validate_record()
+        with WheelFile.open(fancy_wheel) as source, pytest.raises(
+            WheelFile.validation_error,
+            match="hash / size of (.+) didn't match RECORD",
+        ):
+            source.validate_record()
