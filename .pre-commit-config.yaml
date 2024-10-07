@@ -8,7 +8,7 @@ repos:
         exclude: docs/.*|tests/.*|noxfile.py
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-builtin-literals
       - id: check-added-large-files
@@ -26,7 +26,7 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.8
+    rev: v0.6.9
     hooks:
       - id: ruff
       - id: ruff-format
