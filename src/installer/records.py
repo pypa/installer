@@ -4,8 +4,9 @@ import base64
 import csv
 import hashlib
 import os
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
-from typing import BinaryIO, Iterable, Iterator, Optional, Tuple, cast
+from typing import BinaryIO, Optional, cast
 
 from installer.utils import copyfileobj_with_hashing, get_stream_length
 
@@ -91,7 +92,7 @@ class RecordEntry:
     size: Optional[int]
     """File's size in bytes."""
 
-    def to_row(self, path_prefix: Optional[str] = None) -> Tuple[str, str, str]:
+    def to_row(self, path_prefix: Optional[str] = None) -> tuple[str, str, str]:
         """Convert this into a 3-element tuple that can be written in a RECORD file.
 
         :param path_prefix: A prefix to attach to the path -- must end in `/`
@@ -216,7 +217,7 @@ class RecordEntry:
         return cls(path=path, hash_=hash_value, size=size_value)
 
 
-def parse_record_file(rows: Iterable[str]) -> Iterator[Tuple[str, str, str]]:
+def parse_record_file(rows: Iterable[str]) -> Iterator[tuple[str, str, str]]:
     """Parse a :pep:`376` RECORD.
 
     Returns an iterable of 3-value tuples, that can be passed to
@@ -233,5 +234,5 @@ def parse_record_file(rows: Iterable[str]) -> Iterator[Tuple[str, str, str]]:
         # Convert Windows paths to use / for consistency
         elements[0] = elements[0].replace("\\", "/")
 
-        value = cast(Tuple[str, str, str], tuple(elements))
+        value = cast(tuple[str, str, str], tuple(elements))
         yield value
