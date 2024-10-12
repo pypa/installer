@@ -5,6 +5,7 @@ import posixpath
 import stat
 import zipfile
 from contextlib import contextmanager
+from functools import cached_property
 from typing import BinaryIO, ClassVar, Iterator, List, Optional, Tuple, Type, cast
 
 from installer.exceptions import InstallerError
@@ -161,7 +162,6 @@ class WheelFile(WheelSource):
             version=parsed_name.version,
             distribution=parsed_name.distribution,
         )
-        self._dist_info_dir: Optional[str] = None
 
     @classmethod
     @contextmanager
@@ -170,12 +170,9 @@ class WheelFile(WheelSource):
         with zipfile.ZipFile(path) as f:
             yield cls(f)
 
-    @property
+    @cached_property
     def dist_info_dir(self) -> str:
         """Name of the dist-info directory."""
-        if self._dist_info_dir is not None:
-            return self._dist_info_dir
-
         top_level_directories = {
             path.split("/", 1)[0] for path in self._zipfile.namelist()
         }
@@ -204,7 +201,6 @@ class WheelFile(WheelSource):
                 dist_info=dist_info_dir,
             )
 
-        self._dist_info_dir = dist_info_dir
         return dist_info_dir
 
     @property
