@@ -2,16 +2,13 @@
 
 import io
 import os
+from collections.abc import Collection, Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     BinaryIO,
-    Collection,
-    Dict,
-    Iterable,
     Optional,
-    Tuple,
     Union,
 )
 
@@ -83,7 +80,7 @@ class WheelDestination:
         self,
         scheme: Scheme,
         record_file_path: str,
-        records: Iterable[Tuple[Scheme, RecordEntry]],
+        records: Iterable[tuple[Scheme, RecordEntry]],
     ) -> None:
         """Finalize installation, after all the files are written.
 
@@ -105,7 +102,7 @@ class WheelDestination:
 class SchemeDictionaryDestination(WheelDestination):
     """Destination, based on a mapping of {scheme: file-system-path}."""
 
-    scheme_dict: Dict[str, str]
+    scheme_dict: dict[str, str]
     """A mapping of {scheme: file-system-path}"""
 
     interpreter: str
@@ -258,7 +255,7 @@ class SchemeDictionaryDestination(WheelDestination):
         self,
         scheme: Scheme,
         record_file_path: str,
-        records: Iterable[Tuple[Scheme, RecordEntry]],
+        records: Iterable[tuple[Scheme, RecordEntry]],
     ) -> None:
         """Finalize installation, by writing the ``RECORD`` file & compiling bytecode.
 

@@ -3,6 +3,7 @@
 import posixpath
 import stat
 import zipfile
+from collections.abc import Iterator
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
@@ -10,11 +11,7 @@ from typing import (
     TYPE_CHECKING,
     BinaryIO,
     ClassVar,
-    Iterator,
-    List,
     Optional,
-    Tuple,
-    Type,
     cast,
 )
 
@@ -25,7 +22,7 @@ from installer.utils import canonicalize_name, parse_wheel_filename
 if TYPE_CHECKING:
     import os
 
-WheelContentElement = Tuple[Tuple[str, str, str], BinaryIO, bool]
+WheelContentElement = tuple[tuple[str, str, str], BinaryIO, bool]
 
 
 __all__ = ["WheelSource", "WheelFile"]
@@ -37,7 +34,7 @@ class WheelSource:
     This is an abstract class, whose methods have to be implemented by subclasses.
     """
 
-    validation_error: ClassVar[Type[Exception]] = ValueError  #: :meta hide-value:
+    validation_error: ClassVar[type[Exception]] = ValueError  #: :meta hide-value:
     """
     .. versionadded:: 0.7.0
 
@@ -66,7 +63,7 @@ class WheelSource:
         return f"{self.distribution}-{self.version}.data"
 
     @property
-    def dist_info_filenames(self) -> List[str]:
+    def dist_info_filenames(self) -> list[str]:
         """Get names of all files in the dist-info directory.
 
         Sample usage/behaviour::
@@ -127,7 +124,7 @@ class WheelSource:
 class _WheelFileValidationError(ValueError, InstallerError):
     """Raised when a wheel file fails validation."""
 
-    def __init__(self, issues: List[str]) -> None:
+    def __init__(self, issues: list[str]) -> None:
         super().__init__(repr(issues))
         self.issues = issues
 
@@ -217,7 +214,7 @@ class WheelFile(WheelSource):
         return dist_info_dir
 
     @property
-    def dist_info_filenames(self) -> List[str]:
+    def dist_info_filenames(self) -> list[str]:
         """Get names of all files in the dist-info directory."""
         base = self.dist_info_dir
         return [
@@ -255,7 +252,7 @@ class WheelFile(WheelSource):
                 [f"Unable to retrieve `RECORD` from {self._zipfile.filename}: {exc!r}"]
             ) from exc
 
-        issues: List[str] = []
+        issues: list[str] = []
 
         for item in self._zipfile.infolist():
             if item.filename[-1:] == "/":  # looks like a directory
