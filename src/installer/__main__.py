@@ -4,7 +4,8 @@ import argparse
 import os.path
 import sys
 import sysconfig
-from typing import Dict, Optional, Sequence
+from collections.abc import Sequence
+from typing import Optional
 
 import installer
 from installer.destinations import SchemeDictionaryDestination
@@ -61,7 +62,7 @@ def _get_main_parser() -> argparse.ArgumentParser:
 
 def _get_scheme_dict(
     distribution_name: str, prefix: Optional[str] = None
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Calculate the scheme dictionary for the current Python environment."""
     vars = {}
     if prefix is None:

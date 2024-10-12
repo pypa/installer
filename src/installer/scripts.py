@@ -3,20 +3,11 @@
 import io
 import os
 import shlex
-import sys
 import zipfile
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from types import ModuleType
-from typing import TYPE_CHECKING, Mapping, Optional, Tuple, Union
-
-if sys.version_info >= (3, 9):  # pragma: no cover
-    from importlib.resources import files
-
-    def read_binary(package: Union[str, ModuleType], file_path: str) -> bytes:
-        return (files(package) / file_path).read_bytes()
-
-else:  # pragma: no cover
-    from importlib.resources import read_binary
+from importlib.resources import files
+from typing import TYPE_CHECKING, Optional
 
 from installer import _scripts
 
@@ -30,7 +21,7 @@ if TYPE_CHECKING:
 __all__ = ["InvalidScript", "Script"]
 
 
-_ALLOWED_LAUNCHERS: Mapping[Tuple["ScriptSection", "LauncherKind"], str] = {
+_ALLOWED_LAUNCHERS: Mapping[tuple["ScriptSection", "LauncherKind"], str] = {
     ("console", "win-ia32"): "t32.exe",
     ("console", "win-amd64"): "t64.exe",
     ("console", "win-arm"): "t_arm.exe",
@@ -119,7 +110,7 @@ class Script:
         except KeyError:
             error = f"{key!r} not in {sorted(_ALLOWED_LAUNCHERS)!r}"
             raise InvalidScript(error) from None
-        return read_binary(_scripts, name)
+        return (files(_scripts) / name).read_bytes()
 
     def _get_alternate_executable(self, executable: str, kind: "LauncherKind") -> str:
         """Get an alternate executable for the launcher.
@@ -132,7 +123,7 @@ class Script:
             executable = os.path.join(dn, fn)
         return executable
 
-    def generate(self, executable: str, kind: "LauncherKind") -> Tuple[str, bytes]:
+    def generate(self, executable: str, kind: "LauncherKind") -> tuple[str, bytes]:
         """Generate a launcher for this script.
 
         :param executable: Path to the executable to invoke.
