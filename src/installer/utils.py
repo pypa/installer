@@ -222,7 +222,7 @@ def construct_record_file(
         io.BytesIO(), encoding="utf-8", write_through=True, newline=""
     )
     writer = csv.writer(stream, delimiter=",", quotechar='"', lineterminator="\n")
-    for scheme, record in records:
+    for scheme, record in sorted(records, key=lambda x: x[1].path):
         writer.writerow(record.to_row(prefix_for_scheme(scheme)))
     stream.seek(0)
     return stream.detach()
