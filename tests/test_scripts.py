@@ -1,6 +1,6 @@
 import io
-import os
 import zipfile
+from pathlib import Path
 
 import pytest
 
@@ -32,12 +32,8 @@ def test_script_generate_space_in_executable():
 def _read_launcher_data(section, kind):
     prefix = {"console": "t", "gui": "w"}[section]
     suffix = {"win-ia32": "32", "win-amd64": "64", "win-arm": "_arm"}[kind]
-    filename = os.path.join(
-        os.path.dirname(os.path.abspath(_scripts.__file__)),
-        f"{prefix}{suffix}.exe",
-    )
-    with open(filename, "rb") as f:
-        return f.read()
+    file = Path(_scripts.__file__).parent / f"{prefix}{suffix}.exe"
+    return file.read_bytes()
 
 
 @pytest.mark.parametrize("section", ["console", "gui"])

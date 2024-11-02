@@ -125,10 +125,9 @@ class TestCopyFileObjWithHashing:
         )
         size = len(data)
 
-        with BytesIO(data) as source:
-            with BytesIO() as dest:
-                result = copyfileobj_with_hashing(source, dest, hash_algorithm="sha256")
-                written_data = dest.getvalue()
+        with BytesIO(data) as source, BytesIO() as dest:
+            result = copyfileobj_with_hashing(source, dest, hash_algorithm="sha256")
+            written_data = dest.getvalue()
 
         assert result == (hash_, size)
         assert written_data == data
@@ -172,9 +171,8 @@ class TestScript:
         ],
     )
     def test_replace_shebang(self, data, expected):
-        with BytesIO(data) as source:
-            with fix_shebang(source, "/my/python") as stream:
-                result = stream.read()
+        with BytesIO(data) as source, fix_shebang(source, "/my/python") as stream:
+            result = stream.read()
         assert result == expected
 
     @pytest.mark.parametrize(
@@ -188,9 +186,8 @@ class TestScript:
         ],
     )
     def test_keep_data(self, data):
-        with BytesIO(data) as source:
-            with fix_shebang(source, "/my/python") as stream:
-                result = stream.read()
+        with BytesIO(data) as source, fix_shebang(source, "/my/python") as stream:
+            result = stream.read()
         assert result == data
 
 

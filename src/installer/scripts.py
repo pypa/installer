@@ -84,7 +84,7 @@ class Script:
         if self.section == "gui" and kind != "posix":
             dn, fn = os.path.split(executable)
             fn = fn.replace("python", "pythonw")
-            executable = os.path.join(dn, fn)
+            executable = os.path.join(dn, fn)  # noqa: PTH118
         return executable
 
     def generate(self, executable: str, kind: "LauncherKind") -> Tuple[str, bytes]:

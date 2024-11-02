@@ -1,16 +1,29 @@
 """Source of information about a wheel file."""
 
-import os
 import posixpath
 import stat
 import zipfile
 from contextlib import contextmanager
 from functools import cached_property
-from typing import BinaryIO, ClassVar, Iterator, List, Optional, Tuple, Type, cast
+from pathlib import Path
+from typing import (
+    TYPE_CHECKING,
+    BinaryIO,
+    ClassVar,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    cast,
+)
 
 from installer.exceptions import InstallerError
 from installer.records import RecordEntry, parse_record_file
 from installer.utils import canonicalize_name, parse_wheel_filename
+
+if TYPE_CHECKING:
+    import os
 
 WheelContentElement = Tuple[Tuple[str, str, str], BinaryIO, bool]
 
@@ -156,7 +169,7 @@ class WheelFile(WheelSource):
         self._zipfile = f
         assert f.filename
 
-        basename = os.path.basename(f.filename)
+        basename = Path(f.filename).name
         parsed_name = parse_wheel_filename(basename)
         super().__init__(
             version=parsed_name.version,
