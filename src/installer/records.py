@@ -5,6 +5,7 @@ import csv
 import hashlib
 import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import BinaryIO, Iterable, Iterator, Optional, Tuple, cast
 
 from installer.utils import copyfileobj_with_hashing, get_stream_length
@@ -152,23 +153,19 @@ class RecordEntry:
         :return: Whether data read from stream matches hash and size.
         """
         if self.hash_ is not None:
-            with open(os.devnull, "wb") as new_target:
+            with Path(os.devnull).open("wb") as new_target:
                 hash_, size = copyfileobj_with_hashing(
                     stream, cast("BinaryIO", new_target), self.hash_.name
                 )
 
             if self.size is not None and size != self.size:
                 return False
-            if self.hash_.value != hash_:
-                return False
-            return True
+            return self.hash_.value == hash_
 
         elif self.size is not None:
             assert self.hash_ is None
             size = get_stream_length(stream)
-            if size != self.size:
-                return False
-            return True
+            return size == self.size
 
         return True
 

@@ -1,4 +1,5 @@
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -25,7 +26,7 @@ def record_simple_iter(record_simple_list):
 def record_simple_file(tmpdir, record_simple_list):
     p = tmpdir.join("RECORD")
     p.write("\n".join(record_simple_list))
-    with open(str(p)) as f:
+    with Path(p).open() as f:
         yield f
 
 

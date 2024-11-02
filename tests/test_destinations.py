@@ -1,5 +1,5 @@
 import io
-import os.path
+from pathlib import Path
 
 import pytest
 
@@ -86,10 +86,7 @@ class TestSchemeDictionaryDestination:
     )
     def test_write_file(self, destination, scheme, path, data, expected):
         record = destination.write_file(scheme, path, io.BytesIO(data), False)
-        file_path = os.path.join(destination.scheme_dict[scheme], path)
-        with open(file_path, "rb") as f:
-            file_data = f.read()
-
+        file_data = (Path(destination.scheme_dict[scheme]) / path).read_bytes()
         assert file_data == expected
         assert record.path == path
 
@@ -111,12 +108,11 @@ class TestSchemeDictionaryDestination:
     def test_write_script(self, destination):
         script_args = ("my_entrypoint", "my_module", "my_function", "console")
         record = destination.write_script(*script_args)
-        file_path = os.path.join(destination.scheme_dict["scripts"], "my_entrypoint")
+        file_path = Path(destination.scheme_dict["scripts"]) / "my_entrypoint"
 
-        assert os.path.isfile(file_path)
+        assert file_path.is_file()
 
-        with open(file_path, "rb") as f:
-            file_data = f.read()
+        file_data = file_path.read_bytes()
         name, expected_data = Script(*script_args).generate("/my/python", "posix")
 
         assert file_data == expected_data
@@ -179,11 +175,9 @@ class TestSchemeDictionaryDestination:
         ]
 
         destination.finalize_installation("purelib", "RECORD", records)
-        file_path = os.path.join(destination.scheme_dict["purelib"], "RECORD")
+        file_path = Path(destination.scheme_dict["purelib"]) / "RECORD"
 
-        with open(file_path, "rb") as f:
-            data = f.read()
-
+        data = file_path.read_bytes()
         assert data == (
             b"RECORD,,\n"
             b"../data/my_data1.bin,sha256=NV0A-M4OPuqTsHjeD6Wth_-UqrpAAAdyplcustFZ8s4,9\n"

@@ -13,7 +13,7 @@ from installer.utils import SCHEME_NAMES, Scheme, parse_entrypoints, parse_metad
 __all__ = ["install"]
 
 
-def _process_WHEEL_file(source: WheelSource) -> Scheme:
+def _process_WHEEL_file(source: WheelSource) -> Scheme:  # noqa: N802
     """Process the WHEEL file, from ``source``.
 
     Returns the scheme that the archive root should go in.

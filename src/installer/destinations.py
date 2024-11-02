@@ -138,12 +138,11 @@ class SchemeDictionaryDestination(WheelDestination):
     overwrite_existing: bool = False
     """Silently overwrite existing files."""
 
-    def _path_with_destdir(self, scheme: Scheme, path: str) -> str:
-        file = os.path.join(self.scheme_dict[scheme], path)
+    def _path_with_destdir(self, scheme: Scheme, path: str) -> Path:
+        file = Path(self.scheme_dict[scheme]) / path
         if self.destdir is not None:
-            file_path = Path(file)
-            rel_path = file_path.relative_to(file_path.anchor)
-            return os.path.join(self.destdir, rel_path)
+            rel_path = file.relative_to(file.anchor)
+            return Path(self.destdir) / rel_path
         return file
 
     def write_to_fs(
@@ -164,15 +163,15 @@ class SchemeDictionaryDestination(WheelDestination):
         - Hashes the written content, to determine the entry in the ``RECORD`` file.
         """
         target_path = self._path_with_destdir(scheme, path)
-        if not self.overwrite_existing and os.path.exists(target_path):
-            message = f"File already exists: {target_path}"
+        if not self.overwrite_existing and target_path.exists():
+            message = f"File already exists: {target_path!s}"
             raise FileExistsError(message)
 
-        parent_folder = os.path.dirname(target_path)
-        if not os.path.exists(parent_folder):
-            os.makedirs(parent_folder)
+        parent_folder = target_path.parent
+        if not parent_folder.exists():
+            parent_folder.mkdir(parents=True)
 
-        with open(target_path, "wb") as f:
+        with target_path.open("wb") as f:
             hash_, size = copyfileobj_with_hashing(stream, f, self.hash_algorithm)
 
         if is_executable:
@@ -234,9 +233,9 @@ class SchemeDictionaryDestination(WheelDestination):
             )
 
             path = self._path_with_destdir(Scheme("scripts"), script_name)
-            mode = os.stat(path).st_mode
+            mode = path.stat().st_mode
             mode |= (mode & 0o444) >> 2
-            os.chmod(path, mode)
+            path.chmod(mode)
 
             return entry
 
@@ -248,9 +247,8 @@ class SchemeDictionaryDestination(WheelDestination):
         import compileall
 
         target_path = self._path_with_destdir(scheme, record.path)
-        dir_path_to_embed = os.path.dirname(  # Without destdir
-            os.path.join(self.scheme_dict[scheme], record.path)
-        )
+        dir_path_to_embed = (Path(self.scheme_dict[scheme]) / record.path).parent
+
         for level in self.bytecode_optimization_levels:
             compileall.compile_file(
                 target_path, optimize=level, quiet=1, ddir=dir_path_to_embed

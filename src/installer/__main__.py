@@ -75,7 +75,7 @@ def _get_scheme_dict(
     # calculate 'headers' path, not currently in sysconfig - see
     # https://bugs.python.org/issue44445. This is based on what distutils does.
     # TODO: figure out original vs normalised distribution names
-    scheme_dict["headers"] = os.path.join(
+    scheme_dict["headers"] = os.path.join(  # noqa: PTH118
         sysconfig.get_path("include", vars={"installed_base": installed_base}),
         distribution_name,
     )
