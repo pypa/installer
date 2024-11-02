@@ -2,7 +2,7 @@
 
 import posixpath
 from io import BytesIO
-from typing import Dict, Tuple, cast
+from typing import cast
 
 from installer.destinations import WheelDestination
 from installer.exceptions import InvalidWheelSource
@@ -35,7 +35,7 @@ def _process_WHEEL_file(source: WheelSource) -> Scheme:  # noqa: N802
 
 def _determine_scheme(
     path: str, source: WheelSource, root_scheme: Scheme
-) -> Tuple[Scheme, str]:
+) -> tuple[Scheme, str]:
     """Determine which scheme to place given path in, from source."""
     data_dir = source.data_dir
 
@@ -64,7 +64,7 @@ def _determine_scheme(
 def install(
     source: WheelSource,
     destination: WheelDestination,
-    additional_metadata: Dict[str, bytes],
+    additional_metadata: dict[str, bytes],
 ) -> None:
     """Install wheel described by ``source`` into ``destination``.
 

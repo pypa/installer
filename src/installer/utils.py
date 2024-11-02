@@ -9,6 +9,7 @@ import os
 import re
 import sys
 from collections import namedtuple
+from collections.abc import Iterable, Iterator
 from configparser import ConfigParser
 from email.message import Message
 from email.parser import FeedParser
@@ -18,11 +19,8 @@ from typing import (
     TYPE_CHECKING,
     BinaryIO,
     Callable,
-    Iterable,
-    Iterator,
     NewType,
     Optional,
-    Tuple,
     cast,
 )
 
@@ -31,7 +29,7 @@ if TYPE_CHECKING:
     from installer.scripts import LauncherKind, ScriptSection
 
 Scheme = NewType("Scheme", str)
-AllSchemes = Tuple[Scheme, ...]
+AllSchemes = tuple[Scheme, ...]
 
 __all__ = [
     "parse_metadata_file",
@@ -117,7 +115,7 @@ def copyfileobj_with_hashing(
     source: BinaryIO,
     dest: BinaryIO,
     hash_algorithm: str,
-) -> Tuple[str, int]:
+) -> tuple[str, int]:
     """Copy a buffer while computing the content's hash and size.
 
     Copies the source buffer into the destination buffer while computing the
@@ -206,7 +204,7 @@ def fix_shebang(stream: BinaryIO, interpreter: str) -> Iterator[BinaryIO]:
 
 
 def construct_record_file(
-    records: Iterable[Tuple[Scheme, "RecordEntry"]],
+    records: Iterable[tuple[Scheme, "RecordEntry"]],
     prefix_for_scheme: Callable[[Scheme], Optional[str]] = lambda _: None,
 ) -> BinaryIO:
     """Construct a RECORD file.
@@ -228,7 +226,7 @@ def construct_record_file(
     return stream.detach()
 
 
-def parse_entrypoints(text: str) -> Iterable[Tuple[str, str, str, "ScriptSection"]]:
+def parse_entrypoints(text: str) -> Iterable[tuple[str, str, str, "ScriptSection"]]:
     """Parse ``entry_points.txt``-style files.
 
     :param text: entire contents of the file
