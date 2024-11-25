@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 WheelContentElement = tuple[tuple[str, str, str], BinaryIO, bool]
 
 
-__all__ = ["WheelSource", "WheelFile"]
+__all__ = ["WheelFile", "WheelSource"]
 
 
 class WheelSource:

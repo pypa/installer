@@ -32,16 +32,16 @@ Scheme = NewType("Scheme", str)
 AllSchemes = tuple[Scheme, ...]
 
 __all__ = [
+    "SCHEME_NAMES",
+    "WheelFilename",
+    "construct_record_file",
+    "copyfileobj_with_hashing",
+    "fix_shebang",
+    "get_launcher_kind",
+    "make_file_executable",
+    "parse_entrypoints",
     "parse_metadata_file",
     "parse_wheel_filename",
-    "copyfileobj_with_hashing",
-    "get_launcher_kind",
-    "fix_shebang",
-    "construct_record_file",
-    "parse_entrypoints",
-    "make_file_executable",
-    "WheelFilename",
-    "SCHEME_NAMES",
 ]
 
 # Borrowed from https://github.com/python/cpython/blob/v3.9.1/Lib/shutil.py#L52
