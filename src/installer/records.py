@@ -13,8 +13,8 @@ from installer.utils import copyfileobj_with_hashing, get_stream_length
 
 __all__ = [
     "Hash",
-    "RecordEntry",
     "InvalidRecordEntry",
+    "RecordEntry",
     "parse_record_file",
 ]
 
