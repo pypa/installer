@@ -262,10 +262,10 @@ class TestParseEntryPoints:
             pytest.param(
                 """
                     [console_scripts]
-                    நான் = ஓர்.ஒருங்குறி:கட்டளை
+                    "நான்" = "ஓர்.ஒருங்குறி:கட்டளை"
                 """,
                 [
-                    (" ", "ஓர்.ஒருங்குறி", "கட்டளை", "console"),
+                    ("நான்", "ஓர்.ஒருங்குறி", "கட்டளை", "console"),
                 ],
                 id="unicode",
             ),
