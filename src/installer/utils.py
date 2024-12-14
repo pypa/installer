@@ -241,7 +241,9 @@ def parse_entrypoints(text: str) -> Iterable[tuple[str, str, str, "ScriptSection
 
             # TODO: make this a proper error, which can be caught.
             assert len(attrs), "Attributes are empty"
-            assert all(x.isidentifier() for x in attrs.split(".")), f"{attrs} are not all valid identifiers"
+            assert all(
+                x.isidentifier() for x in attrs.split(".")
+            ), f"{attrs} are not all valid identifiers"
 
             script_section = cast("ScriptSection", section[: -len("_scripts")])
 
