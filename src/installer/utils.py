@@ -237,7 +237,7 @@ def parse_entrypoints(text: str) -> Iterable[tuple[str, str, str, "ScriptSection
             assert ":" in value
 
             module, attrs = [x.strip() for x in value.split(":", 1)]
-            assert len(module)
+            assert module.isidentifier()
 
             # TODO: make this a proper error, which can be caught.
             assert len(attrs)
