@@ -39,7 +39,7 @@ async def _get_distlib_page(client: httpx.AsyncClient) -> Any:
 
 def _get_link_from_response(json_response: dict[str, Any]) -> tuple[str, str] | None:
     version = max(version_str.split(".") for version_str in json_response["versions"])
-    filename = f'distlib-{".".join(version)}.tar.gz'
+    filename = f"distlib-{'.'.join(version)}.tar.gz"
     for file_info in json_response["files"]:
         if file_info["filename"] == filename:
             return file_info["url"], filename
