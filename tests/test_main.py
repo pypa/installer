@@ -14,9 +14,9 @@ def test_get_scheme_dict():
 def test_get_scheme_dict_prefix():
     d = get_scheme_dict(distribution_name="foo", prefix="/foo")
     for key in ("purelib", "platlib", "headers", "scripts", "data"):
-        assert d[key].startswith(
-            f"{os.sep}foo"
-        ), f"{key} does not start with /foo: {d[key]}"
+        assert d[key].startswith(f"{os.sep}foo"), (
+            f"{key} does not start with /foo: {d[key]}"
+        )
 
 
 def test_main(fancy_wheel, tmp_path):
@@ -62,9 +62,9 @@ def test_main_prefix(fancy_wheel, tmp_path):
     installed_py_files = list(destdir.rglob("*.py"))
 
     for f in installed_py_files:
-        assert str(f.parent).startswith(
-            str(destdir / "foo")
-        ), f"path does not respect destdir+prefix: {f}"
+        assert str(f.parent).startswith(str(destdir / "foo")), (
+            f"path does not respect destdir+prefix: {f}"
+        )
     assert {f.stem for f in installed_py_files} == {"__init__", "__main__", "data"}
 
     installed_pyc_files = destdir.rglob("*.pyc")
