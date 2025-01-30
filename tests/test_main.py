@@ -74,28 +74,6 @@ def test_main_prefix(fancy_wheel, tmp_path):
     }
 
 
-def test_main_executable(fancy_wheel, tmp_path):
-    destdir = tmp_path / "dest"
-
-    main(
-        [
-            str(fancy_wheel),
-            "-d",
-            str(destdir),
-            "--executable",
-            "/monty/python3.x",
-        ],
-        "python -m installer",
-    )
-
-    installed_scripts = destdir.rglob("bin/*")
-
-    for f in installed_scripts:
-        with f.open("rb") as fp:
-            shebang = fp.readline()
-            assert shebang == b"#!/monty/python3.x\n"
-
-
 def test_main_no_pyc(fancy_wheel, tmp_path):
     destdir = tmp_path / "dest"
 

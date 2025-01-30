@@ -32,13 +32,6 @@ def _get_main_parser() -> argparse.ArgumentParser:
         help="override prefix to install packages to",
     )
     parser.add_argument(
-        "--executable",
-        metavar="path",
-        default=sys.executable,
-        type=str,
-        help="#! executable to install scripts with (default=sys.executable)",
-    )
-    parser.add_argument(
         "--compile-bytecode",
         action="append",
         metavar="level",
@@ -110,7 +103,7 @@ def _main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
                 source.validate_record(validate_contents=args.validate_record == "all")
             destination = SchemeDictionaryDestination(
                 scheme_dict=_get_scheme_dict(source.distribution, prefix=args.prefix),
-                interpreter=args.executable,
+                interpreter=sys.executable,
                 script_kind=get_launcher_kind(),
                 bytecode_optimization_levels=bytecode_levels,
                 destdir=args.destdir,
