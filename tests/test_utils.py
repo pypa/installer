@@ -269,6 +269,16 @@ class TestParseEntryPoints:
                 ],
                 id="unicode",
             ),
+            pytest.param(
+                """
+                    [console_scripts]
+                    நான் = ஓர்.ஒருங்குறி:கட்டளை[some, extras]
+                """,
+                [
+                    ("நான்", "ஓர்.ஒருங்குறி", "கட்டளை", "console"),
+                ],
+                id="unicode",
+            ),
         ],
     )
     def test_valid(self, script, expected):
