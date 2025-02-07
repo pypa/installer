@@ -241,6 +241,9 @@ def parse_entrypoints(text: str) -> Iterable[tuple[str, str, str, "ScriptSection
                 x.isidentifier() for x in module.split(".")
             ), f"{module} are not all valid identifiers"
 
+            if "[" in attrs and "]" in attrs:
+                attrs, extras = [x.strip() for x in value.split("[", 1)]
+
             # TODO: make this a proper error, which can be caught.
             assert len(attrs), "Attributes are empty"
             assert attrs.isidentifier(), f"{attrs} is not a valid identifier"
