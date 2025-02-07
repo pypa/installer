@@ -242,7 +242,7 @@ def parse_entrypoints(text: str) -> Iterable[tuple[str, str, str, "ScriptSection
             )
 
             if "[" in attrs and "]" in attrs:
-                attrs, extras = [x.strip() for x in value.split("[", 1)]
+                attrs, extras = [x.strip() for x in attrs.split("[", 1)]
 
             # TODO: make this a proper error, which can be caught.
             assert len(attrs), "Attributes are empty"
