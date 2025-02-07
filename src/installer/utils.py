@@ -237,9 +237,9 @@ def parse_entrypoints(text: str) -> Iterable[tuple[str, str, str, "ScriptSection
             assert ":" in value
 
             module, attrs = [x.strip() for x in value.split(":", 1)]
-            assert all(
-                x.isidentifier() for x in module.split(".")
-            ), f"{module} are not all valid identifiers"
+            assert all(x.isidentifier() for x in module.split(".")), (
+                f"{module} are not all valid identifiers"
+            )
 
             if "[" in attrs and "]" in attrs:
                 attrs, extras = [x.strip() for x in value.split("[", 1)]
