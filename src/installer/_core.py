@@ -28,9 +28,9 @@ def _process_WHEEL_file(source: WheelSource) -> Scheme:  # noqa: N802
 
     # Determine where archive root should go.
     if metadata["Root-Is-Purelib"] == "true":
-        return cast(Scheme, "purelib")
+        return cast("Scheme", "purelib")
     else:
-        return cast(Scheme, "platlib")
+        return cast("Scheme", "platlib")
 
 
 def _determine_scheme(
@@ -58,7 +58,7 @@ def _determine_scheme(
         msg_fmt = "{path} is not contained in a valid .data subdirectory."
         raise InvalidWheelSource(source, msg_fmt.format(path=path))
 
-    return cast(Scheme, scheme_name), posixpath.join(*reversed(parts[:-1]))
+    return cast("Scheme", scheme_name), posixpath.join(*reversed(parts[:-1]))
 
 
 def install(
