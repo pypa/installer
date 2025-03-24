@@ -76,7 +76,7 @@ _ENTRYPOINT_REGEX = re.compile(
 )
 
 # According to https://www.python.org/dev/peps/pep-0427/#id7
-SCHEME_NAMES = cast(AllSchemes, ("purelib", "platlib", "headers", "scripts", "data"))
+SCHEME_NAMES = cast("AllSchemes", ("purelib", "platlib", "headers", "scripts", "data"))
 
 
 def parse_metadata_file(contents: str) -> Message:

@@ -294,7 +294,7 @@ class WheelFile(WheelSource):
                 )
             if validate_contents:
                 with self._zipfile.open(item, "r") as stream:
-                    if not record.validate_stream(cast(BinaryIO, stream)):
+                    if not record.validate_stream(cast("BinaryIO", stream)):
                         issues.append(
                             f"In {self._zipfile.filename}, hash / size of {item.filename} didn't match RECORD"
                         )

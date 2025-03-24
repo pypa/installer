@@ -231,5 +231,5 @@ def parse_record_file(rows: Iterable[str]) -> Iterator[tuple[str, str, str]]:
         # Convert Windows paths to use / for consistency
         elements[0] = elements[0].replace("\\", "/")
 
-        value = cast(tuple[str, str, str], tuple(elements))
+        value = cast("tuple[str, str, str]", tuple(elements))
         yield value
