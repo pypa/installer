@@ -15,6 +15,7 @@ from typing import (
 from installer.records import Hash, RecordEntry
 from installer.scripts import Script
 from installer.utils import (
+    _WINDOWS,
     Scheme,
     construct_record_file,
     copyfileobj_with_hashing,
@@ -267,10 +268,13 @@ class SchemeDictionaryDestination(WheelDestination):
         def prefix_for_scheme(file_scheme: str) -> Optional[str]:
             if file_scheme == scheme:
                 return None
-            path = os.path.relpath(
-                self.scheme_dict[file_scheme],
-                start=self.scheme_dict[scheme],
-            )
+            if _WINDOWS:  # pragma: no cover
+                path = os.path.abspath(self.scheme_dict[file_scheme])  # noqa: PTH100
+            else:
+                path = os.path.relpath(
+                    self.scheme_dict[file_scheme],
+                    start=self.scheme_dict[scheme],
+                )
             return path + "/"
 
         record_list = list(records)
