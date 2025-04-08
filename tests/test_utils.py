@@ -259,6 +259,26 @@ class TestParseEntryPoints:
                 ],
                 id="cli-and-gui",
             ),
+            pytest.param(
+                """
+                    [console_scripts]
+                    நான் = ஓர்.ஒருங்குறி:கட்டளை
+                """,
+                [
+                    ("நான்", "ஓர்.ஒருங்குறி", "கட்டளை", "console"),
+                ],
+                id="unicode",
+            ),
+            pytest.param(
+                """
+                    [console_scripts]
+                    நான் = ஓர்.ஒருங்குறி:கட்டளை[கூடுதல்]
+                """,
+                [
+                    ("நான்", "ஓர்.ஒருங்குறி", "கட்டளை", "console"),
+                ],
+                id="unicode with extras",
+            ),
         ],
     )
     def test_valid(self, script, expected):
