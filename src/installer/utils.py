@@ -24,6 +24,8 @@ from typing import (
     cast,
 )
 
+from installer.scripts import _build_shebang
+
 if TYPE_CHECKING:
     from installer.records import RecordEntry
     from installer.scripts import LauncherKind, ScriptSection
@@ -186,7 +188,7 @@ def fix_shebang(stream: BinaryIO, interpreter: str) -> Iterator[BinaryIO]:
     if stream.read(8) == b"#!python":
         new_stream = io.BytesIO()
         # write our new shebang
-        new_stream.write(f"#!{interpreter}\n".encode())
+        new_stream.write(_build_shebang(interpreter, False) + b"\n")
         # copy the rest of the stream
         stream.seek(0)
         stream.readline()  # skip first line
