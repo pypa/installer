@@ -296,7 +296,7 @@ class TestWheelFile:
             if filename.split("/")[-1] == "RECORD":
                 hash_ = "sha256=pREiHcl39jRySUXMCOrwmSsnOay8FB7fOJP5mZQ3D3A"
                 size = str(len(record_file_contents))
-            new_record_file_lines.append(",".join((filename, hash_, size)))
+            new_record_file_lines.append(f"{filename},{hash_},{size}")
 
         replace_file_in_zip(
             fancy_wheel,
@@ -323,7 +323,7 @@ class TestWheelFile:
             filename, hash_, size = line.split(",")
             if filename.split("/")[-1] != "RECORD":
                 hash_ = "sha256=pREiHcl39jRySUXMCOrwmSsnOay8FB7fOJP5mZQ3D3A"
-            new_record_file_lines.append(",".join((filename, hash_, size)))
+            new_record_file_lines.append(f"{filename},{hash_},{size}")
 
         replace_file_in_zip(
             fancy_wheel,
