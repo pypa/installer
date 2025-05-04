@@ -46,6 +46,7 @@ extend-select = [
     "SIM", # flake8-simplify
     "TID", # flake8-tidy-imports
     "TC",  # flake8-type-checking
+    "FLY", # flynt
     "I",   # isort
     "N",   # pep8-naming
     "W",   # pycodestyle warnings
