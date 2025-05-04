@@ -36,23 +36,23 @@ extend-exclude = [
 
 [tool.ruff.lint]
 extend-select = [
+    "ERA", # eradicate
     "B",   # flake8-bugbear
     "C4",  # flake8-comprehensions
-    "ERA", # flake8-eradicate/eradicate
+    "ISC", # flake8-implicit-str-concat
+    "PTH", # flake8-use-pathlib
+    "PIE", # flake8-pie
+    "T20", # flake8-print
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports
+    "TC",  # flake8-type-checking
     "I",   # isort
     "N",   # pep8-naming
-    "PIE", # flake8-pie
-    "PGH", # pygrep
-    "RUF", # ruff checks
-    "SIM", # flake8-simplify
-    "T20", # flake8-print
-    "TC",  # flake8-type-checking
-    "TID", # flake8-tidy-imports
-    "UP",  # pyupgrade
-    "D",   # pydocstyle
-    "PTH", # flake8-use-pathlib
-    "ISC", # implicit-str-concat
     "W",   # pycodestyle warnings
+    "D",   # pydocstyle
+    "PGH", # pygrep-hooks
+    "UP",  # pyupgrade
+    "RUF", # ruff rules
 ]
 ignore = [
     "D105",
