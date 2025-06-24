@@ -177,6 +177,7 @@ class TestSchemeDictionaryDestination:
         destination.finalize_installation("purelib", "RECORD", records)
         file_path = Path(destination.scheme_dict["purelib"]) / "RECORD"
 
+        data = file_path.read_bytes()
         expected_data = (
             b"RECORD,,\n"
             b"data/my_data1.bin,sha256=NV0A-M4OPuqTsHjeD6Wth_-UqrpAAAdyplcustFZ8s4,9\n"
