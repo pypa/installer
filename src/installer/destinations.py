@@ -270,7 +270,7 @@ class SchemeDictionaryDestination(WheelDestination):
                 return None
             if _WINDOWS:  # pragma: no cover
                 path = os.path.abspath(self.scheme_dict[file_scheme])  # noqa: PTH100
-            else:
+            else:  # pragma: no cover
                 path = os.path.relpath(
                     self.scheme_dict[file_scheme],
                     start=self.scheme_dict[scheme],
