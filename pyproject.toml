@@ -11,8 +11,9 @@ authors = [
     { name = "Pradyun Gedam", email = "pradyunsg@gmail.com" },
 ]
 requires-python = ">=3.9"
+license = "MIT"
 classifiers = [
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: MIT License",  # for compatibility with tooling such as pip-licenses
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
