@@ -113,7 +113,7 @@ class TestSchemeDictionaryDestination:
         assert file_path.is_file()
 
         file_data = file_path.read_bytes()
-        name, expected_data = Script(*script_args).generate("/my/python", "posix")
+        _, expected_data = Script(*script_args).generate("/my/python", "posix")
 
         assert file_data == expected_data
         assert record.path == "my_entrypoint"

@@ -67,7 +67,7 @@ class TestWheelFile:
             pass
 
         with (
-            pytest.raises(ValueError, match="Not a valid wheel filename: .+"),
+            pytest.raises(ValueError, match=r"Not a valid wheel filename: .+"),
             WheelFile.open(str(path)),
         ):
             pass
@@ -233,7 +233,7 @@ class TestWheelFile:
             WheelFile.open(fancy_wheel) as source,
             pytest.raises(
                 WheelFile.validation_error,
-                match="hash / size of (.+) is not included in RECORD",
+                match=r"hash / size of (.+) is not included in RECORD",
             ),
         ):
             source.validate_record(validate_contents=False)
@@ -279,7 +279,7 @@ class TestWheelFile:
             WheelFile.open(fancy_wheel) as source,
             pytest.raises(
                 WheelFile.validation_error,
-                match="digital signature file (.+) is incorrectly contained in RECORD.",
+                match=r"digital signature file (.+) is incorrectly contained in RECORD.",
             ),
         ):
             source.validate_record(validate_contents=False)
@@ -307,7 +307,7 @@ class TestWheelFile:
             WheelFile.open(fancy_wheel) as source,
             pytest.raises(
                 WheelFile.validation_error,
-                match="RECORD file incorrectly contains hash / size.",
+                match=r"RECORD file incorrectly contains hash / size.",
             ),
         ):
             source.validate_record(validate_contents=False)
@@ -334,7 +334,7 @@ class TestWheelFile:
             WheelFile.open(fancy_wheel) as source,
             pytest.raises(
                 WheelFile.validation_error,
-                match="hash / size of (.+) didn't match RECORD",
+                match=r"hash / size of (.+) didn't match RECORD",
             ),
         ):
             source.validate_record()
