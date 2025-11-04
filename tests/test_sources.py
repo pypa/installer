@@ -338,3 +338,26 @@ class TestWheelFile:
             ),
         ):
             source.validate_record()
+
+    def test_rejects_record_containing_unknown_hash(self, fancy_wheel):
+        with WheelFile.open(fancy_wheel) as source:
+            record_file_contents = source.read_dist_info("RECORD")
+
+        new_record_file_contents = record_file_contents.replace("sha256=", "sha=")
+        replace_file_in_zip(
+            fancy_wheel,
+            filename="fancy-1.0.0.dist-info/RECORD",
+            content=new_record_file_contents,
+        )
+
+        with (
+            WheelFile.open(fancy_wheel) as source,
+            pytest.raises(
+                WheelFile.validation_error,
+                match=(
+                    "In .+, entry in RECORD file for .+ is invalid: "
+                    "invalid hash algorithm 'sha'"
+                ),
+            ),
+        ):
+            source.validate_record(validate_contents=True)
