@@ -907,3 +907,83 @@ class TestInstall:
             ],
             any_order=True,
         )
+
+    def test_skips_pycache_and_warns(self, mock_destination):
+        """Files inside a __pycache__ directory should be skipped and a
+        RuntimeWarning emitted describing the skipped file.
+        """
+        top_pycache_path = "__pycache__/bad.cpython-312.pyc"
+        top_good_path = "good.py"
+        sub_pycache_path = "fancy/__pycache__/bad.cpython-312.pyc"
+        sub_good_path = "fancy/good.py"
+
+        # Create a fake wheel
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                top_pycache_path: b"""\
+                        # compiled bytecode
+                    """,
+                top_good_path: b"""\
+                        # good source file
+                    """,
+                sub_pycache_path: b"""\
+                    # compiled bytecode
+                """,
+                sub_good_path: b"""\
+                    # good source file
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+
+        # Installing should warn and skip the __pycache__ files.
+        with pytest.warns(RuntimeWarning) as record:
+            install(
+                source=source,
+                destination=mock_destination,
+                additional_metadata={},
+            )
+
+        # Ensure warnings mentioning the __pycache__ paths were emitted.
+        messages = [str(w.message) for w in record]
+        assert len(messages) == 2
+        assert any(top_pycache_path in m for m in messages)
+        assert any(sub_pycache_path in m for m in messages)
+
+        # Ensure write_file was not called for the __pycache__ paths.
+        written_files = {
+            kwargs.get("path")
+            for __, kwargs in mock_destination.write_file.call_args_list
+        }
+        assert top_good_path in written_files
+        assert sub_good_path in written_files
+        assert top_pycache_path not in written_files
+        assert sub_pycache_path not in written_files
+
+        # Ensure finalize_installation's records do not include __pycache__ paths.
+        assert mock_destination.finalize_installation.called
+        records = mock_destination.finalize_installation.call_args[1]["records"]
+        record_paths = {
+            rec.path if isinstance(rec, RecordEntry) else rec[0] for __, rec in records
+        }
+        assert top_good_path in record_paths
+        assert sub_good_path in record_paths
+        assert top_pycache_path not in record_paths
+        assert sub_pycache_path not in record_paths

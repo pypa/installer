@@ -1,7 +1,9 @@
 """Core wheel installation logic."""
 
 import posixpath
+import warnings
 from io import BytesIO
+from pathlib import Path
 from typing import cast
 
 from installer.destinations import WheelDestination
@@ -98,6 +100,19 @@ def install(
         path = source_record.path
         # Skip the RECORD, which is written at the end, based on this info.
         if path == record_file_path:
+            continue
+
+        if "__pycache__" in Path(path).parts[:-1]:
+            warnings.warn(
+                (
+                    f"Skip installing {path} from {source.distribution}."
+                    " Installing files in a __pycache__ directory poses a security risk."
+                    " __pycache__ directories should not be included in wheels."
+                    f" This is probably an issue in the build process of '{source.distribution}'."
+                ),
+                RuntimeWarning,
+                stacklevel=2,
+            )
             continue
 
         # Figure out where to write this file.
