@@ -65,16 +65,6 @@ WheelFilename = namedtuple(
     "WheelFilename", ["distribution", "version", "build_tag", "tag"]
 )
 
-# Adapted from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L90
-_ENTRYPOINT_REGEX = re.compile(
-    r"""
-    (?P<module>[\w.]+)\s*
-    (:\s*(?P<attrs>[\w.]+))\s*
-    (?P<extras>\[.*\])?\s*$
-    """,
-    re.VERBOSE | re.UNICODE,
-)
-
 # According to https://www.python.org/dev/peps/pep-0427/#id7
 SCHEME_NAMES = cast("AllSchemes", ("purelib", "platlib", "headers", "scripts", "data"))
 
@@ -244,16 +234,19 @@ def parse_entrypoints(text: str) -> Iterable[tuple[str, str, str, "ScriptSection
 
         for name, value in config.items(section):
             assert isinstance(name, str)
-            match = _ENTRYPOINT_REGEX.match(value)
-            assert match
+            assert ":" in value
 
-            module = match.group("module")
-            assert isinstance(module, str)
+            module, attrs = [x.strip() for x in value.split(":", 1)]
+            assert all(x.isidentifier() for x in module.split(".")), (
+                f"{module} are not all valid identifiers"
+            )
 
-            attrs = match.group("attrs")
+            if "[" in attrs and "]" in attrs:
+                attrs, extras = [x.strip() for x in attrs.split("[", 1)]
+
             # TODO: make this a proper error, which can be caught.
-            assert attrs is not None
-            assert isinstance(attrs, str)
+            assert len(attrs), "Attributes are empty"
+            assert attrs.isidentifier(), f"{attrs} is not a valid identifier"
 
             script_section = cast("ScriptSection", section[: -len("_scripts")])
 
