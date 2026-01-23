@@ -7,7 +7,7 @@ import zipfile
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from importlib.resources import files
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from installer import _scripts
 
@@ -66,7 +66,7 @@ class Script:
     are ``"gui"`` and ``"console"``.
     """
 
-    def _get_launcher_data(self, kind: "LauncherKind") -> Optional[bytes]:
+    def _get_launcher_data(self, kind: "LauncherKind") -> bytes | None:
         if kind == "posix":
             return None
         key = (self.section, kind)

@@ -11,7 +11,6 @@ from typing import (
     TYPE_CHECKING,
     BinaryIO,
     ClassVar,
-    Optional,
     cast,
 )
 
@@ -135,7 +134,7 @@ class _WheelFileValidationError(ValueError, InstallerError):
 class _WheelFileBadDistInfo(ValueError, InstallerError):
     """Raised when a wheel file has issues around `.dist-info`."""
 
-    def __init__(self, *, reason: str, filename: Optional[str], dist_info: str) -> None:
+    def __init__(self, *, reason: str, filename: str | None, dist_info: str) -> None:
         super().__init__(reason)
         self.reason = reason
         self.filename = filename
@@ -285,10 +284,7 @@ class WheelFile(WheelSource):
                         f"In {self._zipfile.filename}, entry in RECORD file for "
                         f"{item.filename} is invalid: {issue}"
                     )
-
-                # coverage on Windows and python < 3.10 claims that the next line is not
-                # reached, pragma to deal with this false positive.
-                continue  # pragma: no cover
+                continue
 
             if item.filename == f"{self.dist_info_dir}/RECORD":
                 # Assert that RECORD doesn't have size and hash.

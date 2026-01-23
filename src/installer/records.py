@@ -7,7 +7,7 @@ import os
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import BinaryIO, Optional, cast
+from typing import BinaryIO, cast
 
 from installer.utils import copyfileobj_with_hashing, get_stream_length
 
@@ -87,13 +87,13 @@ class RecordEntry:
     path: str
     """File's path."""
 
-    hash_: Optional[Hash]
+    hash_: Hash | None
     """Hash of the file's contents."""
 
-    size: Optional[int]
+    size: int | None
     """File's size in bytes."""
 
-    def to_row(self, path_prefix: Optional[str] = None) -> tuple[str, str, str]:
+    def to_row(self, path_prefix: str | None = None) -> tuple[str, str, str]:
         """Convert this into a 3-element tuple that can be written in a RECORD file.
 
         :param path_prefix: A prefix to attach to the path -- must end in `/`
@@ -192,7 +192,7 @@ class RecordEntry:
         if not path:
             issues.append("`path` cannot be empty")
 
-        hash_value: Optional[Hash] = None
+        hash_value: Hash | None = None
         if hash_:
             try:
                 hash_value = Hash.parse(hash_)
@@ -204,7 +204,7 @@ class RecordEntry:
 
         if size:
             try:
-                size_value: Optional[int] = int(size)
+                size_value: int | None = int(size)
             except ValueError:
                 issues.append("`size` cannot be non-integer")
         else:

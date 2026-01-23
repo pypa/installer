@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     BinaryIO,
-    Optional,
     Union,
 )
 
@@ -126,7 +125,7 @@ class SchemeDictionaryDestination(WheelDestination):
     used to generate it.
     """
 
-    destdir: Optional[str] = None
+    destdir: str | None = None
     """
     A staging directory in which to write all files. This is expected to be the
     filesystem root at runtime, so embedded paths will be written as though
@@ -265,7 +264,7 @@ class SchemeDictionaryDestination(WheelDestination):
         :param records: entries to write to the ``RECORD`` file
         """
 
-        def prefix_for_scheme(file_scheme: str) -> Optional[str]:
+        def prefix_for_scheme(file_scheme: str) -> str | None:
             if file_scheme == scheme:
                 return None
             if _WINDOWS:  # pragma: no cover
