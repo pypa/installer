@@ -23,7 +23,7 @@ more code reuse opportunities.
 One of the benefits of this fully described interface is the possibility to
 decouple the implementation of additional validation on wheels (such as
 validating the RECORD entries in a wheel match the actual contents of the wheel,
-or enforcing signing requirements) based on what the specific usecase demands.
+or enforcing signing requirements) based on what the specific use case demands.
 
 ## WheelDestination
 

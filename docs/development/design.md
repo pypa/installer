@@ -4,7 +4,7 @@
 
 This project is born out of [this discussion][1]. Effectively, the volunteers
 who maintain the Python packaging toolchain identified a need for a library in
-the ecology that handles the details of "wheel -> installed package". This is
+the ecosystem that handles the details of "wheel -> installed package". This is
 that library.
 
 There's also a need for “a fast tool to populate a package into an environment”
@@ -17,6 +17,6 @@ and this library can be used to build that. This package itself might also
 
 - Abstractions for installation of a wheel distribution.
 - Utilities for writing concrete implementations of these abstractions.
-- Concrete implementations of these abstraction, for the most common usecase.
+- Concrete implementations of these abstraction, for the most common use case.
 - Utilities for handling wheel RECORD files.
 - Utilities for generating Python script launchers.

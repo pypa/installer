@@ -1,6 +1,6 @@
 # License
 
-This project's source code and documentation is under the following license:
+This project's source code and documentation are under the following license:
 
 ```{include} ../LICENSE
 

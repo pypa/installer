@@ -5,7 +5,7 @@ contributions and greatly appreciate your effort!
 
 ## Code of Conduct
 
-Everyone interacting in the pip project's codebases, issue trackers, chat rooms,
+Everyone interacting in the installer project's codebases, issue trackers, chat rooms,
 and mailing lists is expected to follow the [PyPA Code of Conduct][coc].
 
 [coc]: https://www.pypa.io/en/latest/code-of-conduct/
