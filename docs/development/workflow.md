@@ -69,10 +69,10 @@ Run the tests against all supported Python versions, if an interpreter for that
 version is available locally.
 
 ```sh
-nox -s test-3.9
+nox -s test-3.14
 ```
 
-Run the tests against Python 3.9. It is also possible to specify other supported
+Run the tests against Python 3.14. It is also possible to specify other supported
 Python versions (like `3.12` or `pypy3`).
 
 ### Documentation

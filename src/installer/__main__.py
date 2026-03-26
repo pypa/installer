@@ -5,7 +5,6 @@ import os.path
 import sys
 import sysconfig
 from collections.abc import Sequence
-from typing import Optional
 
 import installer
 from installer.destinations import SchemeDictionaryDestination
@@ -61,7 +60,7 @@ def _get_main_parser() -> argparse.ArgumentParser:
 
 
 def _get_scheme_dict(
-    distribution_name: str, prefix: Optional[str] = None
+    distribution_name: str, prefix: str | None = None
 ) -> dict[str, str]:
     """Calculate the scheme dictionary for the current Python environment."""
     vars = {}
@@ -84,7 +83,7 @@ def _get_scheme_dict(
     return scheme_dict
 
 
-def _main(cli_args: Sequence[str], program: Optional[str] = None) -> None:
+def _main(cli_args: Sequence[str], program: str | None = None) -> None:
     """Process arguments and perform the install."""
     parser = _get_main_parser()
     if program:

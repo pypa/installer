@@ -189,5 +189,7 @@ class TestSchemeDictionaryDestination:
         )
         assert all(
             real.endswith(expected)
-            for real, expected in zip(data.split(b"\n"), expected_data.split(b"\n"))
+            for real, expected in zip(
+                data.split(b"\n"), expected_data.split(b"\n"), strict=True
+            )
         )

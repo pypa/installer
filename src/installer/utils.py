@@ -9,7 +9,7 @@ import os
 import re
 import sys
 from collections import namedtuple
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from configparser import ConfigParser
 from email.message import Message
 from email.parser import FeedParser
@@ -18,9 +18,7 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     BinaryIO,
-    Callable,
     NewType,
-    Optional,
     cast,
 )
 
@@ -205,7 +203,7 @@ def fix_shebang(stream: BinaryIO, interpreter: str) -> Iterator[BinaryIO]:
 
 def construct_record_file(
     records: Iterable[tuple[Scheme, "RecordEntry"]],
-    prefix_for_scheme: Callable[[Scheme], Optional[str]] = lambda _: None,
+    prefix_for_scheme: Callable[[Scheme], str | None] = lambda _: None,
 ) -> BinaryIO:
     """Construct a RECORD file.
 
