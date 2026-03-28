@@ -133,7 +133,7 @@ class RecordEntry:
         """Validate that ``data`` matches this instance.
 
         .. attention::
-            .. deprecated:: 0.8.0
+            .. deprecated:: 1.0.0
                 Use :py:meth:`validate_stream` instead, with ``BytesIO(data)``.
 
         :param data: Contents of the file corresponding to this instance.
