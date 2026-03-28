@@ -193,3 +193,7 @@ class TestSchemeDictionaryDestination:
                 data.split(b"\n"), expected_data.split(b"\n"), strict=True
             )
         )
+
+    def test_blocking_path_traversal(self, destination):
+        with pytest.raises(ValueError):
+            destination._path_with_destdir("purelib", "subdir/../../outside.txt")
