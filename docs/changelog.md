@@ -1,5 +1,32 @@
 # Changelog
 
+## v1.0.0 (Mar 28, 2025)
+
+- Drop support for Python 3.9, 3.8, and 3.7 (#305, #242, #206)
+- Add support and Python 3.13 and 3.14 (#201, #282)
+- Add `--overwrite-existing` CLI option (#216)
+- Add `--validate-record` CLI option (#161)
+- Support installing multiple wheels (#203)
+- Handle invalid hash algorithms (#179)
+- Stream-based validation instead of in-memory (#98)
+- Add validate_stream methods (#99)
+- Consolidate and refine validation APIs (#108, #111)
+- Sort entries before writing RECORD (#245)
+- Do not install __pycache__ from wheels (#307)
+- Fix a path traversal bug (#317)
+- Update launcher scripts and Windows behavior (#212, #181)
+- Fix Windows relpath bug (#286)
+- Migrate to dataclasses (#200)
+- Use cached_property for memoization (#243)
+- Refactor installer.scripts (#239)
+- Decouple test modules (#104)
+- Avoid cross-module imports from .utils (#102)
+- Lazy imports for performance (#226)
+- Complete type annotations and enforce strict mypy (#173)
+- Deprecate RecordEntry.validate (#186)
+- Fix documentation typos and grammar (#309, #210)
+- Improve docstrings and internal documentation (#100)
+
 ## v0.7.0 (Mar 17, 2023)
 
 - Improve handling of non-normalized `.dist-info` folders (#168)
