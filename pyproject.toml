@@ -27,6 +27,12 @@ dynamic = [
 [project.urls]
 "GitHub" = "https://github.com/pypa/installer"
 
+[tool.flit.sdist]
+include = [
+    "docs/",
+    "tests/",
+]
+
 [tool.ruff]
 fix = true
 extend-exclude = [
