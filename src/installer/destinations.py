@@ -19,6 +19,7 @@ from installer.utils import (
     construct_record_file,
     copyfileobj_with_hashing,
     fix_shebang,
+    is_relative_to,
     make_file_executable,
 )
 
@@ -139,7 +140,7 @@ class SchemeDictionaryDestination(WheelDestination):
         target_dir = Path(self.scheme_dict[scheme]).resolve()
         file = (target_dir / path).resolve()
 
-        if not file.is_relative_to(target_dir):
+        if not is_relative_to(file, target_dir):
             raise ValueError(
                 f"Attempting to write {path} outside of the target directory"
             )
