@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.0 (Mar 28, 2025)
+## v1.0.0 (Mar 28, 2026)
 
 - Drop support for Python 3.9, 3.8, and 3.7 (#305, #242, #206)
 - Add support and Python 3.13 and 3.14 (#201, #282)
