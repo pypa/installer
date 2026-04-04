@@ -2,6 +2,7 @@
 
 import io
 import os
+import shutil
 from collections.abc import Collection, Iterable
 from dataclasses import dataclass
 from pathlib import Path
@@ -74,6 +75,26 @@ class WheelDestination:
             >>> with open("__init__.py") as stream:
             ...     dest.write_file("purelib", "pkg/__init__.py", stream)
 
+        """
+        raise NotImplementedError
+
+    def write_file_no_record(
+        self,
+        scheme: Scheme,
+        path: Union[str, "os.PathLike[str]"],
+        stream: BinaryIO,
+        is_executable: bool,
+    ) -> None:
+        """Write a file to correct ``path`` within the ``scheme``, without recording.
+
+        Like :py:meth:`write_file`, but does not need to return a
+        :py:class:`~installer.records.RecordEntry`.  Implementations may skip
+        hash computation for better performance.
+
+        :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
+        :param path: path within that scheme
+        :param stream: contents of the file
+        :param is_executable: whether the file should be made executable
         """
         raise NotImplementedError
 
@@ -211,6 +232,37 @@ class SchemeDictionaryDestination(WheelDestination):
                 )
 
         return self.write_to_fs(scheme, path_, stream, is_executable)
+
+    def write_file_no_record(
+        self,
+        scheme: Scheme,
+        path: Union[str, "os.PathLike[str]"],
+        stream: BinaryIO,
+        is_executable: bool,
+    ) -> None:
+        """Write a file without computing a hash or returning a record entry.
+
+        :param scheme: scheme to write the file in (like "purelib", "platlib" etc).
+        :param path: path within that scheme
+        :param stream: contents of the file
+        :param is_executable: whether the file should be made executable
+
+        - Ensures that an existing file is not being overwritten.
+        """
+        target_path = self._path_with_destdir(scheme, os.fspath(path))
+        if not self.overwrite_existing and target_path.exists():
+            message = f"File already exists: {target_path!s}"
+            raise FileExistsError(message)
+
+        parent_folder = target_path.parent
+        if not parent_folder.exists():
+            parent_folder.mkdir(parents=True)
+
+        with target_path.open("wb") as f:
+            shutil.copyfileobj(stream, f)
+
+        if is_executable:
+            make_file_executable(target_path)
 
     def write_script(
         self, name: str, module: str, attr: str, section: "ScriptSection"
