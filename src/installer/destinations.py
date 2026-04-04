@@ -34,6 +34,8 @@ class WheelDestination:
     (re)writing.
     """
 
+    hash_algorithm: str = "sha256"
+
     def write_script(
         self, name: str, module: str, attr: str, section: "ScriptSection"
     ) -> RecordEntry:
