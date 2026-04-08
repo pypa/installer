@@ -270,31 +270,3 @@ def _current_umask() -> int:
 def make_file_executable(path: Path) -> None:
     """Make the file at the provided path executable."""
     path.chmod(0o777 & ~_current_umask() | 0o111)
-
-
-# Borrowed from:
-# https://github.com/python-poetry/poetry/blob/95cd84c149a14b55ae8e41328bc6752fbb8b6883/src/poetry/utils/_compat.py#L56
-def is_relative_to(path1: Path, path2: Path) -> bool:
-    """Check if path1 is relative to path2.
-
-    Works also if one of both paths has a Windows long path prefix.
-    A long path prefix may be added when calling Path.resolve().
-    """
-    if _WINDOWS:  # pragma: no cover
-        # Work around an issue that is_relative_to() does not work if
-        # one of both paths has a long path prefix and the other path has not.
-        long_path_prefix = "\\\\?\\"
-        long_path_unc_prefix = f"{long_path_prefix}UNC\\"
-
-        def remove_long_path_prefix(path: Path) -> Path:
-            if (path_str := str(path)).startswith(long_path_prefix):
-                if path_str.startswith(long_path_unc_prefix):
-                    path = Path("\\\\" + path_str.removeprefix(long_path_unc_prefix))
-                else:
-                    path = Path(path_str.removeprefix(long_path_prefix))
-            return path
-
-        path1 = remove_long_path_prefix(path1)
-        path2 = remove_long_path_prefix(path2)
-
-    return path1.is_relative_to(path2)
