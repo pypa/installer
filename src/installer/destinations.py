@@ -155,7 +155,10 @@ class SchemeDictionaryDestination(WheelDestination):
             )
 
         if self.destdir is not None:
-            rel_path = file.relative_to(file.anchor)
+            # When using destdir, construct the path from the original (non-absolute)
+            # scheme paths so that symlinked scheme directories are preserved correctly.
+            orig_dir = Path(self.scheme_dict[scheme])
+            rel_path = (orig_dir / path).relative_to(orig_dir.anchor)
             return Path(self.destdir) / rel_path
         return file
 
