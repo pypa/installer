@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.1 (May 11, 2026)
+- Include docs and tests in sdist again (#322)
+- Fix long path issue on Windows (#321)
+- Fix date in changelog (#324)
+- Use `os.path.abspath()` instead of `Path.resolve()` for performance (#326)
+
 ## v1.0.0 (Mar 28, 2026)
 
 - Drop support for Python 3.9, 3.8, and 3.7 (#305, #242, #206)
