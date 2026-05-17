@@ -1,14 +1,17 @@
 import hashlib
 import textwrap
 from io import BytesIO
+from pathlib import Path
 from unittest import mock
 
 import pytest
 
 from installer import install
+from installer.destinations import SchemeDictionaryDestination
 from installer.exceptions import InvalidWheelSource
 from installer.records import RecordEntry
 from installer.sources import WheelSource
+from installer.utils import SCHEME_NAMES
 
 
 # --------------------------------------------------------------------------------------
@@ -22,13 +25,18 @@ def hash_and_size(data):
 def mock_destination():
     retval = mock.Mock()
 
+    class MockScriptRecord(tuple):
+        @property
+        def path(self):
+            return self[0]
+
     # A hacky approach to making sure we got the right objects going in.
     def custom_write_file(scheme, path, stream, is_executable):
         assert isinstance(stream, BytesIO)
         return (path, scheme, 0)
 
     def custom_write_script(name, module, attr, section):
-        return (name, module, attr, section)
+        return MockScriptRecord((name, module, attr, section))
 
     retval.write_file.side_effect = custom_write_file
     retval.write_script.side_effect = custom_write_script
@@ -987,3 +995,102 @@ class TestInstall:
         assert sub_good_path in record_paths
         assert top_pycache_path not in record_paths
         assert sub_pycache_path not in record_paths
+
+    def test_skips_script_when_entrypoint_has_same_name(self, mock_destination):
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy-1.0.0.data/scripts/fancy": b"""\
+                    #!/usr/bin/env python
+                    print("script")
+                """,
+                "fancy-1.0.0.data/scripts/fancy-extra": b"""\
+                    #!/usr/bin/env python
+                    print("other script")
+                """,
+            },
+            dist_info_files={
+                "entry_points.txt": b"""\
+                    [console_scripts]
+                    fancy = fancy:main
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+
+        with pytest.warns(RuntimeWarning, match="generated from an entry point"):
+            install(
+                source=source,
+                destination=mock_destination,
+                additional_metadata={},
+            )
+
+        written_files = {
+            (kwargs["scheme"], kwargs["path"])
+            for __, kwargs in mock_destination.write_file.call_args_list
+        }
+        assert ("scripts", "fancy") not in written_files
+        assert ("scripts", "fancy-extra") in written_files
+
+        records = mock_destination.finalize_installation.call_args[1]["records"]
+        script_record_paths = [
+            rec.path if isinstance(rec, RecordEntry) else rec[0]
+            for scheme, rec in records
+            if scheme == "scripts"
+        ]
+        assert script_record_paths == ["fancy", "fancy-extra"]
+
+    def test_script_entrypoint_conflict_does_not_overwrite_script(self, tmp_path):
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy-1.0.0.data/scripts/fancy": b"""\
+                    #!/usr/bin/env python
+                    print("wheel script")
+                """,
+            },
+            dist_info_files={
+                "entry_points.txt": b"""\
+                    [console_scripts]
+                    fancy = fancy:main
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+        scheme_dict = {}
+        for scheme in SCHEME_NAMES:
+            path = tmp_path / scheme
+            path.mkdir()
+            scheme_dict[scheme] = str(path)
+        destination = SchemeDictionaryDestination(scheme_dict, "/my/python", "posix")
+
+        with pytest.warns(RuntimeWarning, match="generated from an entry point"):
+            install(source=source, destination=destination, additional_metadata={})
+
+        script_path = Path(scheme_dict["scripts"]) / "fancy"
+        assert script_path.exists()
+        script_contents = script_path.read_bytes()
+        assert b"from fancy import main" in script_contents
+        assert b"wheel script" not in script_contents
