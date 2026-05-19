@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+import installer.records
 from installer.records import Hash, InvalidRecordEntry, RecordEntry, parse_record_file
 
 
@@ -175,6 +176,34 @@ class TestRecordEntry:
             ]
         )
         assert record.to_row("prefix/") == expected_row
+
+    def test_string_representation_with_backslash_path(self, monkeypatch):
+        monkeypatch.setattr(installer.records.os, "sep", "/")
+        record = RecordEntry.from_elements(
+            r"distribution-1.0.dist-info\RECORD",
+            "",
+            "",
+        )
+
+        assert record.to_row() == (
+            "distribution-1.0.dist-info/RECORD",
+            "",
+            "",
+        )
+
+    def test_string_representation_with_backslash_path_and_prefix(self, monkeypatch):
+        monkeypatch.setattr(installer.records.os, "sep", "/")
+        record = RecordEntry.from_elements(
+            r"bin\script.py",
+            "",
+            "",
+        )
+
+        assert record.to_row("prefix/") == (
+            "prefix/bin/script.py",
+            "",
+            "",
+        )
 
     def test_equality(self):
         record = RecordEntry.from_elements(
