@@ -32,8 +32,8 @@ Scheme = NewType("Scheme", str)
 AllSchemes = tuple[Scheme, ...]
 
 __all__ = [
-    "InvalidEntryPoint",
     "SCHEME_NAMES",
+    "InvalidEntryPoint",
     "WheelFilename",
     "construct_record_file",
     "copyfileobj_with_hashing",
