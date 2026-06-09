@@ -81,6 +81,7 @@ def install(
     # RECORD handling
     record_file_path = posixpath.join(source.dist_info_dir, "RECORD")
     written_records = []
+    generated_script_paths: set[str] = set()
 
     # Write the entry_points based scripts.
     if "entry_points.txt" in source.dist_info_filenames:
@@ -92,6 +93,7 @@ def install(
                 attr=attr,
                 section=section,
             )
+            generated_script_paths.add(record.path)
             written_records.append((Scheme("scripts"), record))
 
     # Write all the files from the wheel.
@@ -121,6 +123,18 @@ def install(
             source=source,
             root_scheme=root_scheme,
         )
+        if scheme == "scripts" and destination_path in generated_script_paths:
+            warnings.warn(
+                (
+                    f"Skip installing script {path} from {source.distribution}"
+                    f" because it conflicts with an entry point script named"
+                    f" {destination_path!r}."
+                ),
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            continue
+
         record = destination.write_file(
             scheme=scheme,
             path=destination_path,
