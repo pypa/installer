@@ -259,7 +259,9 @@ class WheelFile(WheelSource):
 
             record_args = record_mapping.pop(item.filename, None)
 
-            if item.filename.startswith(self.dist_info_dir + "/") and item.filename.split("/")[-1] in ("RECORD.p7s", "RECORD.jws"):
+            if item.filename.startswith(
+                self.dist_info_dir + "/"
+            ) and item.filename.split("/")[-1] in ("RECORD.p7s", "RECORD.jws"):
                 # both are for digital signatures, and not mentioned in RECORD
                 if record_args is not None:
                     # Incorrectly contained
