@@ -3,7 +3,6 @@
 import posixpath
 import warnings
 from io import BytesIO
-from pathlib import Path
 from typing import cast
 
 from installer.destinations import WheelDestination
@@ -102,7 +101,7 @@ def install(
         if path == record_file_path:
             continue
 
-        if "__pycache__" in Path(path).parts[:-1]:
+        if "__pycache__" in path.split("/")[:-1]:
             warnings.warn(
                 (
                     f"Skip installing {path} from {source.distribution}."
