@@ -220,7 +220,7 @@ class WheelFile(WheelSource):
             name[len(base) + 1 :]
             for name in self._zipfile.namelist()
             if name[-1:] != "/"
-            if base == posixpath.commonprefix([name, base])
+            if name.startswith(base + "/")
         ]
 
     def read_dist_info(self, filename: str) -> str:
@@ -259,8 +259,8 @@ class WheelFile(WheelSource):
 
             record_args = record_mapping.pop(item.filename, None)
 
-            if self.dist_info_dir == posixpath.commonprefix(
-                [self.dist_info_dir, item.filename]
+            if item.filename.startswith(
+                self.dist_info_dir + "/"
             ) and item.filename.split("/")[-1] in ("RECORD.p7s", "RECORD.jws"):
                 # both are for digital signatures, and not mentioned in RECORD
                 if record_args is not None:
