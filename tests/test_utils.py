@@ -10,6 +10,7 @@ import pytest
 
 from installer.records import RecordEntry
 from installer.utils import (
+    InvalidEntryPoint,
     WheelFilename,
     canonicalize_name,
     construct_record_file,
@@ -264,3 +265,36 @@ class TestParseEntryPoints:
     def test_valid(self, script, expected):
         iterable = parse_entrypoints(textwrap.dedent(script))
         assert list(iterable) == expected, expected
+
+    @pytest.mark.parametrize(
+        ("script", "expected_name", "expected_value"),
+        [
+            pytest.param(
+                """
+                    [console_scripts]
+                    package = package-main:main
+                """,
+                "package",
+                "package-main:main",
+                id="invalid-module",
+            ),
+            pytest.param(
+                """
+                    [console_scripts]
+                    package = package.__main__
+                """,
+                "package",
+                "package.__main__",
+                id="missing-attribute",
+            ),
+        ],
+    )
+    def test_invalid(self, script, expected_name, expected_value):
+        with pytest.raises(InvalidEntryPoint) as ctx:
+            list(parse_entrypoints(textwrap.dedent(script)))
+
+        assert ctx.value.section == "console_scripts"
+        assert ctx.value.name == expected_name
+        assert ctx.value.value == expected_value
+        assert expected_name in str(ctx.value)
+        assert expected_value in str(ctx.value)
