@@ -8,7 +8,7 @@ import pytest
 from installer import install
 from installer.exceptions import InvalidWheelSource
 from installer.records import RecordEntry
-from installer.sources import WheelSource
+from installer.sources import WheelFile, WheelSource
 
 
 # --------------------------------------------------------------------------------------
@@ -779,6 +779,35 @@ class TestInstall:
                     ],
                 ),
             ]
+        )
+
+    def test_handles_wheel_data_dir_with_build_tag(self, fancy_wheel_with_build_tag):
+        destination = mock.Mock()
+
+        def custom_write_file(scheme, path, stream, is_executable):
+            stream.read()
+            return (path, scheme, 0)
+
+        destination.write_file.side_effect = custom_write_file
+        destination.write_script.side_effect = lambda name, module, attr, section: (
+            name,
+            module,
+            attr,
+            section,
+        )
+
+        with WheelFile.open(fancy_wheel_with_build_tag) as source:
+            install(
+                source=source,
+                destination=destination,
+                additional_metadata={},
+            )
+
+        destination.write_file.assert_any_call(
+            scheme="data",
+            path="fancy/data.py",
+            stream=mock.ANY,
+            is_executable=False,
         )
 
     def test_errors_out_when_given_invalid_scheme_in_data(self, mock_destination):
