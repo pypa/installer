@@ -1,6 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Skip installing legacy scripts from wheels when an entry point has already
+  generated a script at the same path (#315)
+
 ## v1.0.1 (May 11, 2026)
+
 - Include docs and tests in sdist again (#322)
 - Fix long path issue on Windows (#321)
 - Fix date in changelog (#324)

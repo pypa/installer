@@ -781,6 +781,76 @@ class TestInstall:
             ]
         )
 
+    def test_skips_data_script_if_entrypoint_writes_same_path(self, mock_destination):
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy-1.0.0.data/scripts/fancy": b"""\
+                    # legacy script with same name as the entry point
+                """,
+            },
+            dist_info_files={
+                "entry_points.txt": b"""\
+                    [console_scripts]
+                    fancy = fancy:main
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+
+        with pytest.warns(RuntimeWarning, match="same path as an entry point"):
+            install(
+                source=source,
+                destination=mock_destination,
+                additional_metadata={},
+            )
+
+        assert mock_destination.write_file.call_args_list == [
+            mock.call(
+                scheme="purelib",
+                path="fancy-1.0.0.dist-info/METADATA",
+                stream=mock.ANY,
+                is_executable=False,
+            ),
+            mock.call(
+                scheme="purelib",
+                path="fancy-1.0.0.dist-info/WHEEL",
+                stream=mock.ANY,
+                is_executable=False,
+            ),
+            mock.call(
+                scheme="purelib",
+                path="fancy-1.0.0.dist-info/entry_points.txt",
+                stream=mock.ANY,
+                is_executable=False,
+            ),
+        ]
+        mock_destination.finalize_installation.assert_called_once_with(
+            scheme="purelib",
+            record_file_path="fancy-1.0.0.dist-info/RECORD",
+            records=[
+                ("scripts", ("fancy", "fancy", "main", "console")),
+                ("purelib", ("fancy-1.0.0.dist-info/METADATA", "purelib", 0)),
+                ("purelib", ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0)),
+                (
+                    "purelib",
+                    ("fancy-1.0.0.dist-info/entry_points.txt", "purelib", 0),
+                ),
+                ("purelib", RecordEntry("fancy-1.0.0.dist-info/RECORD", None, None)),
+            ],
+        )
+
     def test_errors_out_when_given_invalid_scheme_in_data(self, mock_destination):
         # Create a fake wheel
         source = FakeWheelSource(
