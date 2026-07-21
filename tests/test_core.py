@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import textwrap
 from io import BytesIO
@@ -7,7 +8,7 @@ import pytest
 
 from installer import install
 from installer.exceptions import InvalidWheelSource
-from installer.records import RecordEntry
+from installer.records import Hash, RecordEntry
 from installer.sources import WheelSource
 
 
@@ -15,7 +16,14 @@ from installer.sources import WheelSource
 # Helpers
 # --------------------------------------------------------------------------------------
 def hash_and_size(data):
-    return hashlib.sha256(data).hexdigest(), len(data)
+    digest = hashlib.sha256(data).digest()
+    hash_ = base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
+    return hash_, len(data)
+
+
+def _re(path):
+    """Build expected RecordEntry matching on path only (hash/size lenient)."""
+    return RecordEntry(path, Hash("sha256", mock.ANY), mock.ANY)
 
 
 @pytest.fixture
@@ -25,13 +33,16 @@ def mock_destination():
     # A hacky approach to making sure we got the right objects going in.
     def custom_write_file(scheme, path, stream, is_executable):
         assert isinstance(stream, BytesIO)
-        return (path, scheme, 0)
+        data = stream.read()
+        hash_value, size = hash_and_size(data)
+        return RecordEntry(path, Hash("sha256", hash_value), size)
 
     def custom_write_script(name, module, attr, section):
         return (name, module, attr, section)
 
     retval.write_file.side_effect = custom_write_file
     retval.write_script.side_effect = custom_write_script
+    retval.hash_algorithm = "sha256"
 
     return retval
 
@@ -214,21 +225,21 @@ class TestInstall:
                     records=[
                         ("scripts", ("fancy", "fancy", "main", "console")),
                         ("scripts", ("fancy-gui", "fancy", "main", "gui")),
-                        ("purelib", ("fancy/__init__.py", "purelib", 0)),
-                        ("purelib", ("fancy/__main__.py", "purelib", 0)),
-                        ("purelib", ("fancy-1.0.0.dist-info/METADATA", "purelib", 0)),
-                        ("purelib", ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0)),
+                        ("purelib", _re("fancy/__init__.py")),
+                        ("purelib", _re("fancy/__main__.py")),
+                        ("purelib", _re("fancy-1.0.0.dist-info/METADATA")),
+                        ("purelib", _re("fancy-1.0.0.dist-info/WHEEL")),
                         (
                             "purelib",
-                            ("fancy-1.0.0.dist-info/entry_points.txt", "purelib", 0),
+                            _re("fancy-1.0.0.dist-info/entry_points.txt"),
                         ),
                         (
                             "purelib",
-                            ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
+                            _re("fancy-1.0.0.dist-info/top_level.txt"),
                         ),
                         (
                             "purelib",
-                            ("fancy-1.0.0.dist-info/fun_file.txt", "purelib", 0),
+                            _re("fancy-1.0.0.dist-info/fun_file.txt"),
                         ),
                         (
                             "purelib",
@@ -330,17 +341,17 @@ class TestInstall:
                     scheme="purelib",
                     record_file_path="fancy-1.0.0.dist-info/RECORD",
                     records=[
-                        ("purelib", ("fancy/__init__.py", "purelib", 0)),
-                        ("purelib", ("fancy/__main__.py", "purelib", 0)),
-                        ("purelib", ("fancy-1.0.0.dist-info/METADATA", "purelib", 0)),
-                        ("purelib", ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0)),
+                        ("purelib", _re("fancy/__init__.py")),
+                        ("purelib", _re("fancy/__main__.py")),
+                        ("purelib", _re("fancy-1.0.0.dist-info/METADATA")),
+                        ("purelib", _re("fancy-1.0.0.dist-info/WHEEL")),
                         (
                             "purelib",
-                            ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
+                            _re("fancy-1.0.0.dist-info/top_level.txt"),
                         ),
                         (
                             "purelib",
-                            ("fancy-1.0.0.dist-info/fun_file.txt", "purelib", 0),
+                            _re("fancy-1.0.0.dist-info/fun_file.txt"),
                         ),
                         (
                             "purelib",
@@ -469,21 +480,21 @@ class TestInstall:
                     records=[
                         ("scripts", ("fancy", "fancy", "main", "console")),
                         ("scripts", ("fancy-gui", "fancy", "main", "gui")),
-                        ("platlib", ("fancy/__init__.py", "platlib", 0)),
-                        ("platlib", ("fancy/__main__.py", "platlib", 0)),
-                        ("platlib", ("fancy-1.0.0.dist-info/METADATA", "platlib", 0)),
-                        ("platlib", ("fancy-1.0.0.dist-info/WHEEL", "platlib", 0)),
+                        ("platlib", _re("fancy/__init__.py")),
+                        ("platlib", _re("fancy/__main__.py")),
+                        ("platlib", _re("fancy-1.0.0.dist-info/METADATA")),
+                        ("platlib", _re("fancy-1.0.0.dist-info/WHEEL")),
                         (
                             "platlib",
-                            ("fancy-1.0.0.dist-info/entry_points.txt", "platlib", 0),
+                            _re("fancy-1.0.0.dist-info/entry_points.txt"),
                         ),
                         (
                             "platlib",
-                            ("fancy-1.0.0.dist-info/top_level.txt", "platlib", 0),
+                            _re("fancy-1.0.0.dist-info/top_level.txt"),
                         ),
                         (
                             "platlib",
-                            ("fancy-1.0.0.dist-info/fun_file.txt", "platlib", 0),
+                            _re("fancy-1.0.0.dist-info/fun_file.txt"),
                         ),
                         (
                             "platlib",
@@ -756,21 +767,21 @@ class TestInstall:
                     records=[
                         ("scripts", ("fancy", "fancy", "main", "console")),
                         ("scripts", ("fancy-gui", "fancy", "main", "gui")),
-                        ("data", ("fancy/data.py", "data", 0)),
-                        ("headers", ("fancy/headers.py", "headers", 0)),
-                        ("platlib", ("fancy/platlib.py", "platlib", 0)),
-                        ("purelib", ("fancy/purelib.py", "purelib", 0)),
-                        ("scripts", ("fancy/scripts.py", "scripts", 0)),
-                        ("purelib", ("fancy/__init__.py", "purelib", 0)),
-                        ("purelib", ("fancy-1.0.0.dist-info/METADATA", "purelib", 0)),
-                        ("purelib", ("fancy-1.0.0.dist-info/WHEEL", "purelib", 0)),
+                        ("data", _re("fancy/data.py")),
+                        ("headers", _re("fancy/headers.py")),
+                        ("platlib", _re("fancy/platlib.py")),
+                        ("purelib", _re("fancy/purelib.py")),
+                        ("scripts", _re("fancy/scripts.py")),
+                        ("purelib", _re("fancy/__init__.py")),
+                        ("purelib", _re("fancy-1.0.0.dist-info/METADATA")),
+                        ("purelib", _re("fancy-1.0.0.dist-info/WHEEL")),
                         (
                             "purelib",
-                            ("fancy-1.0.0.dist-info/entry_points.txt", "purelib", 0),
+                            _re("fancy-1.0.0.dist-info/entry_points.txt"),
                         ),
                         (
                             "purelib",
-                            ("fancy-1.0.0.dist-info/top_level.txt", "purelib", 0),
+                            _re("fancy-1.0.0.dist-info/top_level.txt"),
                         ),
                         (
                             "purelib",
@@ -872,9 +883,12 @@ class TestInstall:
                 """,
             },
         )
-        all_contents = list(source.get_contents())
+        all_contents = [
+            (record, stream.read(), is_exec)
+            for record, stream, is_exec in source.get_contents()
+        ]
         source.get_contents = lambda: (
-            (*contents, True) for (*contents, _) in all_contents
+            (record, BytesIO(data), True) for record, data, _ in all_contents
         )
         install(
             source=source,
@@ -987,3 +1001,193 @@ class TestInstall:
         assert sub_good_path in record_paths
         assert top_pycache_path not in record_paths
         assert sub_pycache_path not in record_paths
+
+    def test_returns_empty_mismatches_when_hashes_match(self, mock_destination):
+        """When the wheel's RECORD matches installed content, return []."""
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    def main():
+                        print("I'm a fancy package")
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+
+        mismatches = install(
+            source=source,
+            destination=mock_destination,
+            additional_metadata={},
+        )
+
+        assert mismatches == []
+
+    def test_returns_mismatches_for_corrupted_content(self, mock_destination):
+        """When installed content differs from the wheel's RECORD, report it."""
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    def main():
+                        print("I'm a fancy package")
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+
+        # Corrupt get_contents: inject different data than what RECORD expects.
+        original_get_contents = source.get_contents
+
+        def corrupted_get_contents():
+            for record, stream, is_exec in original_get_contents():
+                if record[0] == "fancy/__init__.py":
+                    yield record, BytesIO(b"CORRUPTED"), is_exec
+                else:
+                    yield record, stream, is_exec
+
+        source.get_contents = corrupted_get_contents
+
+        mismatches = install(
+            source=source,
+            destination=mock_destination,
+            additional_metadata={},
+        )
+
+        assert len(mismatches) == 1
+        source_rec, written_rec = mismatches[0]
+        assert source_rec.path == "fancy/__init__.py"
+        assert source_rec.hash_ != written_rec.hash_
+
+    def test_no_mismatch_when_source_has_no_hash(self, mock_destination):
+        """Files without a hash in the wheel's RECORD cannot be compared."""
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    def main():
+                        print("I'm a fancy package")
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+
+        # Strip hash info from all records.
+        original_get_contents = source.get_contents
+
+        def no_hash_get_contents():
+            for record, stream, is_exec in original_get_contents():
+                yield (record[0], "", ""), stream, is_exec
+
+        source.get_contents = no_hash_get_contents
+
+        mismatches = install(
+            source=source,
+            destination=mock_destination,
+            additional_metadata={},
+        )
+
+        assert mismatches == []
+
+    def test_skips_mismatch_check_for_non_compliant_algorithm(self, mock_destination):
+        """A non-compliant hash algorithm (e.g. md5) is ignored for comparison."""
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    def main():
+                        print("I'm a fancy package")
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+
+        # Replace the sha256 record with a *wrong* md5 hash.
+        original_get_contents = source.get_contents
+
+        def wrong_md5_get_contents():
+            for record, stream, is_exec in original_get_contents():
+                if record[0] == "fancy/__init__.py":
+                    data = stream.read()
+                    yield (
+                        (record[0], "md5=AAAAAAAAAAAAAAAAAAAAAA", str(len(data))),
+                        BytesIO(data),
+                        is_exec,
+                    )
+                else:
+                    yield record, stream, is_exec
+
+        source.get_contents = wrong_md5_get_contents
+
+        mismatches = install(
+            source=source,
+            destination=mock_destination,
+            additional_metadata={},
+        )
+
+        # md5 is non-compliant, so no comparison is performed.
+        assert mismatches == []
