@@ -9,6 +9,7 @@ from installer import install
 from installer.exceptions import InvalidWheelSource
 from installer.records import RecordEntry
 from installer.sources import WheelSource
+from installer.utils import InvalidEntryPoint
 
 
 # --------------------------------------------------------------------------------------
@@ -350,6 +351,44 @@ class TestInstall:
                 ),
             ]
         )
+
+    def test_invalid_entrypoint_errors_clearly(self, mock_destination):
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"",
+            },
+            dist_info_files={
+                "entry_points.txt": b"""\
+                    [console_scripts]
+                    fancy = fancy-project:main
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+
+        with pytest.raises(InvalidEntryPoint) as ctx:
+            install(
+                source=source,
+                destination=mock_destination,
+                additional_metadata={},
+            )
+
+        assert ctx.value.section == "console_scripts"
+        assert ctx.value.name == "fancy"
+        assert ctx.value.value == "fancy-project:main"
+        assert "fancy-project:main" in str(ctx.value)
 
     def test_handles_platlib(self, mock_destination):
         # Create a fake wheel
