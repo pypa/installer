@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Use `os.path.commonpath` instead of `os.path.commonprefix` to address deprecation
+  warnings on Python 3.15 (#345)
+
 ## v1.0.1 (May 11, 2026)
 - Include docs and tests in sdist again (#322)
 - Fix long path issue on Windows (#321)
