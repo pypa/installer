@@ -232,7 +232,7 @@ def parse_entrypoints(text: str) -> Iterable[tuple[str, str, str, "ScriptSection
         name of the script, module to use, attribute to call, kind of script (cli / gui)
     """
     # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115
-    config = ConfigParser(delimiters="=")
+    config = ConfigParser(delimiters="=", strict=False)
     config.optionxform = str  # type: ignore[assignment, method-assign]
     config.read_string(text)
 
