@@ -167,6 +167,7 @@ class WheelFile(WheelSource):
 
         basename = Path(f.filename).name
         parsed_name = parse_wheel_filename(basename)
+        self._build_tag = parsed_name.build_tag
         super().__init__(
             version=parsed_name.version,
             distribution=parsed_name.distribution,
@@ -211,6 +212,14 @@ class WheelFile(WheelSource):
             )
 
         return dist_info_dir
+
+    @cached_property
+    def data_dir(self) -> str:
+        """Name of the data directory."""
+        if self._build_tag is None:
+            return super().data_dir
+
+        return f"{self.distribution}-{self.version}-{self._build_tag}.data"
 
     @property
     def dist_info_filenames(self) -> list[str]:

@@ -130,6 +130,10 @@ class TestWheelFile:
         with WheelFile.open(denorm) as source:
             assert source.dist_info_filenames
 
+    def test_build_tag_is_part_of_data_dir(self, fancy_wheel_with_build_tag):
+        with WheelFile.open(fancy_wheel_with_build_tag) as source:
+            assert source.data_dir == "fancy-1.0.0-1337.data"
+
     def test_requires_dist_info_name_match(self, fancy_wheel):
         misnamed = fancy_wheel.rename(
             fancy_wheel.parent / "misnamed-1.0.0-py3-none-any.whl"
