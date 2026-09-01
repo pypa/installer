@@ -2,12 +2,15 @@
 
 import base64
 import hashlib
+import os
+import stat
 import textwrap
 from email.message import Message
 from io import BytesIO
 
 import pytest
 
+import installer.utils as utils
 from installer.records import RecordEntry
 from installer.utils import (
     WheelFilename,
@@ -142,6 +145,46 @@ class TestGetStreamLength:
             result = get_stream_length(source)
 
         assert result == size
+
+
+class TestMakeFileExecutable:
+    @pytest.mark.parametrize(
+        ("umask", "expected_mode"),
+        [
+            pytest.param(0o022, 0o755, id="typical"),
+            pytest.param(0o777, 0o511, id="restrictive"),
+        ],
+    )
+    def test_sets_owner_read_bit(self, monkeypatch, umask, expected_mode):
+        class FakePath:
+            def __init__(self):
+                self.mode = None
+
+            def chmod(self, mode):
+                self.mode = mode
+
+        path = FakePath()
+        monkeypatch.setattr(utils, "_current_umask", lambda: umask)
+
+        utils.make_file_executable(path)
+
+        assert path.mode == expected_mode
+
+    @pytest.mark.skipif(
+        os.name == "nt",
+        reason="Windows chmod does not expose POSIX execute bits",
+    )
+    def test_sets_owner_read_bit_with_restrictive_umask(self, tmp_path):
+        path = tmp_path / "executable"
+        old_umask = os.umask(0o777)
+        try:
+            path.write_bytes(b"executable")
+            utils.make_file_executable(path)
+        finally:
+            os.umask(old_umask)
+
+        mode = stat.S_IMODE(path.stat().st_mode)
+        assert mode == 0o511
 
 
 class TestScript:
