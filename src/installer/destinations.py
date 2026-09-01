@@ -268,7 +268,7 @@ class SchemeDictionaryDestination(WheelDestination):
 
         for level in self.bytecode_optimization_levels:
             compileall.compile_file(
-                target_path, optimize=level, quiet=1, ddir=dir_path_to_embed
+                target_path, optimize=level, quiet=2, ddir=dir_path_to_embed
             )
 
     def finalize_installation(
