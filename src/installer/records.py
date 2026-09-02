@@ -106,8 +106,7 @@ class RecordEntry:
             path = self.path
 
         # Convert Windows paths to use / for consistency
-        if os.sep == "\\":
-            path = path.replace("\\", "/")  # pragma: no cover
+        path = path.replace("\\", "/")
 
         return (
             path,
