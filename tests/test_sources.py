@@ -7,8 +7,9 @@ from hashlib import sha256
 import pytest
 
 from installer.exceptions import InstallerError
-from installer.records import parse_record_file
+from installer.records import Hash, RecordEntry, parse_record_file
 from installer.sources import WheelFile, WheelSource
+from installer.utils import Scheme, construct_record_file
 
 
 class TestWheelSource:
@@ -361,3 +362,40 @@ class TestWheelFile:
             ),
         ):
             source.validate_record(validate_contents=True)
+
+    @pytest.mark.parametrize(
+        "odd_path",
+        [
+            pytest.param("fancy/we\nird.py", id="newline"),
+            pytest.param("fancy/we\u2028ird.py", id="line-separator"),
+        ],
+    )
+    def test_reads_record_with_odd_characters_in_path(self, fancy_wheel, odd_path):
+        # RECORD is a CSV file, and the spec requires it to be "readable with the
+        # default reader of Python's csv module". str.splitlines() is not that
+        # reader: it drops the terminator inside a quoted field, and it also
+        # splits on characters csv does not treat as row separators.
+        contents = b"# odd\n"
+
+        with WheelFile.open(fancy_wheel) as source:
+            record_file_contents = source.read_dist_info("RECORD")
+
+        digest = urlsafe_b64encode(sha256(contents).digest()).decode().rstrip("=")
+        entry = RecordEntry(
+            path=odd_path, hash_=Hash("sha256", digest), size=len(contents)
+        )
+        new_record = construct_record_file([(Scheme("purelib"), entry)]).read().decode()
+
+        with zipfile.ZipFile(fancy_wheel, "a") as archive:
+            archive.writestr(odd_path, contents)
+        replace_file_in_zip(
+            fancy_wheel,
+            filename="fancy-1.0.0.dist-info/RECORD",
+            content=record_file_contents + new_record,
+        )
+
+        with WheelFile.open(fancy_wheel) as source:
+            source.validate_record(validate_contents=True)
+            paths = [record[0] for record, _, _ in source.get_contents()]
+
+        assert odd_path in paths
