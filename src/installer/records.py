@@ -222,7 +222,8 @@ def parse_record_file(rows: Iterable[str]) -> Iterator[tuple[str, str, str]]:
     Returns an iterable of 3-value tuples, that can be passed to
     :any:`RecordEntry.from_elements`.
 
-    :param rows: iterator providing lines of a RECORD (no trailing newlines).
+    :param rows: iterator providing lines of a RECORD (no trailing newlines),
+        or a text stream opened with ``newline=""``.
     """
     reader = csv.reader(rows, delimiter=",", quotechar='"', lineterminator="\n")
     for row_index, elements in enumerate(reader):
