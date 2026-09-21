@@ -55,8 +55,8 @@ def replace_file_in_zip(path: str, filename: str, content: "str | None") -> None
                 files[file] = archive.read(file)
     # Replace original archive
     with zipfile.ZipFile(path, mode="w") as archive:
-        for name, content in files.items():
-            archive.writestr(name, content)
+        for name, file_content in files.items():
+            archive.writestr(name, file_content)
 
 
 class TestWheelFile:
