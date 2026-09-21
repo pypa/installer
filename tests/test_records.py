@@ -176,6 +176,11 @@ class TestRecordEntry:
         )
         assert record.to_row("prefix/") == expected_row
 
+    def test_to_row_normalizes_windows_path_on_any_platform(self):
+        record = RecordEntry.from_elements(r"package\module.py", "", "")
+
+        assert record.to_row() == ("package/module.py", "", "")
+
     def test_equality(self):
         record = RecordEntry.from_elements(
             "file.py",
