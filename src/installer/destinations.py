@@ -302,5 +302,5 @@ class SchemeDictionaryDestination(WheelDestination):
                 scheme, record_file_path, record_stream, is_executable=False
             )
 
-        for scheme, record in record_list:
-            self._compile_bytecode(scheme, record)
+        for scheme_, record in record_list:
+            self._compile_bytecode(scheme_, record)

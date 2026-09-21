@@ -73,9 +73,9 @@ def mock_wheel(tmp_path, name):
     }
 
     with zipfile.ZipFile(path, "w") as archive:
-        for name, indented_content in files.items():
+        for filename, indented_content in files.items():
             archive.writestr(
-                name,
+                filename,
                 textwrap.dedent(indented_content.decode("utf-8")).encode("utf-8"),
             )
 
