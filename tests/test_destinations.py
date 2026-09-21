@@ -25,6 +25,11 @@ class TestWheelDestination:
             )
 
         with pytest.raises(NotImplementedError):
+            destination.write_file_no_record(
+                scheme=None, path=None, stream=None, is_executable=False
+            )
+
+        with pytest.raises(NotImplementedError):
             destination.finalize_installation(
                 scheme=None,
                 record_file_path=None,
@@ -197,3 +202,39 @@ class TestSchemeDictionaryDestination:
     def test_blocking_path_traversal(self, destination):
         with pytest.raises(ValueError):
             destination._path_with_destdir("purelib", "subdir/../../outside.txt")
+
+    @pytest.mark.parametrize(
+        ("scheme", "path", "data", "expected"),
+        [
+            pytest.param(
+                "data", "my_data.bin", b"my data", b"my data", id="normal file"
+            ),
+            pytest.param(
+                "data",
+                "data_folder/my_data.bin",
+                b"my data",
+                b"my data",
+                id="normal file in subfolder",
+            ),
+        ],
+    )
+    def test_write_file_no_record(self, destination, scheme, path, data, expected):
+        destination.write_file_no_record(scheme, path, io.BytesIO(data), False)
+        file_data = (Path(destination.scheme_dict[scheme]) / path).read_bytes()
+        assert file_data == expected
+
+    def test_write_file_no_record_executable(self, destination):
+        destination.write_file_no_record(
+            "data", "my_script.sh", io.BytesIO(b"#!/bin/sh\n"), True
+        )
+        file_path = Path(destination.scheme_dict["data"]) / "my_script.sh"
+        assert file_path.read_bytes() == b"#!/bin/sh\n"
+
+    def test_write_file_no_record_duplicate_raises(self, destination):
+        destination.write_file_no_record(
+            "data", "my_data.bin", io.BytesIO(b"my data"), False
+        )
+        with pytest.raises(FileExistsError):
+            destination.write_file_no_record(
+                "data", "my_data.bin", io.BytesIO(b"my data"), False
+            )
