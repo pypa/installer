@@ -30,3 +30,9 @@ repos:
     hooks:
       - id: ruff-check
       - id: ruff-format
+
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.30.1
+    hooks:
+      - id: zizmor
+        args: ["--pedantic"]

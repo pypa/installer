@@ -13,6 +13,8 @@ concurrency:
     ${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   tests:
     name: tests / ${{ matrix.os }} / ${{ matrix.python-version }}
@@ -28,10 +30,12 @@ jobs:
             python-version: pypy3.10
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Get Python to test against
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
@@ -42,10 +46,13 @@ jobs:
       # prettier-ignore
       - run: >
           nox
-          -s test-${{ matrix.python-version }}
-          doctest-${{ matrix.python-version }}
+          -s test-${PYTHON_VERSION}
+          doctest-${PYTHON_VERSION}
           --error-on-missing-interpreters
         if: matrix.python-version != 'pypy3.10'
+        shell: bash
+        env:
+          PYTHON_VERSION: ${{ matrix.python-version }}
 
       - run: nox --error-on-missing-interpreters -s test-pypy3 doctest-pypy3
         if: matrix.python-version == 'pypy3.10'
