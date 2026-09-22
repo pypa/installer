@@ -1,4 +1,6 @@
 import os
+import sys
+import types
 
 import pytest
 
@@ -88,6 +90,31 @@ def test_main_no_pyc(fancy_wheel, tmp_path):
 
     installed_pyc_files = destdir.rglob("*.pyc")
     assert set(installed_pyc_files) == set()
+
+
+def test_main_silences_bytecode_compile_failures(
+    fancy_wheel, tmp_path, monkeypatch, capsys
+):
+    calls = []
+
+    def fake_compile_file(*args, **kwargs):
+        calls.append((args, kwargs))
+        if kwargs["quiet"] != 2:
+            sys.stderr.write("*** Error compiling test module...\n")
+        return False
+
+    monkeypatch.setitem(
+        sys.modules, "compileall", types.SimpleNamespace(compile_file=fake_compile_file)
+    )
+
+    destdir = tmp_path / "dest"
+
+    main([str(fancy_wheel), "-d", str(destdir)], "python -m installer")
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert calls
+    assert all(kwargs["quiet"] == 2 for _, kwargs in calls)
 
 
 @pytest.mark.parametrize(
