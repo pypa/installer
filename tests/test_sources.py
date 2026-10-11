@@ -238,6 +238,44 @@ class TestWheelFile:
         ):
             source.validate_record(validate_contents=False)
 
+    @pytest.mark.parametrize("validate_contents", [True, False])
+    @pytest.mark.parametrize(
+        "missing_files",
+        [("fancy/__init__.py",), ("fancy/__init__.py", "fancy/__main__.py")],
+    )
+    def test_rejects_record_files_missing_from_wheel(
+        self, fancy_wheel, validate_contents, missing_files
+    ):
+        for filename in missing_files:
+            replace_file_in_zip(fancy_wheel, filename, None)
+
+        with (
+            WheelFile.open(fancy_wheel) as source,
+            pytest.raises(WheelFile.validation_error) as exc_info,
+        ):
+            source.validate_record(validate_contents=validate_contents)
+
+        assert exc_info.value.issues == [
+            f"In {fancy_wheel}, {filename} is mentioned in RECORD but not in the wheel"
+            for filename in missing_files
+        ]
+
+    @pytest.mark.parametrize("validate_contents", [True, False])
+    def test_accepts_record_with_archive_directory(
+        self, fancy_wheel, validate_contents
+    ):
+        with WheelFile.open(fancy_wheel) as source:
+            record_file_contents = source.read_dist_info("RECORD")
+
+        replace_file_in_zip(
+            fancy_wheel,
+            filename="fancy-1.0.0.dist-info/RECORD",
+            content=record_file_contents + "fancy/,,\n",
+        )
+
+        with WheelFile.open(fancy_wheel) as source:
+            source.validate_record(validate_contents=validate_contents)
+
     def test_accept_wheel_with_signature_file(self, fancy_wheel):
         with WheelFile.open(fancy_wheel) as source:
             record_file_contents = source.read_dist_info("RECORD")

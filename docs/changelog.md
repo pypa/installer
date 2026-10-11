@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reject RECORD entries for files missing from the wheel during explicit validation.
+
 - Use `os.path.commonpath` instead of `os.path.commonprefix` to address deprecation
   warnings on Python 3.15 (#345)
 
