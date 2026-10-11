@@ -254,10 +254,10 @@ class WheelFile(WheelSource):
         issues: list[str] = []
 
         for item in self._zipfile.infolist():
+            record_args = record_mapping.pop(item.filename, None)
+
             if item.filename[-1:] == "/":  # looks like a directory
                 continue
-
-            record_args = record_mapping.pop(item.filename, None)
 
             if self.dist_info_dir == posixpath.commonpath(
                 [self.dist_info_dir, item.filename]
@@ -305,6 +305,11 @@ class WheelFile(WheelSource):
                         issues.append(
                             f"In {self._zipfile.filename}, hash / size of {item.filename} didn't match RECORD"
                         )
+
+        for filename in record_mapping:
+            issues.append(
+                f"In {self._zipfile.filename}, {filename} is mentioned in RECORD but not in the wheel"
+            )
 
         if issues:
             raise _WheelFileValidationError(issues)
