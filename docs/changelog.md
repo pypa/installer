@@ -1,9 +1,10 @@
 # Changelog
 
-## Unreleased
-
-- Use `os.path.commonpath` instead of `os.path.commonprefix` to address deprecation
-  warnings on Python 3.15 (#345)
+## v1.1.0 (Oct 12, 2026)
+- Add early return when there are no optimization levels to compile bytecode for (#341)
+- Avoid building a `pathlib.Path` object for each record entry (#342)
+- Declare support for Python 3.15 (#346)
+- Use `os.path.commonpath` instead of `os.path.commonprefix` to address deprecation warnings on Python 3.15 (#345)
 
 ## v1.0.1 (May 11, 2026)
 - Include docs and tests in sdist again (#322)
