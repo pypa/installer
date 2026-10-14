@@ -28,7 +28,10 @@ def mock_destination():
         return (path, scheme, 0)
 
     def custom_write_script(name, module, attr, section):
-        return (name, module, attr, section)
+        assert module
+        assert attr
+        assert section in {"console", "gui"}
+        return RecordEntry(name, None, None)
 
     retval.write_file.side_effect = custom_write_file
     retval.write_script.side_effect = custom_write_script
@@ -212,8 +215,8 @@ class TestInstall:
                     scheme="purelib",
                     record_file_path="fancy-1.0.0.dist-info/RECORD",
                     records=[
-                        ("scripts", ("fancy", "fancy", "main", "console")),
-                        ("scripts", ("fancy-gui", "fancy", "main", "gui")),
+                        ("scripts", RecordEntry("fancy", None, None)),
+                        ("scripts", RecordEntry("fancy-gui", None, None)),
                         ("purelib", ("fancy/__init__.py", "purelib", 0)),
                         ("purelib", ("fancy/__main__.py", "purelib", 0)),
                         ("purelib", ("fancy-1.0.0.dist-info/METADATA", "purelib", 0)),
@@ -467,8 +470,8 @@ class TestInstall:
                     scheme="platlib",
                     record_file_path="fancy-1.0.0.dist-info/RECORD",
                     records=[
-                        ("scripts", ("fancy", "fancy", "main", "console")),
-                        ("scripts", ("fancy-gui", "fancy", "main", "gui")),
+                        ("scripts", RecordEntry("fancy", None, None)),
+                        ("scripts", RecordEntry("fancy-gui", None, None)),
                         ("platlib", ("fancy/__init__.py", "platlib", 0)),
                         ("platlib", ("fancy/__main__.py", "platlib", 0)),
                         ("platlib", ("fancy-1.0.0.dist-info/METADATA", "platlib", 0)),
@@ -754,8 +757,8 @@ class TestInstall:
                     scheme="purelib",
                     record_file_path="fancy-1.0.0.dist-info/RECORD",
                     records=[
-                        ("scripts", ("fancy", "fancy", "main", "console")),
-                        ("scripts", ("fancy-gui", "fancy", "main", "gui")),
+                        ("scripts", RecordEntry("fancy", None, None)),
+                        ("scripts", RecordEntry("fancy-gui", None, None)),
                         ("data", ("fancy/data.py", "data", 0)),
                         ("headers", ("fancy/headers.py", "headers", 0)),
                         ("platlib", ("fancy/platlib.py", "platlib", 0)),
@@ -780,6 +783,54 @@ class TestInstall:
                 ),
             ]
         )
+
+    def test_skips_data_script_that_matches_entrypoint(self, mock_destination):
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"",
+                "fancy-1.0.0.data/scripts/fancy": b"""\
+                    #!/usr/bin/env python
+                    print("legacy script")
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "entry_points.txt": b"""\
+                    [console_scripts]
+                    fancy = fancy:main
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+
+        with pytest.warns(RuntimeWarning, match="conflicts with an entry point script"):
+            install(
+                source=source,
+                destination=mock_destination,
+                additional_metadata={},
+            )
+
+        assert not any(
+            call.kwargs["scheme"] == "scripts" and call.kwargs["path"] == "fancy"
+            for call in mock_destination.write_file.call_args_list
+        )
+        records = mock_destination.finalize_installation.call_args.kwargs["records"]
+        script_records = [record for scheme, record in records if scheme == "scripts"]
+        assert script_records == [RecordEntry("fancy", None, None)]
 
     def test_errors_out_when_given_invalid_scheme_in_data(self, mock_destination):
         # Create a fake wheel
