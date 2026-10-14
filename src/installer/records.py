@@ -6,7 +6,7 @@ import hashlib
 import os
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import BinaryIO, cast
 
 from installer.utils import copyfileobj_with_hashing, get_stream_length
@@ -106,8 +106,7 @@ class RecordEntry:
             path = self.path
 
         # Convert Windows paths to use / for consistency
-        if os.sep == "\\":
-            path = path.replace("\\", "/")  # pragma: no cover
+        path = PureWindowsPath(path).as_posix()
 
         return (
             path,
