@@ -987,3 +987,225 @@ class TestInstall:
         assert sub_good_path in record_paths
         assert top_pycache_path not in record_paths
         assert sub_pycache_path not in record_paths
+
+    def test_trust_wheel_record_uses_source_hashes(self, mock_destination):
+        """When trust_wheel_record=True, records from the wheel's RECORD
+        should be used instead of whatever write_file returns.
+        """
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    def main():
+                        print("I'm a fancy package")
+                """,
+                "fancy/__main__.py": b"""\
+                    if __name__ == "__main__":
+                        from . import main
+                        main()
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+
+        install(
+            source=source,
+            destination=mock_destination,
+            additional_metadata={},
+            trust_wheel_record=True,
+        )
+
+        # All wheel files (non-scripts scheme) should go through
+        # write_file_no_record instead of write_file.
+        no_record_calls = mock_destination.write_file_no_record.call_args_list
+        write_file_calls = mock_destination.write_file.call_args_list
+        no_record_paths = {c.kwargs["path"] for c in no_record_calls}
+
+        # Regular files and dist-info files (except RECORD) should all use
+        # write_file_no_record.
+        assert "fancy/__init__.py" in no_record_paths
+        assert "fancy/__main__.py" in no_record_paths
+
+        # write_file should NOT have been called for files that went through
+        # write_file_no_record.
+        write_file_paths = {c.kwargs["path"] for c in write_file_calls}
+        assert "fancy/__init__.py" not in write_file_paths
+        assert "fancy/__main__.py" not in write_file_paths
+
+        # finalize_installation should receive RecordEntry objects with the
+        # source hashes (not the mock return values from write_file).
+        records = mock_destination.finalize_installation.call_args[1]["records"]
+        for _scheme, rec in records:
+            if isinstance(rec, RecordEntry) and rec.hash_ is not None:
+                assert rec.hash_.name == "sha256"
+                assert rec.hash_.value != ""
+
+    def test_trust_wheel_record_falls_back_for_missing_hash(self, mock_destination):
+        """When trust_wheel_record=True but a record has no hash,
+        write_file should be used as a fallback.
+        """
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    def main():
+                        print("I'm a fancy package")
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+
+        # Patch get_contents to strip hash info from the first file.
+        original_get_contents = source.get_contents
+
+        def patched_get_contents():
+            for record, stream, is_exec in original_get_contents():
+                path = record[0]
+                if path == "fancy/__init__.py":
+                    yield (path, "", ""), stream, is_exec
+                else:
+                    yield record, stream, is_exec
+
+        source.get_contents = patched_get_contents
+
+        install(
+            source=source,
+            destination=mock_destination,
+            additional_metadata={},
+            trust_wheel_record=True,
+        )
+
+        # fancy/__init__.py has no hash, so it should go through write_file.
+        write_file_paths = {
+            c.kwargs["path"] for c in mock_destination.write_file.call_args_list
+        }
+        assert "fancy/__init__.py" in write_file_paths
+
+    def test_trust_wheel_record_still_hashes_scripts(self, mock_destination):
+        """Scripts-scheme files should always be hashed (shebang rewriting
+        may change their content).
+        """
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    def main():
+                        print("I'm a fancy package")
+                """,
+                "fancy-1.0.0.data/scripts/run_fancy": b"""\
+                    #!/usr/bin/env python3
+                    import fancy; fancy.main()
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+
+        install(
+            source=source,
+            destination=mock_destination,
+            additional_metadata={},
+            trust_wheel_record=True,
+        )
+
+        # The scripts-scheme file should go through write_file, not
+        # write_file_no_record.
+        write_file_paths = {
+            c.kwargs["path"] for c in mock_destination.write_file.call_args_list
+        }
+        assert "run_fancy" in write_file_paths
+
+    def test_trust_wheel_record_still_hashes_additional_metadata(
+        self, mock_destination
+    ):
+        """Additional metadata should always be hashed since it's generated
+        by the caller and not present in the wheel's RECORD.
+        """
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={
+                "fancy/__init__.py": b"""\
+                    def main():
+                        print("I'm a fancy package")
+                """,
+            },
+            dist_info_files={
+                "top_level.txt": b"""\
+                    fancy
+                """,
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+                "METADATA": b"""\
+                    Metadata-Version: 2.1
+                    Name: fancy
+                    Version: 1.0.0
+                """,
+            },
+        )
+
+        install(
+            source=source,
+            destination=mock_destination,
+            additional_metadata={
+                "fun_file.txt": b"this should be in dist-info!",
+            },
+            trust_wheel_record=True,
+        )
+
+        # Additional metadata should go through write_file.
+        write_file_paths = {
+            c.kwargs["path"] for c in mock_destination.write_file.call_args_list
+        }
+        assert "fancy-1.0.0.dist-info/fun_file.txt" in write_file_paths
