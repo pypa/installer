@@ -67,3 +67,21 @@ def test_script_generate_launcher_error(section, kind):
     script = Script("foo", "foo.bar", "baz.qux", section=section)
     with pytest.raises(InvalidScript):
         script.generate("#!C:\\path to my\\python.exe\n", kind=kind)
+
+
+@pytest.mark.parametrize("kind", ["win-ia32", "win-amd64", "win-arm", "win-arm64"])
+@pytest.mark.parametrize("section", ["console", "gui"])
+def test_script_generate_windows_path_on_any_platform(kind, section):
+    script = Script("foo", "foo.bar", "baz.qux", section=section)
+    executable = r"C:\python-env\Scripts\python.exe"
+    expected = r"C:\python-env\Scripts\pythonw.exe" if section == "gui" else executable
+    launcher = script._get_launcher_data(kind)
+
+    name, data = script.generate(executable, kind=kind)
+
+    assert name == "foo.exe"
+    assert data.startswith(launcher + f"#!{expected}\n".encode())
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        code = archive.read("__main__.py")
+    assert b"\nfrom foo.bar import baz\n" in code
+    assert b"baz.qux()" in code
