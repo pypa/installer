@@ -1,7 +1,7 @@
 """Generate executable scripts, on various platforms."""
 
 import io
-import os
+import ntpath
 import shlex
 import zipfile
 from collections.abc import Mapping
@@ -83,9 +83,9 @@ class Script:
         On Windows, when the script section is gui-script, pythonw.exe should be used.
         """
         if self.section == "gui" and kind != "posix":
-            dn, fn = os.path.split(executable)
+            dn, fn = ntpath.split(executable)
             fn = fn.replace("python", "pythonw")
-            executable = os.path.join(dn, fn)  # noqa: PTH118
+            executable = ntpath.join(dn, fn)
         return executable
 
     def generate(self, executable: str, kind: "LauncherKind") -> tuple[str, bytes]:
