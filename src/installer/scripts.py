@@ -121,7 +121,9 @@ class Script:
 
     @staticmethod
     def _is_executable_simple(executable: bytes) -> bool:
-        if b" " in executable:
+        # The kernel splits a shebang on space and tab. A path with either
+        # one has to go through the quoted /bin/sh wrapper.
+        if b" " in executable or b"\t" in executable:
             return False
         shebang_length = len(executable) + 3  # Prefix #! and newline after.
         # According to distlib, Darwin can handle up to 512 characters. But I want
