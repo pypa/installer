@@ -1,4 +1,6 @@
 import hashlib
+import subprocess
+import sys
 import textwrap
 from io import BytesIO
 from unittest import mock
@@ -95,6 +97,30 @@ class FakeWheelSource(WheelSource):
 # --------------------------------------------------------------------------------------
 # Actual Tests
 # --------------------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    "path",
+    ["./fancy-1.0.0.data/data/file.txt", "fancy-1.0.0.data"],
+)
+def test_rejects_data_paths_without_matching_ancestor(path):
+    # Bound the regression: these paths previously made the split loop spin forever.
+    code = textwrap.dedent(
+        """\
+        import sys
+        from installer._core import _determine_scheme
+        from installer.exceptions import InvalidWheelSource
+        from installer.sources import WheelSource
+
+        try:
+            _determine_scheme(sys.argv[1], WheelSource("fancy", "1.0.0"), "purelib")
+        except InvalidWheelSource:
+            pass
+        else:
+            raise AssertionError("expected InvalidWheelSource")
+        """
+    )
+    subprocess.run([sys.executable, "-c", code, path], check=True, timeout=3)
+
+
 class TestInstall:
     def test_calls_destination_correctly(self, mock_destination):
         # Create a fake wheel

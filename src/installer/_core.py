@@ -48,7 +48,7 @@ def _determine_scheme(
     parts = []
     scheme_name = None
     left = path
-    while True:
+    while left:
         left, right = posixpath.split(left)
         parts.append(right)
         if left == source.data_dir:
