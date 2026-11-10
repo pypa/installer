@@ -92,6 +92,7 @@ class TestRecordEntry:
             ("", "", "", ["path"]),
             ("", "", "non-int", ["path", "size"]),
             ("a.py", "", "non-int", ["size"]),
+            ("a.py", "", "-5", ["size"]),
             # Notice that we're explicitly allowing non-compliant hash values
             ("a.py", "some-random-value", "non-int", ["size"]),
         ],
