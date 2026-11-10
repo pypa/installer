@@ -33,12 +33,10 @@ _ALLOWED_LAUNCHERS: Mapping[tuple["ScriptSection", "LauncherKind"], str] = {
 }
 
 _SCRIPT_TEMPLATE = """\
-# -*- coding: utf-8 -*-
-import re
 import sys
 from {module} import {import_name}
 if __name__ == "__main__":
-    sys.argv[0] = re.sub(r"(-script\\.pyw|\\.exe)?$", "", sys.argv[0])
+    sys.argv[0] = sys.argv[0].removesuffix(".exe")
     sys.exit({func_path}())
 """
 
