@@ -6,6 +6,7 @@ from unittest import mock
 import pytest
 
 from installer import install
+from installer._core import _determine_scheme
 from installer.exceptions import InvalidWheelSource
 from installer.records import RecordEntry
 from installer.sources import WheelSource
@@ -987,3 +988,30 @@ class TestInstall:
         assert sub_good_path in record_paths
         assert top_pycache_path not in record_paths
         assert sub_pycache_path not in record_paths
+
+
+class TestDetermineScheme:
+    @pytest.mark.parametrize(
+        "path",
+        [
+            "./fancy-1.0.0.data/data/file.txt",
+            "fancy-1.0.0.data",
+        ],
+    )
+    def test_rejects_unmatched_data_ancestors(self, path):
+        source = FakeWheelSource(
+            distribution="fancy",
+            version="1.0.0",
+            regular_files={},
+            dist_info_files={
+                "WHEEL": b"""\
+                    Wheel-Version: 1.0
+                    Generator: magic (1.0.0)
+                    Root-Is-Purelib: true
+                    Tag: py3-none-any
+                """,
+            },
+        )
+
+        with pytest.raises(InvalidWheelSource):
+            _determine_scheme(path, source, "purelib")
