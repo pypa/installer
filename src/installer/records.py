@@ -207,6 +207,9 @@ class RecordEntry:
                 size_value: int | None = int(size)
             except ValueError:
                 issues.append("`size` cannot be non-integer")
+            else:
+                if size_value < 0:
+                    issues.append("`size` cannot be negative")
         else:
             size_value = None
 
