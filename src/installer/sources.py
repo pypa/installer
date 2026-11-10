@@ -1,5 +1,6 @@
 """Source of information about a wheel file."""
 
+import io
 import posixpath
 import stat
 import zipfile
@@ -242,9 +243,10 @@ class WheelFile(WheelSource):
         :param validate_contents: Whether to validate content integrity.
         """
         try:
-            record_lines = self.read_dist_info("RECORD").splitlines()
+            record_text = self.read_dist_info("RECORD")
             record_mapping = {
-                record[0]: record for record in parse_record_file(record_lines)
+                record[0]: record
+                for record in parse_record_file(io.StringIO(record_text, newline=""))
             }
         except Exception as exc:
             raise _WheelFileValidationError(
@@ -317,8 +319,8 @@ class WheelFile(WheelSource):
         :any:`AssertionError` will be raised.
         """
         # Convert the record file into a useful mapping
-        record_lines = self.read_dist_info("RECORD").splitlines()
-        records = parse_record_file(record_lines)
+        record_text = self.read_dist_info("RECORD")
+        records = parse_record_file(io.StringIO(record_text, newline=""))
         record_mapping = {record[0]: record for record in records}
 
         for item in self._zipfile.infolist():
