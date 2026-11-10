@@ -29,6 +29,18 @@ def test_script_generate_space_in_executable():
     assert b"baz.qux()" in data
 
 
+@pytest.mark.parametrize("section", ["console", "gui"])
+def test_script_generate_tab_in_executable(section):
+    # A tab is a shebang delimiter, same as a space. The direct shebang
+    # would execute only the path before the tab.
+    script = Script("foo", "foo.bar", "baz.qux", section=section)
+    name, data = script.generate("/path\tto\tpython", kind="posix")
+
+    assert name == "foo"
+    assert data.startswith(b"#!/bin/sh\n")
+    assert b" '/path\tto\tpython'" in data
+
+
 def _read_launcher_data(section, kind):
     prefix = {"console": "t", "gui": "w"}[section]
     suffix = {"win-ia32": "32", "win-amd64": "64", "win-arm": "_arm"}[kind]
