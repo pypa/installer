@@ -10,12 +10,19 @@ def fancy_wheel(tmp_path):
 
 
 @pytest.fixture
+def fancy_wheel_with_build_tag(tmp_path):
+    return mock_wheel(tmp_path, "fancy", build_tag="1337")
+
+
+@pytest.fixture
 def another_fancy_wheel(tmp_path):
     return mock_wheel(tmp_path, "another_fancy")
 
 
-def mock_wheel(tmp_path, name):
-    path = tmp_path / f"{name}-1.0.0-py2.py3-none-any.whl"
+def mock_wheel(tmp_path, name, build_tag=None):
+    wheel_build_tag = f"-{build_tag}" if build_tag is not None else ""
+    data_dir = f"{name}-1.0.0{wheel_build_tag}.data"
+    path = tmp_path / f"{name}-1.0.0{wheel_build_tag}-py2.py3-none-any.whl"
     files = {
         f"{name}/": b"""""",
         f"{name}/__init__.py": b"""\
@@ -27,8 +34,8 @@ def mock_wheel(tmp_path, name):
                 from . import main
                 main()
         """,
-        f"{name}-1.0.0.data/data/{name}/": b"""""",
-        f"{name}-1.0.0.data/data/{name}/data.py": b"""\
+        f"{data_dir}/data/{name}/": b"""""",
+        f"{data_dir}/data/{name}/data.py": b"""\
             # put me in data
         """,
         f"{name}-1.0.0.dist-info/": b"""""",
@@ -63,7 +70,7 @@ def mock_wheel(tmp_path, name):
         f"{name}-1.0.0.dist-info/RECORD": f"""\
             {name}/__init__.py,sha256=qZ2qq7xVBAiUFQVv-QBHhdtCUF5p1NsWwSOiD7qdHN0,36
             {name}/__main__.py,sha256=Wd4SyWJOIMsHf_5-0oN6aNFwen8ehJnRo-erk2_K-eY,61
-            {name}-1.0.0.data/data/{name}/data.py,sha256=nuFRUNQF5vP7FWE-v5ysyrrfpIaAvfzSiGOgfPpLOeI,17
+            {data_dir}/data/{name}/data.py,sha256=nuFRUNQF5vP7FWE-v5ysyrrfpIaAvfzSiGOgfPpLOeI,17
             {name}-1.0.0.dist-info/top_level.txt,sha256=SW-yrrF_c8KlserorMw54inhLjZ3_YIuLz7fYT4f8ao,6
             {name}-1.0.0.dist-info/entry_points.txt,sha256=AxJl21_zgoNWjCfvSkC9u_rWSzGyCtCzhl84n979jCc,75
             {name}-1.0.0.dist-info/WHEEL,sha256=1DrXMF1THfnBjsdS5sZn-e7BKcmUn7jnMbShGeZomgc,84
