@@ -22,6 +22,8 @@ from typing import (
     cast,
 )
 
+from installer.exceptions import InstallerError
+
 if TYPE_CHECKING:
     from installer.records import RecordEntry
     from installer.scripts import LauncherKind, ScriptSection
@@ -31,6 +33,7 @@ AllSchemes = tuple[Scheme, ...]
 
 __all__ = [
     "SCHEME_NAMES",
+    "InvalidEntryPoint",
     "WheelFilename",
     "construct_record_file",
     "copyfileobj_with_hashing",
@@ -62,6 +65,21 @@ _WHEEL_FILENAME_REGEX = re.compile(
 WheelFilename = namedtuple(
     "WheelFilename", ["distribution", "version", "build_tag", "tag"]
 )
+
+
+class InvalidEntryPoint(ValueError, InstallerError):
+    """Raised when an ``entry_points.txt`` entry is invalid."""
+
+    def __init__(self, *, section: str, name: str, value: str, reason: str) -> None:
+        """Initialize with context about the invalid entry point."""
+        super().__init__(
+            f"Invalid entry point {name!r} in [{section}]: {value!r}. {reason}"
+        )
+        self.section = section
+        self.name = name
+        self.value = value
+        self.reason = reason
+
 
 # Adapted from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L90
 _ENTRYPOINT_REGEX = re.compile(
@@ -230,6 +248,7 @@ def parse_entrypoints(text: str) -> Iterable[tuple[str, str, str, "ScriptSection
     :param text: entire contents of the file
     :return:
         name of the script, module to use, attribute to call, kind of script (cli / gui)
+    :raises InvalidEntryPoint: if an entry point cannot be parsed.
     """
     # Borrowed from https://github.com/python/importlib_metadata/blob/v3.4.0/importlib_metadata/__init__.py#L115
     config = ConfigParser(delimiters="=")
@@ -243,14 +262,25 @@ def parse_entrypoints(text: str) -> Iterable[tuple[str, str, str, "ScriptSection
         for name, value in config.items(section):
             assert isinstance(name, str)
             match = _ENTRYPOINT_REGEX.match(value)
-            assert match
+            if not match:
+                raise InvalidEntryPoint(
+                    section=section,
+                    name=name,
+                    value=value,
+                    reason="Expected a reference in the form module:attribute.",
+                )
 
             module = match.group("module")
             assert isinstance(module, str)
 
             attrs = match.group("attrs")
-            # TODO: make this a proper error, which can be caught.
-            assert attrs is not None
+            if attrs is None:  # pragma: no cover
+                raise InvalidEntryPoint(
+                    section=section,
+                    name=name,
+                    value=value,
+                    reason="Missing callable attribute.",
+                )
             assert isinstance(attrs, str)
 
             script_section = cast("ScriptSection", section[: -len("_scripts")])
