@@ -44,6 +44,10 @@ PyPI <https://pypi.org/project/installer>
 
 ## Basic Usage
 
+To install a wheel for the running Python interpreter, use
+{func}`installer.utils.get_launcher_kind` to select the script launcher for the
+current machine:
+
 ```python
 import sys
 import sysconfig
@@ -51,12 +55,13 @@ import sysconfig
 from installer import install
 from installer.destinations import SchemeDictionaryDestination
 from installer.sources import WheelFile
+from installer.utils import get_launcher_kind
 
 # Handler for installation directories and writing into them.
 destination = SchemeDictionaryDestination(
     sysconfig.get_paths(),
     interpreter=sys.executable,
-    script_kind="posix",
+    script_kind=get_launcher_kind(),
 )
 
 with WheelFile.open("sampleproject-1.3.1-py2.py3-none-any.whl") as source:

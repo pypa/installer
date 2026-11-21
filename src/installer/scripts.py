@@ -91,8 +91,8 @@ class Script:
 
         :param executable: Path to the executable to invoke.
         :param kind: Which launcher template should be used.
-            Valid values are ``"posix"``, ``"win-ia32"``, ``"win-amd64"`` and
-            ``"win-arm"``.
+            Valid values are ``"posix"``, ``"win-ia32"``, ``"win-amd64"``,
+            ``"win-arm"`` and ``"win-arm64"``.
         :type kind: str
 
         :raises InvalidScript: if no appropriate template is available.
