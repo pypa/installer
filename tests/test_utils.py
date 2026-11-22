@@ -259,6 +259,20 @@ class TestParseEntryPoints:
                 ],
                 id="cli-and-gui",
             ),
+            pytest.param(
+                """
+                    [console_scripts]
+                    foo = foo.bar:main
+
+                    [console_scripts]
+                    bar = bar.baz:main
+                """,
+                [
+                    ("foo", "foo.bar", "main", "console"),
+                    ("bar", "bar.baz", "main", "console"),
+                ],
+                id="duplicate-section",
+            ),
         ],
     )
     def test_valid(self, script, expected):
