@@ -26,13 +26,13 @@ repos:
       - id: blacken-docs
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.4
+    rev: v0.17.6
     hooks:
       - id: ruff-check
       - id: ruff-format
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.32.0
+    rev: v1.33.1
     hooks:
       - id: zizmor
         args: ["--pedantic"]
