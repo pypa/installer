@@ -7,6 +7,7 @@ import hashlib
 import io
 import os
 import re
+import stat
 import sys
 from collections import namedtuple
 from collections.abc import Callable, Iterable, Iterator
@@ -269,4 +270,5 @@ def _current_umask() -> int:
 # https://github.com/pypa/pip/blob/0f21fb92/src/pip/_internal/utils/unpacking.py#L93
 def make_file_executable(path: Path) -> None:
     """Make the file at the provided path executable."""
-    path.chmod(0o777 & ~_current_umask() | 0o111)
+    execute_bits = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+    path.chmod(0o777 & ~_current_umask() | execute_bits | stat.S_IRUSR)
