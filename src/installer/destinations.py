@@ -123,6 +123,12 @@ class SchemeDictionaryDestination(WheelDestination):
     Compile cached bytecode for installed .py files with these optimization
     levels. The bytecode is specific to the minor version of Python (e.g. 3.10)
     used to generate it.
+
+    Compilation runs in the Python process that calls ``installer``. The
+    ``interpreter`` argument supplies the interpreter path for generated
+    launchers. For a destination that uses a different Python version, leave
+    the optimization levels empty and compile bytecode using that version
+    after installation.
     """
 
     destdir: str | None = None
